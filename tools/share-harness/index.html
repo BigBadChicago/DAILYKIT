@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>DAILYKIT share harness</title>
+    <link rel="stylesheet" href="/src/ui/chrome.css" />
+    <style>
+      .hz-bar {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 16px;
+        background: var(--dk-surface);
+        border-bottom: var(--dk-line-width) solid var(--dk-line);
+      }
+      .hz-title { flex: 1 1 auto; margin: 0; font-size: 1rem; }
+      .hz-grid {
+        --hz-scale: 1;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 16px;
+        padding: 16px;
+      }
+      .hz-card {
+        padding: 12px;
+        border: var(--dk-line-width) solid var(--dk-line);
+        border-radius: var(--dk-radius);
+        background: var(--dk-surface);
+      }
+      .hz-card__id { margin: 0; font-size: 0.9rem; font-family: var(--dk-board-font); }
+      .hz-card__note { margin: 4px 0 10px; font-size: 0.78rem; color: var(--dk-text-dim); }
+      .hz-block {
+        margin: 0;
+        /* Monospace so a ragged row is visible as a ragged right edge. */
+        font-family: var(--dk-board-font);
+        font-size: calc(1rem * var(--hz-scale));
+        line-height: 1.25;
+        white-space: pre;
+        overflow-x: auto;
+      }
+      .hz-meta { margin: 10px 0 0; font-size: 0.72rem; color: var(--dk-text-dim); }
+    </style>
+  </head>
+  <body>
+    <main id="harness"></main>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

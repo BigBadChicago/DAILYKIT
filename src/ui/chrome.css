@@ -1,0 +1,424 @@
+/*
+ * Layer 2. Suite chrome. Every color is a custom property so a theme swap is
+ * an attribute change on the root and never a class sweep over the tree.
+ *
+ * Contrast handling: prefers-contrast and forced-colors are layered over the
+ * light and dark sets at the end of this file rather than being a separate
+ * theme value. See theme.ts.
+ */
+
+:root {
+  --dk-accent-hue: 210;
+  --dk-board-font: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --dk-font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --dk-tap: 44px;
+  --dk-radius: 10px;
+  --dk-gap: 12px;
+  --dk-line-width: 1px;
+  --dk-header-height: 56px;
+  --dk-motion: 160ms;
+
+  --dk-safe-top: env(safe-area-inset-top, 0px);
+  --dk-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --dk-safe-left: env(safe-area-inset-left, 0px);
+  --dk-safe-right: env(safe-area-inset-right, 0px);
+}
+
+:root[data-theme="light"] {
+  --dk-bg: hsl(0 0% 100%);
+  --dk-surface: hsl(0 0% 97%);
+  --dk-surface-raised: hsl(0 0% 100%);
+  --dk-text: hsl(0 0% 12%);
+  --dk-text-dim: hsl(0 0% 38%);
+  --dk-line: hsl(0 0% 82%);
+  --dk-accent: hsl(var(--dk-accent-hue) 62% 40%);
+  --dk-accent-text: hsl(0 0% 100%);
+  --dk-focus: hsl(var(--dk-accent-hue) 80% 32%);
+  --dk-scrim: hsl(0 0% 0% / 0.45);
+  --dk-toast-bg: hsl(0 0% 15%);
+  --dk-toast-text: hsl(0 0% 100%);
+}
+
+:root[data-theme="dark"] {
+  --dk-bg: hsl(220 12% 10%);
+  --dk-surface: hsl(220 10% 15%);
+  --dk-surface-raised: hsl(220 10% 19%);
+  --dk-text: hsl(0 0% 94%);
+  --dk-text-dim: hsl(0 0% 68%);
+  --dk-line: hsl(220 8% 32%);
+  --dk-accent: hsl(var(--dk-accent-hue) 62% 62%);
+  --dk-accent-text: hsl(220 12% 10%);
+  --dk-focus: hsl(var(--dk-accent-hue) 90% 72%);
+  --dk-scrim: hsl(0 0% 0% / 0.65);
+  --dk-toast-bg: hsl(0 0% 92%);
+  --dk-toast-text: hsl(0 0% 10%);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--dk-bg);
+  color: var(--dk-text);
+  font-family: var(--dk-font);
+  /* Requirement 8.2. The board must not rubber band or double tap zoom. */
+  overscroll-behavior: none;
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
+}
+
+body.dk-scroll-locked {
+  overflow: hidden;
+}
+
+.dk-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+:focus-visible {
+  outline: 3px solid var(--dk-focus);
+  outline-offset: 2px;
+}
+
+/* Header */
+
+.dk-header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: calc(var(--dk-header-height) + var(--dk-safe-top));
+  padding: var(--dk-safe-top) calc(8px + var(--dk-safe-right)) 0 calc(8px + var(--dk-safe-left));
+  border-bottom: var(--dk-line-width) solid var(--dk-line);
+  background: var(--dk-surface);
+}
+
+.dk-header__title {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dk-iconbutton {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--dk-tap);
+  min-height: var(--dk-tap);
+  padding: 0 6px;
+  border: 0;
+  border-radius: var(--dk-radius);
+  background: transparent;
+  color: var(--dk-text);
+  font: inherit;
+  font-size: 1.1rem;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.dk-iconbutton:hover { background: var(--dk-surface-raised); }
+.dk-iconbutton[aria-disabled="true"] { opacity: 0.4; pointer-events: none; }
+
+/* Modal */
+
+.dk-modal-scrim {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(12px + var(--dk-safe-top)) 12px calc(12px + var(--dk-safe-bottom));
+  background: var(--dk-scrim);
+  z-index: 100;
+}
+
+.dk-modal {
+  width: min(460px, 100%);
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--dk-surface-raised);
+  color: var(--dk-text);
+  border: var(--dk-line-width) solid var(--dk-line);
+  border-radius: var(--dk-radius);
+  box-shadow: 0 10px 30px hsl(0 0% 0% / 0.3);
+  animation: dk-modal-in var(--dk-motion) ease-out;
+}
+
+@keyframes dk-modal-in {
+  from { transform: translateY(8px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+.dk-modal__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 8px 8px 16px;
+  border-bottom: var(--dk-line-width) solid var(--dk-line);
+}
+
+.dk-modal__title {
+  flex: 1 1 auto;
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.dk-modal__body {
+  padding: 16px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Toast */
+
+.dk-toasts {
+  position: fixed;
+  left: 50%;
+  bottom: calc(16px + var(--dk-safe-bottom));
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  z-index: 200;
+  pointer-events: none;
+}
+
+.dk-toast {
+  max-width: min(90vw, 420px);
+  padding: 10px 14px;
+  border-radius: var(--dk-radius);
+  background: var(--dk-toast-bg);
+  color: var(--dk-toast-text);
+  font-size: 0.92rem;
+  animation: dk-toast-in var(--dk-motion) ease-out;
+}
+
+.dk-toast--leaving { opacity: 0; transition: opacity var(--dk-motion) linear; }
+
+@keyframes dk-toast-in {
+  from { transform: translateY(10px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+/* Countdown */
+
+.dk-countdown {
+  font-variant-numeric: tabular-nums;
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.dk-countdown__label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 400;
+  letter-spacing: normal;
+  color: var(--dk-text-dim);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+}
+
+/* Contrast layers. Applied over whichever theme is active. */
+
+@media (prefers-contrast: more) {
+  :root[data-theme="light"] {
+    --dk-text: hsl(0 0% 0%);
+    --dk-text-dim: hsl(0 0% 22%);
+    --dk-line: hsl(0 0% 30%);
+    --dk-accent: hsl(var(--dk-accent-hue) 80% 28%);
+    --dk-line-width: 2px;
+  }
+  :root[data-theme="dark"] {
+    --dk-text: hsl(0 0% 100%);
+    --dk-text-dim: hsl(0 0% 84%);
+    --dk-line: hsl(0 0% 78%);
+    --dk-accent: hsl(var(--dk-accent-hue) 90% 78%);
+    --dk-line-width: 2px;
+  }
+}
+
+@media (forced-colors: active) {
+  :root {
+    --dk-bg: Canvas;
+    --dk-surface: Canvas;
+    --dk-surface-raised: Canvas;
+    --dk-text: CanvasText;
+    --dk-text-dim: CanvasText;
+    --dk-line: CanvasText;
+    --dk-accent: Highlight;
+    --dk-accent-text: HighlightText;
+    --dk-focus: Highlight;
+    --dk-toast-bg: Canvas;
+    --dk-toast-text: CanvasText;
+  }
+  .dk-modal, .dk-toast, .dk-iconbutton {
+    border: 1px solid CanvasText;
+    box-shadow: none;
+  }
+  /* forced-colors drops shadows, so the scrim cannot carry separation alone. */
+  .dk-modal-scrim { background: Canvas; }
+}
+
+/* Stats panel */
+
+.dk-hidden { display: none; }
+
+.dk-stats__figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
+  gap: var(--dk-gap);
+  margin: 0 0 20px;
+}
+
+.dk-stats__figure { text-align: center; }
+
+.dk-stats__label {
+  font-size: 0.72rem;
+  line-height: 1.2;
+  color: var(--dk-text-dim);
+}
+
+.dk-stats__value {
+  margin: 2px 0 0;
+  font-size: 1.6rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.dk-stats__note {
+  margin: 4px 0 0;
+  font-size: 0.68rem;
+  line-height: 1.25;
+  color: var(--dk-text-dim);
+}
+
+.dk-stats__heading {
+  margin: 0 0 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--dk-text-dim);
+}
+
+.dk-hist__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+  font-size: 0.85rem;
+}
+
+.dk-hist__label {
+  flex: 0 0 auto;
+  width: 6.5em;
+  color: var(--dk-text-dim);
+}
+
+.dk-hist__bar {
+  display: flex;
+  justify-content: flex-end;
+  min-width: 1.8em;
+  padding: 2px 6px;
+  border: var(--dk-line-width) solid transparent;
+  border-radius: 4px;
+  background: var(--dk-line);
+  color: var(--dk-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.dk-hist__row--current .dk-hist__bar {
+  background: var(--dk-accent);
+  color: var(--dk-accent-text);
+  /* Shape as well as color, per requirement 8.1. */
+  border-color: var(--dk-text);
+}
+
+.dk-hist__row--distinguished .dk-hist__label {
+  color: var(--dk-text);
+  font-weight: 700;
+}
+
+/* Help panel */
+
+.dk-help__headline {
+  margin: 0 0 12px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.dk-help__steps {
+  margin: 0 0 16px;
+  padding-left: 1.2em;
+  line-height: 1.5;
+}
+
+.dk-help__steps li { margin-bottom: 6px; }
+
+.dk-help__example {
+  margin: 0;
+  padding: 12px;
+  border: var(--dk-line-width) solid var(--dk-line);
+  border-radius: var(--dk-radius);
+  background: var(--dk-surface);
+}
+
+.dk-help__example-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--dk-board-font);
+}
+
+.dk-help__line { margin: 0; }
+
+.dk-help__caption {
+  margin-top: 10px;
+  font-size: 0.85rem;
+  color: var(--dk-text-dim);
+  text-align: center;
+}
+
+/* Grid cursor. The board host owns cell geometry; only the cursor ring is here. */
+
+[role="grid"]:focus { outline: none; }
+
+[role="grid"]:focus-visible {
+  outline: 3px solid var(--dk-focus);
+  outline-offset: 3px;
+}
+
+.dk-cell--cursor {
+  outline: 3px solid var(--dk-focus);
+  outline-offset: -3px;
+}
