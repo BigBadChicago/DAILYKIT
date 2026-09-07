@@ -12,12 +12,11 @@
  * because that type lives in Layer 3.
  */
 
+import type { GridInput } from "../core/types.js";
 import { on, setAttr } from "./dom.js";
 
-export interface GridCursorOptions {
+export interface GridCursorOptions extends Pick<GridInput, "cols" | "rows"> {
   readonly host: HTMLElement;
-  readonly cols: number;
-  readonly rows: number;
   /** DOM id of the cell element at this index. Owned by the game renderer. */
   readonly cellId: (index: number) => string;
   /** False for a cell the cursor should skip, for example an emptied cell. */

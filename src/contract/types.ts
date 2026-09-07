@@ -5,8 +5,18 @@
 
 import type {
   DistributionSpec,
+  HelpContent,
+  InputDescriptor,
   PuzzleNumber,
   Rejection,
+} from "../core/types.js";
+
+export type {
+  CustomInput,
+  GridInput,
+  HelpContent,
+  InputDescriptor,
+  PointerMode,
 } from "../core/types.js";
 
 /** Requirement 5.1. Everything the chrome needs to render a game's identity
@@ -28,33 +38,6 @@ export interface GameIdentity {
 }
 
 /**
- * Requirement 5.9, widened from the flat pointer and keyboard pair.
- *
- * The grid variant lets ui/gridCursor.ts supply full keyboard play for any
- * lattice game without the game reimplementing arrow key handling. It activates
- * only on this declaration, so a non grid game never pulls the helper in and the
- * presentation kit does not assume grids.
- */
-export type PointerMode = "drag" | "tap" | "none";
-
-export interface GridInput {
-  readonly kind: "grid";
-  readonly cols: number;
-  readonly rows: number;
-  readonly pointer: PointerMode;
-}
-
-export interface CustomInput {
-  readonly kind: "custom";
-  readonly pointer: PointerMode;
-  /** KeyboardEvent.key values the game wants forwarded. Anything not listed is
-   *  left to the chrome, which is how modal focus traps stay intact. */
-  readonly keys: readonly string[];
-}
-
-export type InputDescriptor = GridInput | CustomInput;
-
-/**
  * The shell fetches, the game parses. Requirement 6.3.1 and charter decision 3.
  * Keeping the fetch in the shell puts network, service worker caching, offline
  * fallback, and the past horizon unrated path in one place instead of five.
@@ -68,19 +51,6 @@ export interface ManifestDescriptor {
   readonly indexUrl: string;
   /** How many days past today to prefetch. Charter decision 3 says seven. */
   readonly lookaheadDays: number;
-}
-
-/** Requirement 3.7.1. A worked micro example, not paragraphs of rules. */
-export interface HelpContent {
-  readonly headline: string;
-  readonly steps: readonly string[];
-  readonly example: {
-    readonly caption: string;
-    readonly lines: readonly string[];
-    /** Optional. A game that needs a drawn example, for example a small board,
-     *  paints into this host. The panel itself stays engine owned. */
-    readonly draw?: (host: HTMLElement) => void;
-  };
 }
 
 /**

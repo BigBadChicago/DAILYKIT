@@ -9,8 +9,8 @@ resume work in a fresh conversation with no chat history.
 
 | Field | Value |
 |---|---|
-| Current phase | 4 complete, awaiting approval, Phase 5 blocked on it |
-| Games playable | none |
+| Current phase | 5 complete |
+| Games playable | POKER GRID logic complete, interface not started |
 | Engine contract version | 1, drafted and proven against toy-tap |
 | Manifest horizon | none |
 
@@ -23,7 +23,7 @@ resume work in a fresh conversation with no chat history.
 | 2 | POKER GRID design doc | done | POKER-GRID.md. Share bar row dropped, tiers by hand deficit, three tier name sets proposed |
 | 3 | Core primitives | done | Layers 0 and 1 in full with tests. sfc32 vectors committed. Tier names approved, COMPLETE replaces WON and LOST |
 | 4 | Presentation kit | done | Layer 2 in full with tests. jsdom approved for tests/ui only. Header carries the hub link from this phase. High contrast is a CSS layer, not a theme choice |
-| 5 | POKER GRID logic | not started | |
+| 5 | POKER GRID logic | done | Pure evaluator, rules, generation, solver surface, snapshots, and module contract pass tests |
 | 6 | POKER GRID interface | not started | |
 | 7 | Generation pipeline | not started | |
 | 8 | Polish and launch readiness | not started | |
@@ -65,11 +65,18 @@ uses them.
 | ASSETS.md | n/a | Every asset and its license | none |
 | POKER-GRID.md | n/a | POKER GRID rules, scoring, tiers, and share layout | none |
 | src/shared/share-vocabulary.ts | shared | Suite wide share tokens, their glyphs, and their shapes | none |
+| src/shared/poker-hands.ts | shared | Poker hand categories, ordinals, and shared result tier mapping | shared/share-vocabulary |
 | src/core/result.ts | 0 | Result type so rule failures are values rather than throws | none |
-| src/core/types.ts | 0 | Structural types the engine is written against, independent of the contract | shared/share-vocabulary |
-| src/contract/types.ts | 3 | Identity, input, manifest, help, view, and failure descriptors | core/types |
+| src/core/types.ts | 0 | Structural engine, input, and help types independent of the contract | shared/share-vocabulary |
+| src/contract/types.ts | 3 | Identity, manifest, help, view, and failure descriptors composed from core types | core/types |
 | src/contract/game-module.ts | 3 | The GameModule interface and the single erasure boundary | core/result, core/types, contract/types |
 | src/games/toy-tap/module.ts | 4 | Contract regression fixture, never shipped | core/result, core/types, contract/* |
+| src/games/poker-grid/evaluator.ts | 4 | Five card hand classification and card decoding | shared/poker-hands |
+| src/games/poker-grid/scoring.ts | 4 | POKER GRID hand and card point constants plus tier calculation | shared/poker-hands |
+| src/games/poker-grid/rules.ts | 4 | Pure selection, gravity, commit, terminal, and connected move rules | core/result, core/types, shared/poker-hands, games/poker-grid/evaluator, games/poker-grid/scoring, games/poker-grid/generator |
+| src/games/poker-grid/generator.ts | 4 | Seeded distinct card board construction and puzzle shape validation | core/rng, core/seed, core/types, games/poker-grid/rules |
+| src/games/poker-grid/solver.ts | 4 | Offline search over legal connected hands with exact or bounded result | shared/poker-hands, games/poker-grid/evaluator, games/poker-grid/rules |
+| src/games/poker-grid/module.ts | 4 | POKER GRID GameModule implementation, puzzle parsing, state snapshots, and share data | core/result, core/types, engine/tiers, shared/poker-hands, contract/*, games/poker-grid/evaluator, games/poker-grid/generator, games/poker-grid/rules, games/poker-grid/scoring |
 | src/core/rng.ts | 0 | Deterministic seedable PRNG plus integer range, shuffle, and weighted pick helpers | none |
 | src/core/seed.ts | 0 | Derives a uint32 seed from game id, puzzle number, and optional salt, and expands it into a generator | core/rng, core/types |
 | src/core/date.ts | 0 | Local day arithmetic, epoch math, next midnight target, and clock jump classification | core/types |
@@ -100,8 +107,8 @@ uses them.
 | src/ui/countdown.ts | 2 | Clock recomputing countdown to the next puzzle boundary | ui/dom |
 | src/ui/header.ts | 2 | Shared header with hub link, help, stats, archive, and theme controls | ui/dom, ui/theme |
 | src/ui/statsPanel.ts | 2 | Statistics figures and distribution histogram over an injected view model | ui/dom |
-| src/ui/helpPanel.ts | 2 | How to play body, structural mirror of HelpContent to respect the layer rule | ui/dom |
-| src/ui/gridCursor.ts | 2 | Keyboard cursor over a lattice using aria-activedescendant | ui/dom |
+| src/ui/helpPanel.ts | 2 | How to play body over the shared HelpContent shape | ui/dom, core/types |
+| src/ui/gridCursor.ts | 2 | Keyboard cursor over a lattice using the shared grid dimensions and aria-activedescendant | ui/dom, core/types |
 | tools/share-harness/index.html | tools | Harness page shell and its own styling | ui/chrome.css |
 | tools/share-harness/main.ts | tools | Renders every sample block with a width and line count report | ui/dom, ui/theme, harness/cases, harness/bind |
 | tools/share-harness/cases.ts | tools | Sample share blocks spanning the outcome space | core/types |
@@ -117,6 +124,11 @@ uses them.
 | tests/ui/helpPanel.test.ts | n/a | Text example, drawn example with a hidden text equivalent, teardown | ui/helpPanel |
 | tests/ui/gridCursor.test.ts | n/a | Movement, edge behaviour, empty cell skipping, activation, relocation | ui/gridCursor |
 | tests/tools/share-harness.test.ts | n/a | Grapheme width measurement and case coverage | share-harness/main, share-harness/cases |
+| tests/games/poker-grid/evaluator.test.ts | n/a | Poker category, ordinal, wheel, and wrapped straight coverage | games/poker-grid/evaluator |
+| tests/games/poker-grid/rules.test.ts | n/a | Gravity, selection rejection, commit, move uniqueness, and terminal coverage | games/poker-grid/evaluator, games/poker-grid/rules |
+| tests/games/poker-grid/module.test.ts | n/a | Deterministic generation, snapshot recovery, mismatch rejection, and unrated share coverage | games/poker-grid/generator, games/poker-grid/module, games/poker-grid/rules |
+| tests/games/poker-grid/scoring.test.ts | n/a | Hand count dominance, quality floor, and deficit tier properties | games/poker-grid/scoring |
+| tests/games/poker-grid/solver.test.ts | n/a | Exact search coverage on a compact legal board | games/poker-grid/solver, games/poker-grid/rules |
 
 ## Planned repository layout
 

@@ -1,25 +1,14 @@
 /**
  * Layer 2. The how to play body. Requirement 3.7.
  *
- * HelpContent lives in contract/types.ts, which is Layer 3 and therefore above
- * this file. The shape below is structurally identical, so a module's
- * HelpContent is assignable to it without either side importing the other.
- * Same mechanism as contract decision 3.
+ * HelpContent lives in core/types.ts so Layer 2 can consume the shared shape
+ * without importing upward into the contract.
  */
 
+import type { HelpContent } from "../core/types.js";
 import { el } from "./dom.js";
 
-export interface HelpExample {
-  readonly caption: string;
-  readonly lines: readonly string[];
-  readonly draw?: (host: HTMLElement) => void;
-}
-
-export interface HelpView {
-  readonly headline: string;
-  readonly steps: readonly string[];
-  readonly example: HelpExample;
-}
+export type HelpView = HelpContent;
 
 export interface HelpPanelHandle {
   destroy(): void;

@@ -48,6 +48,9 @@ export function append(host: Node, children: readonly Child[]): void {
 }
 
 export function setText(node: Node, value: string): void {
+  if (node.childNodes.length === 1 && node.firstChild?.nodeType === Node.TEXT_NODE && node.firstChild.nodeValue === value) {
+    return;
+  }
   if (node.textContent !== value) node.textContent = value;
 }
 
