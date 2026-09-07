@@ -9,8 +9,8 @@ resume work in a fresh conversation with no chat history.
 
 | Field | Value |
 |---|---|
-| Current phase | 5 complete |
-| Games playable | POKER GRID logic complete, interface not started |
+| Current phase | 7 in progress |
+| Games playable | POKER GRID interface complete, shell not started |
 | Engine contract version | 1, drafted and proven against toy-tap |
 | Manifest horizon | none |
 
@@ -24,8 +24,8 @@ resume work in a fresh conversation with no chat history.
 | 3 | Core primitives | done | Layers 0 and 1 in full with tests. sfc32 vectors committed. Tier names approved, COMPLETE replaces WON and LOST |
 | 4 | Presentation kit | done | Layer 2 in full with tests. jsdom approved for tests/ui only. Header carries the hub link from this phase. High contrast is a CSS layer, not a theme choice |
 | 5 | POKER GRID logic | done | Pure evaluator, rules, generation, solver surface, snapshots, and module contract pass tests |
-| 6 | POKER GRID interface | not started | |
-| 7 | Generation pipeline | not started | |
+| 6 | POKER GRID interface | done | Accessible five by seven card renderer, pointer gestures, keyboard cursor, card art, and reduced motion styling |
+| 7 | Generation pipeline | in progress | Node-only manifest generation, verification, and calibration tools are being added |
 | 8 | Polish and launch readiness | not started | |
 | 9 | Slate approval | not started | |
 | 10 | Suite shell | not started | |
@@ -77,6 +77,11 @@ uses them.
 | src/games/poker-grid/generator.ts | 4 | Seeded distinct card board construction and puzzle shape validation | core/rng, core/seed, core/types, games/poker-grid/rules |
 | src/games/poker-grid/solver.ts | 4 | Offline search over legal connected hands with exact or bounded result | shared/poker-hands, games/poker-grid/evaluator, games/poker-grid/rules |
 | src/games/poker-grid/module.ts | 4 | POKER GRID GameModule implementation, puzzle parsing, state snapshots, and share data | core/result, core/types, engine/tiers, shared/poker-hands, contract/*, games/poker-grid/evaluator, games/poker-grid/generator, games/poker-grid/rules, games/poker-grid/scoring |
+| src/games/poker-grid/render.ts | 4 | POKER GRID board renderer with card faces, pointer gestures, keyboard activation, and state repaint | ui/dom, ui/gridCursor, contract/types, games/poker-grid/evaluator, games/poker-grid/rules, games/poker-grid/generator |
+| src/games/poker-grid/style.css | 4 | POKER GRID board layout, card styling, suit shapes, responsive sizing, and motion layers | none |
+| src/games/poker-grid/help.ts | 4 | POKER GRID structured help content and worked example | core/types |
+| data/poker-grid/manifest.index.json | n/a | Generated 2026 Poker Grid horizon and monthly chunk pointers | none |
+| data/poker-grid/manifest.<chunk>.json | n/a | Generated monthly Poker Grid boards and bounded solver best results | none |
 | src/core/rng.ts | 0 | Deterministic seedable PRNG plus integer range, shuffle, and weighted pick helpers | none |
 | src/core/seed.ts | 0 | Derives a uint32 seed from game id, puzzle number, and optional salt, and expands it into a generator | core/rng, core/types |
 | src/core/date.ts | 0 | Local day arithmetic, epoch math, next midnight target, and clock jump classification | core/types |
@@ -89,6 +94,9 @@ uses them.
 | src/engine/share.ts | 1 | Share string assembly and the delivery fallback chain | core/types, shared/share-vocabulary, engine/telemetry |
 | vitest.config.ts | n/a | Test runner configuration | none |
 | tools/rngvectors.ts | tools | Regenerates the committed determinism vector table | core/rng, core/seed |
+| tools/generate.ts | tools | Generates seeded monthly Poker Grid manifest chunks with stored solver results | core/date, core/seed, games/poker-grid/generator, games/poker-grid/rules, games/poker-grid/solver |
+| tools/verify.ts | tools | Validates Poker Grid manifest shape, opening moves, and stored best metadata | games/poker-grid/rules, games/poker-grid/solver |
+| tools/calibrate.ts | tools | Measures generated board opening availability and hand category distribution | core/seed, games/poker-grid/generator, games/poker-grid/rules, games/poker-grid/evaluator, shared/poker-hands |
 | tests/core/rng.vectors.ts | n/a | Committed determinism vectors, data not a spec | none |
 | tests/core/rng.test.ts | n/a | Generator vectors, ranges, uniformity, and helper properties | core/rng, core/seed, rng.vectors |
 | tests/core/seed.test.ts | n/a | Seed stability, separation, and input validation | core/seed |
@@ -129,6 +137,7 @@ uses them.
 | tests/games/poker-grid/module.test.ts | n/a | Deterministic generation, snapshot recovery, mismatch rejection, and unrated share coverage | games/poker-grid/generator, games/poker-grid/module, games/poker-grid/rules |
 | tests/games/poker-grid/scoring.test.ts | n/a | Hand count dominance, quality floor, and deficit tier properties | games/poker-grid/scoring |
 | tests/games/poker-grid/solver.test.ts | n/a | Exact search coverage on a compact legal board | games/poker-grid/solver, games/poker-grid/rules |
+| tests/games/poker-grid/render.test.ts | n/a | Accessible board creation, keyboard activation, repaint, empty cells, and teardown | games/poker-grid/render, games/poker-grid/generator, games/poker-grid/rules |
 
 ## Planned repository layout
 

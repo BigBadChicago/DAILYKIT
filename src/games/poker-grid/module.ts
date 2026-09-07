@@ -1,4 +1,5 @@
 import { err, ok, type Result } from "../../core/result.js";
+import { dateForPuzzleNumber } from "../../core/date.js";
 import type {
   FinishedOutcome,
   Outcome,
@@ -24,6 +25,8 @@ import {
 } from "./rules.js";
 import { scoreHands, tierFor } from "./scoring.js";
 import { CARD_CLEAR_POINTS } from "./scoring.js";
+import { POKER_GRID_HELP } from "./help.js";
+import { mountPokerGrid } from "./render.js";
 
 const CARD_ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnop";
 const HAND_COUNT_LIMIT = 7;
@@ -91,8 +94,11 @@ export default defineGame<PokerState, PokerAction, PokerPuzzle>({
   input: { kind: "grid", cols: 5, rows: 7, pointer: "drag" },
   manifest: {
     granularity: "month",
-    urlForChunk: (number) => `/poker-grid/manifest.${number}.json`,
-    indexUrl: "/poker-grid/manifest.index.json",
+    urlForChunk: (number) => {
+      const date = dateForPuzzleNumber({ year: 2026, month: 1, day: 1 }, number);
+      return `/data/poker-grid/manifest.${date.year}-${String(date.month).padStart(2, "0")}.json`;
+    },
+    indexUrl: "/data/poker-grid/manifest.index.json",
     lookaheadDays: 7,
   },
   archiveEnabled: true,
@@ -173,24 +179,10 @@ export default defineGame<PokerState, PokerAction, PokerPuzzle>({
   },
 
   mount(host: HTMLElement, context: MountContext<PokerState, PokerAction, PokerPuzzle>): GameView<PokerState> {
-    host.textContent = `POKER GRID #${context.puzzle.number}`;
-    return {
-      update(state): void { host.textContent = `${state.hands.length} hands, ${state.grid.filter((card) => card !== null).length} cards remaining`; },
-      unmount(): void { host.textContent = ""; },
-    };
+    return mountPokerGrid(host, context, { reducedMotion: context.reducedMotion });
   },
 
   help(): HelpContent {
-    return {
-      headline: "Clear the board by selecting five connected cards that make a poker hand.",
-      steps: [
-        "Drag across five cards that touch edge to edge. Diagonals do not count.",
-        "Tap a card to add it. Tap a card already in your path to take back that card and everything after it.",
-        "The five must make a pair or better. High card is not a hand.",
-        "Cleared cards vanish, the columns fall, and no new cards arrive.",
-        "Play until no five connected cards make a hand. There is no losing.",
-      ],
-      example: { caption: "two nines and three others, a pair, legal", lines: ["..x", "xxx", "..x"] },
-    };
+    return POKER_GRID_HELP;
   },
 });
