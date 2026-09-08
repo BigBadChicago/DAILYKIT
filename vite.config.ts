@@ -28,14 +28,28 @@
  * chunk for every game at once.
  */
 
-import { cp, stat } from "node:fs/promises";
+import { cp, readFile, readdir, stat } from "node:fs/promises";
 import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig, type Plugin } from "vite";
 
+import {
+  CACHE_NAME_TOKEN,
+  SW_FILE,
+  SW_MANIFEST_FILE,
+  cacheNameFor,
+  precacheAssets,
+} from "./tools/sw-manifest.js";
+
 const root = dirname(fileURLToPath(import.meta.url));
 
 export const ENGINE_VERSION = 1;
+
+/** Bumped by hand when the worker's own behaviour changes. Together with the
+ *  engine version and the build id it names the cache. */
+export const SW_REVISION = 1;
+
+
 
 interface Target {
   /** Directory under dist/. The empty string is the site root. */
@@ -61,6 +75,7 @@ const TARGETS: Readonly<Record<string, Target>> = {
     gameId: "toy-tap",
     productionSafe: false,
   },
+  about: { outPath: "about", html: "src/about/index.html", productionSafe: true },
   harness: { outPath: "harness", html: "tools/share-harness/index.html", productionSafe: false },
 };
 
@@ -117,6 +132,36 @@ function htmlLocationPlugin(targets: readonly [string, Target][]): Plugin {
   };
 }
 
+/**
+ * Files under static/ deploy to the site root byte for byte: the icons, the web
+ * manifest, and anything else addressed by a fixed URL. They are emitted into
+ * the bundle rather than copied afterwards so that a later plugin reading the
+ * bundle sees them, which is what lets the precache list be generated rather
+ * than hand written.
+ */
+function staticFilesPlugin(): Plugin {
+  const dir = resolve(root, "static");
+  return {
+    name: "dailykit-static-files",
+    async generateBundle() {
+      let names: string[];
+      try {
+        names = await readdir(dir);
+      } catch {
+        return;
+      }
+      for (const name of names.sort()) {
+        if (!(await stat(resolve(dir, name))).isFile()) continue;
+        this.emitFile({
+          type: "asset",
+          fileName: name,
+          source: await readFile(resolve(dir, name)),
+        });
+      }
+    },
+  };
+}
+
 /** Manifest chunks are static files the shell fetches by absolute URL, so they
  *  deploy with the games that own them and never with the hub. */
 function manifestDataPlugin(targets: readonly [string, Target][], outDir: string): Plugin {
@@ -131,8 +176,58 @@ function manifestDataPlugin(targets: readonly [string, Target][], outDir: string
         } catch {
           continue;
         }
-        await cp(from, resolve(root, outDir, "data", target.gameId), { recursive: true });
+        /* Manifest chunks and the index only. calibration.json lives in the
+           same directory because it is the study behind the scoring table, and
+           nothing ever fetches it, so deploying it was dead weight. */
+        await cp(from, resolve(root, outDir, "data", target.gameId), {
+          recursive: true,
+          filter: (source) => {
+            const name = source.replaceAll("\\", "/").split("/").pop() ?? "";
+            return name === target.gameId || name.startsWith("manifest.");
+          },
+        });
       }
+    },
+  };
+}
+
+
+/**
+ * Writes the precache list and stamps the cache name into the worker.
+ *
+ * Both halves have to happen here, in generateBundle, because both need the
+ * final emitted file names: the list is those names, and the cache name
+ * carries a build id derived from them. A hand written list goes stale in
+ * silence, and a cache name that does not move when the bundle moves would
+ * pin a returning player to the first index.html they ever loaded, since the
+ * app shell is served cache first and index.html has no content hash.
+ *
+ * The build is deterministic, so an unchanged tree yields an unchanged build
+ * id and the player's cache survives a redeploy of identical bytes.
+ */
+function swManifestPlugin(): Plugin {
+  return {
+    name: "dailykit-sw-manifest",
+    enforce: "post",
+    generateBundle(_options, bundle) {
+      const swKey = Object.keys(bundle).find((key) => key === SW_FILE);
+      if (swKey === undefined) return;
+
+      const assets = precacheAssets(Object.keys(bundle));
+      const cacheName = cacheNameFor(ENGINE_VERSION, SW_REVISION, assets);
+
+      const chunk = bundle[swKey];
+      if (chunk?.type !== "chunk") throw new Error("sw.js was emitted as an asset");
+      if (!chunk.code.includes(CACHE_NAME_TOKEN)) {
+        throw new Error(`${CACHE_NAME_TOKEN} is missing from the emitted worker`);
+      }
+      chunk.code = chunk.code.replaceAll(CACHE_NAME_TOKEN, JSON.stringify(cacheName));
+
+      this.emitFile({
+        type: "asset",
+        fileName: SW_MANIFEST_FILE,
+        source: `${JSON.stringify({ cacheName, assets }, null, 2)}\n`,
+      });
     },
   };
 }
@@ -149,12 +244,22 @@ export default defineConfig(({ mode }) => {
   const input = Object.fromEntries(
     targets.map(([name, target]) => [name, resolve(root, target.html)]),
   );
+  /* The worker's scope is the whole site, so it only makes sense in a build
+     that contains the whole site. A single target build and a dev server both
+     go without one, which is also what keeps a stale cache out of development. */
+  const withWorker = isProduction && outDir === "dist";
+  if (withWorker) input["sw"] = resolve(root, "src/sw/sw.ts");
 
   return {
     root,
     base: "/",
     publicDir: false,
-    plugins: [htmlLocationPlugin(targets), manifestDataPlugin(targets, outDir)],
+    plugins: [
+      staticFilesPlugin(),
+      htmlLocationPlugin(targets),
+      swManifestPlugin(),
+      manifestDataPlugin(targets, outDir),
+    ],
     build: {
       outDir,
       /* Never true. One build must not delete another game's output, which is
@@ -167,7 +272,8 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         input,
         output: {
-          entryFileNames: "assets/[name]-[hash].js",
+          entryFileNames: (chunk) =>
+            chunk.name === "sw" ? SW_FILE : "assets/[name]-[hash].js",
           chunkFileNames: (chunk) =>
             chunk.name === ENGINE_CHUNK
               ? `assets/engine-v${ENGINE_VERSION}.js`

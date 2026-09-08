@@ -5,3 +5,8 @@ vitest.config.ts.timestamp-*
 .sf/
 .sfdx/
 dist-dev
+*.tar.gz
+DK/
+9_10_Patch/
+9_10_Opts/
+_scratch/

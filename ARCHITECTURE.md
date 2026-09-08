@@ -9,7 +9,7 @@ resume work in a fresh conversation with no chat history.
 
 | Field | Value |
 |---|---|
-| Current phase | 10 complete. Slate approved. Phase 8 remainder and Phase 11 both planned and ready to execute, one conversation each |
+| Current phase | Phase 8 remainder done but for the manual checklist. Phase 11 next, and the slate is approved |
 | Games playable | POKER GRID, end to end in a browser, inside the suite shell |
 | Engine contract version | 1, drafted and proven against toy-tap |
 | Manifest horizon | 365 days, puzzle 1 through 365, epoch 2026-01-01, all verified with a solver replay |
@@ -26,11 +26,10 @@ resume work in a fresh conversation with no chat history.
 | 5 | POKER GRID logic | done | Pure evaluator, rules, generation, solver surface, snapshots, and module contract pass tests |
 | 6 | POKER GRID interface | done | Accessible five by seven card renderer, pointer gestures, keyboard cursor, card art, and reduced motion styling |
 | 7 | Generation pipeline | done | Connected region enumeration, exact search with a measured ceiling falling back to a width 400 beam, empirical scoring table, weekday difficulty bands, degenerate board rejection, obfuscated manifest, and the CI jobs that produce and check it |
-| 8 | Polish and launch readiness | done | Dependency layer check, CI wiring, and project runbook |
-| 9 | Slate approval | done | SLATE.md. Pooled thirty four candidates from three lists. **Approved:** POKER GRID, VECTOR, CIPHER, TALLY DROP, RECALL |
+| 8 | Polish and launch readiness | in progress | First pass delivered the dependency layer check, CI wiring, and the runbook only. The remainder is being worked through PHASE-8-PLAN.md. Done since: favicon, web manifest, about page, service worker, offline caching proved with the network disabled, the changelog, POKER GRID's first session board, the byte budget check in CI, and time to interactive measured. Open: running MANUAL-CHECKS.md once and recording the result |
+| 9 | Slate approval | done | SLATE.md. Ten candidates, five recommended, approved 2026-09-08. POKER GRID, CIPHER, RULE OF FOUR, LADDER, ECHO |
 | 10 | Suite shell | done | Hub, shell, per game entries, one pass release build with a shared engine chunk, suite storage and streak, daily card, cross promotion. One contract change and one renderer defect, both below |
-| 8b | Phase 8 remainder | planned | PHASE-8-PLAN.md. Service worker, offline, changelog, about page, favicon, first session board, performance pass, manual checklist |
-| 11 | Game two and abstraction test | planned | PHASE-11-PLAN.md. CIPHER, with six predicted defects to confirm or strike |
+| 11 | Game two and abstraction test | not started | |
 | 12 | Template extraction | not started | |
 | 13 | Games three, four, five | not started | |
 | 14 | Suite launch readiness | not started | |
@@ -64,10 +63,7 @@ Table columns are fixed as follows and every future entry uses them.
 | BACKLOG.md | n/a | Everything deliberately not built | none |
 | ASSETS.md | n/a | Every asset and its license | none |
 | POKER-GRID.md | n/a | POKER GRID rules, scoring, tiers, and share layout | none |
-| SLATE.md | n/a | The Phase 9 candidate pool and the approved five | none |
-| PHASE-8-PLAN.md | n/a | Execution plan for the Phase 8 remainder, decisions settled in advance | none |
-| PHASE-11-PLAN.md | n/a | Execution plan for CIPHER and the abstraction test | none |
-| MISSING.md | n/a | Files this manifest names that do not exist yet | none |
+| SLATE.md | n/a | The Phase 9 candidate list and the recommended five | none |
 | src/shared/share-vocabulary.ts | shared | Suite wide share tokens, their glyphs, and their shapes | none |
 | src/shared/poker-hands.ts | shared | Poker hand categories, ordinals, and shared result tier mapping | shared/share-vocabulary |
 | src/core/result.ts | 0 | Result type so rule failures are values rather than throws | none |
@@ -150,7 +146,7 @@ Table columns are fixed as follows and every future entry uses them.
 | .github/workflows/ci.yml | n/a | Typecheck, tests, and manifest verification on every change | none |
 | .github/workflows/generate.yml | n/a | The job that regenerates and verifies the horizon | none |
 | .gitignore | n/a | Keeps dependencies, build output, and runner scratch out of the repo | none |
-| vite.config.ts | n/a | The GAME allow list, the entry set, the pinned engine chunk, and manifest data deployment | none |
+| vite.config.ts | n/a | The GAME allow list, the entry set, the pinned engine chunk, static root file emission, and manifest data deployment | none |
 | src/engine/dailycard.ts | 1 | The suite's combined one row per finished game share block | core/types, engine/tiers, shared/share-vocabulary |
 | src/shell/registry.ts | 5 | The five suite games as data, readable without loading a game | none |
 | src/shell/suite.ts | 5 | Suite storage, per game today status, theme port, and daily card assembly | core/date, core/result, core/types, engine/dailycard, engine/scheduler, engine/stats, engine/storage, ui/theme, shell/registry |
@@ -159,6 +155,17 @@ Table columns are fixed as follows and every future entry uses them.
 | src/shell/shell.css | 5 | Game page layout, end screen, and archive list styling | none |
 | src/shell/env.d.ts | 5 | Ambient CSS module and import.meta.env declarations for browser builds | none |
 | src/shell/entries/poker-grid.ts | 5 | The POKER GRID bundler entry, the one file that names it | games/poker-grid/module, shell/main |
+| src/shell/register-sw.ts | 5 | Service worker registration, production builds only, deferred to the load event | none |
+| src/sw/sw.ts | n/a | The service worker. Cache first app shell, stale while revalidate manifest chunks, network only for everything else | none |
+| tools/sw-manifest.ts | tools | The precache list and the cache name, as pure functions shared by the build and its test | none |
+| tools/budget.ts | tools | Constraint 2.7's byte budget, asserted against a built dist/ in CI | none |
+| src/shell/changelog.ts | 5 | The entry list, the app version, and what a returning player is shown | none |
+| src/games/poker-grid/tutorial.ts | 4 | The fixed first session board and how it was chosen | games/poker-grid/generator |
+| MANUAL-CHECKS.md | n/a | The Section 10.7 list, with a results table to fill in per run | none |
+| tests/shell/changelog.test.ts | n/a | Version windowing, game scoping, and the two cases that must show nothing | shell/changelog |
+| tests/games/poker-grid/tutorial.test.ts | n/a | Board legality, that it is graded by nothing, and that it is easier than a scheduled day | games/poker-grid/tutorial |
+| tsconfig.sw.json | n/a | The worker's own program, because the WebWorker lib cannot share a program with DOM | none |
+| tests/tools/sw-manifest.test.ts | n/a | Precache coverage, worker exclusion, and cache name movement | tools/sw-manifest |
 | src/shell/entries/poker-grid.html | 5 | The POKER GRID page | none |
 | src/shell/entries/toy-tap.ts | 5 | The toy-tap entry, excluded from production by the allow list | games/toy-tap/module, shell/main |
 | src/shell/entries/toy-tap.html | 5 | The toy-tap page | none |
@@ -166,6 +173,12 @@ Table columns are fixed as follows and every future entry uses them.
 | src/hub/boot.ts | 5 | The hub's bundler entry | hub/hub |
 | src/hub/index.html | 5 | The hub page, deployed at the site root | none |
 | src/hub/hub.css | 5 | Hub layout and card styling | none |
+| src/about/index.html | 5 | The about page. Requirement 8.5's privacy claim written down, plus how a day works | none |
+| src/about/about.css | 5 | About page styling. Imports the chrome tokens directly so the page ships no JavaScript at all | ui/chrome.css |
+| static/icon.svg | n/a | Suite icon, deployed at the site root | none |
+| static/icon-192.png | n/a | Suite icon raster for the install prompt | none |
+| static/icon-512.png | n/a | Suite icon raster for the install prompt and maskable slot | none |
+| static/site.webmanifest | n/a | Web app manifest, deployed at the site root | none |
 | tests/engine/dailycard.test.ts | n/a | Row shape, the ungraded case, the row cap, and the text equivalent | engine/dailycard, engine/share, engine/tiers |
 | tests/shell/registry.test.ts | n/a | Registry uniqueness, agreement with built modules, and cross promotion | shell/registry, engine/stats, games/poker-grid/module |
 | tests/shell/suite.test.ts | n/a | Today status per game, read only guarantees, daily card input, theme port | shell/suite, shell/registry, engine/* |
@@ -276,6 +289,20 @@ true. Two properties keep the original constraints intact:
 Bumping `ENGINE_VERSION` in `vite.config.ts` is the deliberate act that
 invalidates the shared chunk and redeploys every game together.
 
+**The worker and its precache list.** A release build also emits `dist/sw.js`
+and `dist/sw-manifest.json`. The worker is only added to the entry set for a
+full release build, so `GAME=<id> vite build` and the dev server never produce
+one and a developer can never be served out of a cache. `swManifestPlugin`
+runs after the HTML entries have been renamed, reads the finished bundle, and
+does two things with it: writes the precache list, and stamps the cache name
+into the worker in place of `__DK_CACHE_NAME__`. Both live in
+`tools/sw-manifest.ts` as pure functions so they are testable without a build.
+
+Files under `static/` deploy to the site root byte for byte, emitted into the
+bundle rather than copied afterwards so the precache list sees them.
+`data/<game>/` still deploys separately and is filtered to `manifest.*` only,
+since `calibration.json` is a checked in study that nothing fetches.
+
 **Entries.** Every game has exactly one file that names it,
 `src/shell/entries/<id>.ts`, which imports the module and calls `mountShell`.
 That file plus its sibling HTML is the whole of a game's build surface, it is
@@ -283,12 +310,30 @@ what makes each game its own chunk, and it is why `src/shell/main.ts` names no
 game. The allow list in `vite.config.ts` decides which of those entries a
 production build contains, which is contract decision 12 unchanged.
 
-Measured cold load, gzipped, against the 150 KB budget of constraint 2.7:
+Measured against constraint 2.7. Bytes are asserted in CI by
+`npm run budget`, which sums the gzipped size of each page's own HTML plus
+every script and stylesheet it references and fails over 150 KB. Manifest
+chunks are excluded because they are fetched after the page is interactive.
 
-| Page | Transferred |
-|---|---|
-| Hub | about 17 KB |
-| POKER GRID | about 25 KB |
+| Page | Cold load, gzipped | Interactive, 4x CPU throttle, 1.6 Mbps and 150 ms | Same on 400 kbps and 600 ms |
+|---|---|---|---|
+| Hub | 16.5 KB | 1.07 s | 1.98 s |
+| POKER GRID | 24.9 KB | 0.98 s | 2.27 s |
+| About | 3.4 KB | n/a, no script | n/a |
+
+Measured with headless Chromium at a 360 pixel viewport, `Emulation.setCPUThrottlingRate`
+at 4, timing from navigation to the first playable element existing in the DOM.
+The throttled machine is a cloud container rather than a real mid tier Android,
+so read these as a regression baseline rather than as a field number.
+
+The second row is the one that matters. On a good connection both pages are
+inside the two second budget with room. On a genuinely bad one, POKER GRID
+crosses it, because a first ever visit has to fetch the manifest chunk before
+a board can exist. Two things make that the narrow case it looks like: a board
+cannot be drawn before its cards arrive, so a disabled skeleton would be a
+picture of a game rather than a game, and every later visit is served from the
+service worker cache instead. The tutorial board on a first visit needs no
+manifest at all and warms the chunk while it is played.
 
 Deploy target is Cloudflare Pages at the origin `dailykit.providentia.games`.
 The site is served from the root, so the service worker scope is `/`, asset
@@ -593,48 +638,12 @@ phase and are not to be reopened without a stated reason.
    and not Perfect, no name collision arises and the zero remaining histogram
    bucket keeps the label **Perfect Clear**. Past the manifest horizon the label
    is the lowercase word `unrated`, which sits where a tier name sits.
-17. **Slate, approved.** The five are **POKER GRID, VECTOR, CIPHER, TALLY DROP,
-   and RECALL**. Phase 9 pooled this document's ten candidates with twelve from
-   Gemini and twelve from CoPilot, and was decided on the ruling that **7.1.1's
-   list of five modes is illustrative, not exhaustive**. Two changes from the
-   first pass, both worth carrying forward as reasoning:
-
-   - **TALLY DROP replaced LADDER** because its solution is unique and provable
-     by exhaustive enumeration of 7,776 states, where LADDER scored a player on
-     closeness to a target.
-   - **VECTOR replaced RULE OF FOUR** because 7.1.4's "machine verified" covers
-     two different properties. Uniqueness, that one answer exists, is provable
-     for every candidate considered. Fairness, that a human can reach it by
-     reasoning rather than guessing, is not. RULE OF FOUR proves the first and
-     has no check for the second, so its generator could ship a board that is
-     uniquely solvable and humanly impossible. In VECTOR's family the two proofs
-     are the same pass: propagate with no guessing permitted, and a board that
-     resolves is both unique and solvable. Categorization is the mode the suite
-     gives up, because the version proven in the market is editorial word
-     association, which 7.1.4 bans, and the version that is generatable is the
-     dry and unverifiable one.
-
-   RECALL is the former ECHO, renamed because all three source lists contained a
-   different game by that name. It was kept against both external
-   recommendations because requirement 7.3.4 defines the suite streak as
-   completing at least one game, and that forgiveness is empty unless something
-   on the slate is finishable in forty seconds.
-
-   Build order: CIPHER is game two and the abstraction test, then VECTOR, TALLY
-   DROP, RECALL.
-
-18. **Game ids are storage namespaces, and their uniqueness is asserted.** An id
-   is the game's `localStorage` key under the `dailykit:` prefix and its RNG
-   stream name. Three things keep a namespace from colliding with anything, and
-   the third is the one that needed code: the deployed origin is a dedicated
-   subdomain so the whole storage area belongs to the suite; every key carries
-   the `dailykit:` prefix so even a shared origin would not reach an unrelated
-   application; and no game id may equal a name the engine has already spent.
-   `RESERVED_GAME_IDS` in `src/shell/registry.ts` holds those names, `suite` and
-   `probe`, and `registry.test.ts` asserts that every game's derived key is
-   prefixed, unique, and distinct from both. A game called `suite` would
-   otherwise write its board over the suite record, silently, and only for
-   players who had both.
+17. **Slate.** POKER GRID is one of the five. Phase 9 proposed ten candidates
+   and recommended CIPHER, RULE OF FOUR, LADDER, and ECHO alongside it, in
+   `SLATE.md`. **Approved 2026-09-08.** `src/shell/registry.ts` carries the
+   four as `planned` entries until each is built, and Phase 11 is now
+   unblocked. Changing the slate before a game is built is an edit to that one
+   file.
 
 ## Resolutions of internal conflicts in the source document
 
@@ -740,6 +749,67 @@ presentation, and generation decisions above.
    checks `can` first and shows a line rather than letting the machine report
    an illegal transition, because the player's unfinished live board is the
    thing being protected and they should be told why.
+
+## Offline decisions
+
+Settled in the Phase 8 remainder, in the same standing as the contract, engine,
+presentation, generation, and suite decisions above.
+
+1. **The cache name carries a build id**, not just the engine version and a
+   worker revision. `dailykit-e<engine>-r<revision>-<build id>`, where the build
+   id is a hash of the emitted asset names. The app shell is served cache first
+   and `index.html` has no content hash, so a name that moves only when a human
+   bumps a constant would pin a returning player to the first HTML they ever
+   loaded. The release build is deterministic, so a redeploy of an unchanged
+   tree keeps the id and keeps the player's cache. This is a deviation from the
+   two part name in PHASE-8-PLAN.md section 3.1, approved before implementation.
+2. **The worker is a classic script.** It imports nothing, so a module worker
+   would buy nothing, and classic registration works on the oldest Safari inside
+   constraint 2.8's support floor. It lives in its own TypeScript program,
+   `tsconfig.sw.json`, because the WebWorker lib and the DOM lib cannot share
+   one.
+3. **The precache list is generated, never written.** Hand written lists go
+   stale in silence. `tools/sw-manifest.ts` derives it from the emitted bundle
+   and a test asserts that no page, script, or stylesheet can fall out of it.
+4. **Install precaches asset by asset rather than with `addAll`.** `addAll`
+   rejects the whole install if any single entry fails, and a worker that never
+   installs is worse than one that installs with a gap the fetch handler fills
+   from the network.
+5. **No `skipWaiting` and no automatic reload.** A player mid board must not
+   have the page swapped underneath them. The new worker waits and the next
+   navigation takes it.
+6. **Manifest chunks are stale while revalidate.** A chunk is immutable once
+   written, but a regenerated horizon has to reach a returning player without a
+   hard refresh.
+7. **The lookahead prefetch runs when the browser is idle**, not inside
+   `openDay`. It is what makes tomorrow playable offline, and it is also the
+   largest download on the page, so it must not compete with first paint or
+   with the chunk the player is waiting on. Constraint 2.7's "first input must
+   never wait on network" is the clause this protects.
+8. **The worker never caches itself.** The browser fetches `sw.js` by URL to
+   decide whether to install a new one, and a worker served from its own cache
+   is a worker that can never be replaced.
+9. **The changelog is per game in storage and scoped per entry.** A player who
+   only opens POKER GRID is never told what changed in a game they have not
+   played, so an entry names the games it touches. A stored version of zero is
+   a first ever visit and gets the help panel instead, and the stored version
+   is written forward whether or not anything was shown, so a player who
+   skipped several releases sees one modal rather than one per visit.
+10. **`TUTORIAL_DONE` lands in `LOADING`, not `PLAYING`.** The tutorial board is
+    not any day's puzzle, so finishing it leaves the shell with today still to
+    resolve and fetch. Landing in `PLAYING` would name a state with no board
+    mounted. This is a change to the Phase 3 transition table, made here
+    because the first session board is the first thing ever to use it.
+11. **The tutorial is its own session mode.** Every write to storage asks
+    whether the session is live, so a third mode is what makes "never counted"
+    structural rather than a rule five games each have to remember. It is
+    marked seen when it opens rather than when it is finished, so abandoning it
+    hands the player today's board on their next visit.
+12. **Offline was demonstrated, not argued.** Headless Chromium, service worker
+    installed, server stopped and the context set offline: the hub renders its
+    five cards from cache and POKER GRID renders all 35 cells with the manifest
+    index and the current chunk served from the cache. Redone after any change
+    to the worker or to the build's asset naming.
 
 ## Defects found and corrected in Phase 10
 

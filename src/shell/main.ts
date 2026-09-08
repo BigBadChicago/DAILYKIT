@@ -50,14 +50,38 @@ import { renderStatsPanel, type StatsView } from "../ui/statsPanel.js";
 import { createToaster } from "../ui/toast.js";
 import { applyAccent, installTheme } from "../ui/theme.js";
 import { PuzzleSource } from "./boot.js";
+import { APP_VERSION, pendingChangelog, type ChangelogEntry } from "./changelog.js";
+import { registerServiceWorker } from "./register-sw.js";
 import { HUB_PATH, SUITE_SHARE_URL, entryFor, promotableIds } from "./registry.js";
 import { openGameStore, openSuite, suiteThemePort } from "./suite.js";
 
 const ARCHIVE_PAGE = 60;
 
+/**
+ * Runs after the browser has had its chance to paint. The lookahead prefetch is
+ * what makes tomorrow playable with no connection, and it is also several
+ * hundred kilobytes of manifest chunk, so it must never compete with the first
+ * paint or with the chunk the player is waiting on right now.
+ */
+function whenIdle(run: () => void): void {
+  const idle = (window as unknown as {
+    requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
+  }).requestIdleCallback;
+  if (typeof idle === "function") idle(run, { timeout: 3000 });
+  else window.setTimeout(run, 500);
+}
+
+/**
+ * A tutorial session is its own mode rather than a flag on a live one, because
+ * every place that writes to storage asks this question, and "live" being false
+ * is the whole reason the tutorial can never touch stats, streaks, or the share
+ * button. Charter decision 2.
+ */
+type SessionMode = "live" | "archive" | "tutorial";
+
 interface Session {
   readonly puzzleNumber: PuzzleNumber;
-  readonly mode: "live" | "archive";
+  readonly mode: SessionMode;
   readonly rated: boolean;
   readonly puzzle: OpaquePuzzle;
   state: OpaqueState;
@@ -133,6 +157,86 @@ export function bootGame(game: AnyGameModule, root: HTMLElement): void {
   // Loading a day
   // -------------------------------------------------------------------------
 
+  /**
+   * Requirement 3.7.3. A first ever visit plays a fixed easy board before it
+   * plays a real day, so the controls are learned on a board that costs
+   * nothing. Returns false when the module supplies no tutorial, which leaves
+   * the older behaviour of opening the help panel over today's board.
+   */
+  function startTutorial(): boolean {
+    if (record.tutorialSeen || game.firstSessionPuzzle === undefined) return false;
+
+    const puzzle = game.firstSessionPuzzle();
+    const state = game.initialState(puzzle);
+    session = {
+      puzzleNumber: 0,
+      mode: "tutorial",
+      rated: false,
+      puzzle,
+      state,
+      view: null,
+      finished: false,
+    };
+
+    machine.beginSession(0, "live", state);
+    machine.send("LOADED_TUTORIAL");
+    mountBoard();
+
+    /* Written before the board is touched, so a player who abandons the
+       tutorial gets today's puzzle on their next visit rather than the
+       tutorial again. The changelog is silenced for the same visit by writing
+       the current version alongside it. */
+    record = { ...record, tutorialSeen: true, lastSeenVersion: APP_VERSION };
+    persist();
+
+    setNotice("A practice board. Nothing here counts.");
+    openHelp();
+
+    /* The tutorial needs no manifest, so without this a first visit reaches
+       today's board having cached nothing, and a player who loses their
+       connection while learning the controls cannot then play. The minutes
+       spent here are exactly the right minutes to warm the chunk in. */
+    whenIdle(() => {
+      const resolution = resolve(game.identity.epoch, record.watermark, clock());
+      if (resolution.kind === "resolved") void source.prefetch(resolution.puzzleNumber);
+    });
+    return true;
+  }
+
+  /** The only way out of a tutorial. Idempotent, because both the button and
+   *  dismissing the panel lead here. */
+  function endTutorial(): void {
+    if (!machine.can("TUTORIAL_DONE")) return;
+    machine.send("TUTORIAL_DONE");
+    setNotice(null);
+    void start();
+  }
+
+  function showTutorialEnd(): void {
+    const panel = openModal({
+      title: "That is the whole game",
+      hideWhileOpen: root,
+      onClose: () => endTutorial(),
+      render: (body) => {
+        body.appendChild(
+          el("p", {
+            text: "Practice board finished. It was not scored and it did not count. Today's puzzle is the real one.",
+          }),
+        );
+        const play = el("button", {
+          class: "dk-button dk-button--primary",
+          text: "Play today's puzzle",
+          attrs: { type: "button" },
+        });
+        on(play, "click", () => {
+          /* Closing runs onClose, which is the single path out of a tutorial. */
+          panel.close();
+        });
+        body.appendChild(play);
+      },
+    });
+  }
+
   async function openDay(puzzleNumber: PuzzleNumber, mode: "live" | "archive"): Promise<void> {
     session?.view?.unmount();
     session = null;
@@ -190,13 +294,18 @@ export function bootGame(game: AnyGameModule, root: HTMLElement): void {
     mountBoard();
 
     if (!record.tutorialSeen) {
-      record = { ...record, tutorialSeen: true };
+      /* A first ever visit is told how to play, never what changed. The
+         changelog below cannot fire on the same visit, because its own guard
+         refuses a stored version of zero. */
+      record = { ...record, tutorialSeen: true, lastSeenVersion: APP_VERSION };
       persist();
       openHelp();
+    } else {
+      showChangelogIfDue();
     }
 
     if (alreadyFinished && outcome.kind === "finished") showEndScreen(outcome);
-    void source.prefetch(puzzleNumber);
+    whenIdle(() => void source.prefetch(puzzleNumber));
   }
 
   function mountBoard(): void {
@@ -253,6 +362,13 @@ export function bootGame(game: AnyGameModule, root: HTMLElement): void {
   function finish(outcome: FinishedOutcome): void {
     if (session === null || session.finished) return;
     session.finished = true;
+
+    if (session.mode === "tutorial") {
+      /* Never recorded, never shared, never graded. The end screen here is a
+         handoff to today's board and nothing else. */
+      showTutorialEnd();
+      return;
+    }
 
     const result: StoredResult = {
       score: outcome.score,
@@ -311,6 +427,34 @@ export function bootGame(game: AnyGameModule, root: HTMLElement): void {
         renderStatsPanel(body).update(statsView(currentIndex));
       },
     });
+  }
+
+  /**
+   * One modal, once, on the first load after an update. The stored version is
+   * written forward whether or not anything was worth showing, so a player who
+   * skipped several releases is not shown the same list on every visit.
+   */
+  function showChangelogIfDue(): void {
+    if (record.lastSeenVersion === APP_VERSION) return;
+    const entries = pendingChangelog(record.lastSeenVersion, game.identity.id);
+    record = { ...record, lastSeenVersion: APP_VERSION };
+    persist();
+    if (entries.length === 0) return;
+
+    openModal({
+      title: "What is new",
+      hideWhileOpen: root,
+      render: (body) => {
+        for (const entry of entries) renderChangelogEntry(body, entry);
+      },
+    });
+  }
+
+  function renderChangelogEntry(body: HTMLElement, entry: ChangelogEntry): void {
+    body.appendChild(el("p", { class: "dk-changelog__date", text: entry.date }));
+    const list = el("ul", { class: "dk-changelog" });
+    for (const line of entry.lines) list.appendChild(el("li", { text: line }));
+    body.appendChild(list);
   }
 
   function openHelp(): void {
@@ -500,6 +644,8 @@ export function bootGame(game: AnyGameModule, root: HTMLElement): void {
   }
 
   async function start(): Promise<void> {
+    if (startTutorial()) return;
+
     const resolution = resolve(game.identity.epoch, record.watermark, clock());
     if (resolution.kind === "before-epoch") {
       setNotice(
@@ -536,6 +682,7 @@ export function bootGame(game: AnyGameModule, root: HTMLElement): void {
     }
   });
 
+  registerServiceWorker();
   void start();
 }
 

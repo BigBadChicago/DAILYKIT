@@ -44,6 +44,10 @@ describe("legal paths", () => {
     m.send("LOADED_TUTORIAL");
     expect(m.context.state).toBe("TUTORIAL");
     m.send("TUTORIAL_DONE");
+    /* The tutorial board is not a day, so finishing it returns to LOADING and
+       today is fetched from there. */
+    expect(m.context.state).toBe("LOADING");
+    m.send("LOADED_NEW");
     expect(m.context.state).toBe("PLAYING");
     m.send("FINISHED");
     expect(m.context.state).toBe("COMPLETE");

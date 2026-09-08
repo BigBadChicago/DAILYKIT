@@ -71,7 +71,11 @@ const TRANSITIONS: Readonly<
     LOADED_ARCHIVE: "ARCHIVED_VIEW",
   },
   TUTORIAL: {
-    TUTORIAL_DONE: "PLAYING",
+    /* Back to LOADING, not straight to PLAYING. The tutorial board is not any
+       day's puzzle, so when it ends the shell still has to resolve and fetch
+       today, which is a load. Landing in PLAYING would name a state the shell
+       cannot honour, since no board is mounted yet. */
+    TUTORIAL_DONE: "LOADING",
   },
   PLAYING: {
     HIDDEN: "PAUSED",

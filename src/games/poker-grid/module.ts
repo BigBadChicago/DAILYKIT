@@ -27,6 +27,7 @@ import {
 import { scoreHands, tierFor } from "./scoring.js";
 import { CLEAR_VALUE_PER_HAND } from "./scoring.js";
 import { POKER_GRID_HELP } from "./help.js";
+import { tutorialPuzzle } from "./tutorial.js";
 import { mountPokerGrid } from "./render.js";
 
 const CARD_ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnop";
@@ -125,6 +126,10 @@ export default defineGame<PokerState, PokerAction, PokerPuzzle>({
   generatePuzzle(puzzleNumber: PuzzleNumber, seed: Seed): Result<PokerPuzzle, PuzzleFailure> {
     return ok(makePuzzle(puzzleNumber, seed));
   },
+
+  /* Charter decision 2. A fixed easy board played before the first real
+     puzzle, never graded and never recorded. */
+  firstSessionPuzzle: (): PokerPuzzle => tutorialPuzzle(),
 
   initialState: (puzzle): PokerState => {
     const grid = puzzle.cells.slice();

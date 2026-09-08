@@ -1,0 +1,17 @@
+{
+  "name": "DAILYKIT",
+  "short_name": "DAILYKIT",
+  "description": "Five daily puzzles. One of each a day, the same for everyone, no account needed.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#12161b",
+  "theme_color": "#12161b",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

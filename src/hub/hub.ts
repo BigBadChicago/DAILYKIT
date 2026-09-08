@@ -20,6 +20,7 @@ import { msUntilNextLocalMidnight } from "../core/date.js";
 import { TIER_NAMES, UNRATED_LABEL } from "../engine/tiers.js";
 import { browserShareDeps, composeShare, deliverShare } from "../engine/share.js";
 import { createClock, debugDateOverride } from "../engine/scheduler.js";
+import { registerServiceWorker } from "../shell/register-sw.js";
 import { SUITE_GAMES, SUITE_SHARE_URL } from "../shell/registry.js";
 import {
   allStatuses,
@@ -110,6 +111,9 @@ export function mountHub(root: HTMLElement, clock: () => Date): HubHandle {
       class: "hub-footer__note",
       text: "No accounts, no cookies, no analytics. Everything stays in this browser.",
     }),
+    el("p", { class: "hub-footer__note" }, [
+      el("a", { class: "hub-footer__link", text: "About DAILYKIT", attrs: { href: "/about/" } }),
+    ]),
   ]);
 
   const storageNote = el("p", { class: "hub-note dk-hidden" });
@@ -264,7 +268,11 @@ export function bootHub(): HubHandle {
   const override = debugDateOverride(window.location.search, import.meta.env.DEV);
   const root = document.getElementById("app");
   if (root === null) throw new Error("hub root #app is missing");
-  return mountHub(root, createClock(override));
+  const handle = mountHub(root, createClock(override));
+  /* After mounting, never before. The hub is the page requirement 7.3.1 holds
+     to a one second render and precaching is not part of that second. */
+  registerServiceWorker();
+  return handle;
 }
 
 export const HUB_GAME_COUNT = SUITE_GAMES.length;

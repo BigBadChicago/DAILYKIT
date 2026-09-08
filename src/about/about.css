@@ -1,0 +1,46 @@
+/* Layer 5. About page only. It carries its own copy of the chrome tokens
+   rather than importing them through a script entry: a page with no
+   behaviour should not download the engine chunk to get a stylesheet, and a
+   few kilobytes of duplicated custom properties is the cheaper of the two. */
+
+@import "../ui/chrome.css";
+
+.about-page {
+  max-width: 34rem;
+  margin: 0 auto;
+  padding: var(--dk-gap);
+}
+
+.about-page h1 {
+  margin: 0 0 4px;
+  font-size: 1.4rem;
+  letter-spacing: 0.08em;
+}
+
+.about-page h2 {
+  margin: calc(var(--dk-gap) * 1.5) 0 4px;
+  font-size: 1rem;
+}
+
+.about-page p,
+.about-page li {
+  color: var(--dk-text);
+  line-height: 1.5;
+}
+
+.about-page ul {
+  margin: 0;
+  padding-left: 1.2em;
+}
+
+.about-page__back {
+  display: inline-block;
+  margin-bottom: var(--dk-gap);
+  color: var(--dk-accent);
+}
+
+.about-page__foot {
+  margin-top: calc(var(--dk-gap) * 2);
+  font-size: 0.8rem;
+  color: var(--dk-text-dim);
+}

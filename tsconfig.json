@@ -26,6 +26,7 @@
     "tools/share-harness"
   ],
   "exclude": [
-    "vite.config.ts"
+    "vite.config.ts",
+    "src/sw"
   ]
 }

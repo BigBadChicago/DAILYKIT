@@ -39,22 +39,6 @@ export interface SuiteGameEntry {
  *  card, which has no game to take it from. */
 export const SUITE_SHARE_URL = "dailykit.providentia.games";
 
-/**
- * Ids the engine has already taken under the `dailykit:` prefix. A game with
- * one of these ids would write its board over the suite record or over the
- * storage probe, silently and only on the machines of players who had both.
- *
- * Uniqueness of a game's namespace rests on three things, and this list is the
- * third. First, the deployed origin is a dedicated subdomain, so the whole
- * `localStorage` area belongs to the suite and nothing else on
- * providentia.games can reach it. Second, every key the suite writes carries
- * the `dailykit:` prefix, so even a shared origin would not collide with an
- * unrelated application. Third, no game id may equal a name the engine has
- * already spent. A test asserts all three, so an id is checked when it is
- * added rather than when a player loses a streak.
- */
-export const RESERVED_GAME_IDS: readonly string[] = ["suite", "probe"];
-
 export const HUB_PATH = "/";
 
 const MONO = "ui-monospace, monospace";
@@ -78,14 +62,13 @@ export const SUITE_GAMES: readonly SuiteGameEntry[] = [
     status: "live",
   },
   {
-    id: "vector",
-    displayName: "VECTOR",
-    oneLineRule: "Point every arrow so each numbered cell is the first one that exactly that many arrows reach.",
-    path: "/vector/",
+    id: "rule-of-four",
+    displayName: "RULE OF FOUR",
+    oneLineRule: "Sort sixteen numbers into the four groups that each follow a hidden rule.",
+    path: "/rule-of-four/",
     accent: { hue: "28", boardFontStack: MONO },
     epoch: { year: 2026, month: 1, day: 1 },
-    /* Solved on submission one, two, or three, or failed. */
-    bucketCount: 4,
+    bucketCount: 5,
     hasWinLoss: true,
     stateVersion: 1,
     status: "planned",
@@ -103,22 +86,22 @@ export const SUITE_GAMES: readonly SuiteGameEntry[] = [
     status: "planned",
   },
   {
-    id: "tally-drop",
-    displayName: "TALLY DROP",
-    oneLineRule: "Slide the five number strips until every row adds up to the totals in the margins.",
-    path: "/tally-drop/",
+    id: "ladder",
+    displayName: "LADDER",
+    oneLineRule: "Reach three targets by combining six numbers with plus, minus, times, and divide.",
+    path: "/ladder/",
     accent: { hue: "202", boardFontStack: MONO },
     epoch: { year: 2026, month: 1, day: 1 },
-    bucketCount: 5,
+    bucketCount: 4,
     hasWinLoss: false,
     stateVersion: 1,
     status: "planned",
   },
   {
-    id: "recall",
-    displayName: "RECALL",
+    id: "echo",
+    displayName: "ECHO",
     oneLineRule: "Study a pattern of lit cells, then reproduce it from memory three times.",
-    path: "/recall/",
+    path: "/echo/",
     accent: { hue: "342", boardFontStack: MONO },
     epoch: { year: 2026, month: 1, day: 1 },
     bucketCount: 4,
@@ -139,14 +122,6 @@ export function entryFor(id: string): SuiteGameEntry | null {
 /** Requirement 7.3.7 offers exactly one other game. A planned game is never
  *  offered, because a cross promotion to a page that does not exist is worse
  *  than none. */
-/**
- * True when an id is safe to use as a game's storage namespace and RNG stream
- * name. Called by the test, and by hand before adding a game.
- */
-export function isUsableGameId(id: string): boolean {
-  return /^[a-z]+(-[a-z]+)*$/.test(id) && !RESERVED_GAME_IDS.includes(id);
-}
-
 export function promotableIds(): readonly string[] {
   return LIVE_GAMES.map((entry) => entry.id);
 }

@@ -89,3 +89,15 @@
   background: var(--dk-surface);
   color: var(--dk-text);
 }
+
+.dk-changelog__date {
+  margin: 0 0 4px;
+  font-size: 0.8rem;
+  color: var(--dk-text-dim);
+}
+
+.dk-changelog {
+  margin: 0 0 var(--dk-gap);
+  padding-left: 1.2em;
+  line-height: 1.45;
+}

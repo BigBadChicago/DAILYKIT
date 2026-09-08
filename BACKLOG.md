@@ -77,15 +77,10 @@ work in progress. Adding an item here is how a request is declined.
 Phase 8 was recorded as done and these three items were not built. They are not
 new scope; they are the parts of Section 8 and constraint 2.6 that remain.
 
-- **Service worker and cache versioning.** Constraint 2.6 requires offline play
-  after first load and requirement 7.3.1 requires the hub to render from cache
-  in under a second. Neither is possible without one. The precondition is now
-  in place: the shared chunk has a stable versioned URL and each page has its
-  own, so a cache manifest is a short list rather than a hash chase. Until it
-  exists, `boot.ts` reports that today's puzzle is unavailable offline, which
-  is honest and unpleasant.
-- **A favicon and a web manifest.** Every page currently requests
-  `/favicon.ico` and gets a 404. An asset and an `ASSETS.md` line.
+The service worker and the favicon are now built, and so is everything else
+this section named. What is left is running MANUAL-CHECKS.md once and recording
+the result, which is a human pass across real devices.
+
 - **The Section 10.7 manual checklist.** Emoji rendering per platform, share
   sheet behaviour per platform, and layout on the smallest supported viewport
   are written down nowhere. The daily card adds a second block shape to check.
@@ -113,3 +108,30 @@ new scope; they are the parts of Section 8 and constraint 2.6 that remain.
 - **A shared cross promotion component.** The hub and the end screen both
   render a game's name and path, in two places, from the same registry entry.
   Worth extracting at game three, not at game one.
+
+## Logged in the Phase 8 remainder
+
+- **A visible update prompt.** The worker does not call `skipWaiting`, so a new
+  deploy takes effect on the next navigation and the player is never told. A
+  prompt is a product decision and it is not version 1's.
+- **Precaching the current manifest chunk on install.** The chunk is warmed by
+  the lookahead prefetch instead, which runs when the browser is idle. Adding it
+  to the install list would put several hundred kilobytes in front of the first
+  interaction on a first visit, which is the exact trade constraint 2.7 forbids.
+- **A cross platform build id.** The id is a hash of the emitted asset names, so
+  it is stable across machines only as far as the bundle itself is. That holds
+  today and would stop holding if a build ever emitted a machine dependent name.
+- **Warming more than the current chunk on a first visit.** The tutorial warms
+  the chunk holding today plus the lookahead and nothing beyond it, so a player
+  who goes offline and stays offline past a month boundary loses the day. The
+  fix is a second chunk in the prefetch, and it costs bytes on a first visit,
+  which is the trade this phase spent its budget avoiding.
+- **A skeleton board while the manifest chunk loads.** Constraint 2.7's "first
+  input must never wait on network" is literally violated on a first ever
+  visit, because a board cannot be drawn before its cards arrive. Every later
+  visit reads the chunk from the service worker cache instead. A disabled
+  skeleton would be a picture of a game rather than a game, so it is logged
+  rather than built.
+- **A tutorial board for the other four games.** POKER GRID has one and the
+  seam is proven. Each new game supplies its own or leaves `firstSessionPuzzle`
+  undefined, which falls back to the help panel over today's board.

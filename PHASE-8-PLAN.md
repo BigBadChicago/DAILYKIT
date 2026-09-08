@@ -15,16 +15,16 @@ onboarding, archive, stats, changelog, and an about page.
 
 | Deliverable | State | Note |
 |---|---|---|
-| Service worker | **Missing** | Constraint 2.6 is unmet. Nothing is cached. |
-| Offline behavior | **Missing** | Depends on the above. `boot.ts` reports an honest unavailable message and that is all the offline story there is. |
-| Performance pass | **Partial** | Transferred bytes measured against constraint 2.7: hub about 17 KB gzipped, POKER GRID about 25 KB, budget 150 KB. Time to interactive under 4x CPU throttling has never been measured. |
-| Share verification per platform | **Missing** | The harness page from Phase 4 renders the blocks. No platform has been checked and no result is recorded. |
-| Onboarding | **Partial** | Requirement 3.7.1 and 3.7.2 are met: the help panel opens on a first visit and reopens from the header forever. Requirement 3.7.3 is unmet: POKER GRID has no `firstSessionPuzzle`, so charter decision 2's easy first board does not exist and the `TUTORIAL` lifecycle state is unreachable. |
+| Service worker | **Done** | src/sw/sw.ts, generated precache list, cache name carrying a build id. |
+| Offline behavior | **Done** | Demonstrated in headless Chromium with the server stopped: the hub renders from cache and POKER GRID plays a real day from the cached chunk. |
+| Performance pass | **Done** | Bytes now asserted in CI by npm run budget. Time to interactive measured under 4x CPU throttling and recorded in ARCHITECTURE.md. |
+| Share verification per platform | **Written down, not run** | MANUAL-CHECKS.md lists every platform, client, and pass condition, with a results table. It has not been run. |
+| Onboarding | **Done** | POKER GRID supplies a fixed practice board, the TUTORIAL state is reachable, and nothing about that session is recorded. |
 | Archive | **Done** | Built in Phase 10. Paging is not wired, logged in BACKLOG. |
 | Stats | **Done** | Panel, histogram, suite streak row. |
-| Changelog | **Missing** | `lastSeenVersion` is persisted by `storage.ts` and never read by anything. |
-| About page | **Missing** | The privacy claim of 8.5 is a footer line on the hub and has no page. |
-| Favicon and web manifest | **Missing** | Every page requests `/favicon.ico` and gets a 404, found in the Phase 10 browser smoke test. Also an `ASSETS.md` entry. |
+| Changelog | **Done** | src/shell/changelog.ts, one modal on the first load after an update, per game in storage and scoped per entry. |
+| About page | **Done** | /about/, zero JavaScript, linked from the hub footer. |
+| Favicon and web manifest | **Done** | static/icon.svg plus 192 and 512 rasters, site.webmanifest, icon links on every page, ASSETS.md rows. |
 
 ## 2. Order of work, and why
 
@@ -146,3 +146,10 @@ Constraint 2.7 has two numbers and only one has been measured.
   in `ARCHITECTURE.md`.
 - `MANUAL-CHECKS.md` exists and has been run once with results recorded.
 - POKER GRID has a first session board and the `TUTORIAL` state is reachable.
+
+## Status, updated after the remainder was worked
+
+Everything in section 7's definition of done is met except the last line of
+section 6: MANUAL-CHECKS.md exists and has not been run. That is a human pass
+across real devices and real chat clients, and it is the only thing standing
+between this phase and closed.

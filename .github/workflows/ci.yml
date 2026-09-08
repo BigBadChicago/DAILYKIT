@@ -18,6 +18,9 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm run typecheck:tools
+      # The worker has its own program, because the WebWorker lib cannot share
+      # one with DOM. Without this line it is typechecked nowhere.
+      - run: npm run typecheck:sw
       - run: npm run depcheck
       - run: npm test
       # Section 10.5. The committed manifest is checked on every change to the
@@ -28,3 +31,6 @@ jobs:
       # engine chunk, so a change that breaks bundling must fail here rather
       # than at deploy time.
       - run: npm run build
+      # Constraint 2.7's byte half. The build has to have run first, because
+      # this reads dist/ and sums what each page actually references.
+      - run: npm run budget
