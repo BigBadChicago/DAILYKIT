@@ -1,282 +1,266 @@
 # DAILYKIT SLATE
 
-Phase 9 deliverable. Section 7.2. Ten candidates, five recommended, awaiting
-approval. Nothing in Section 7 permits a game beyond POKER GRID to be built
-before this document is approved, so this file is the gate.
+Phase 9 deliverable, revised. Section 7.2. The pool is now three candidate
+lists pooled and screened together: the ten in the first pass of this document,
+twelve from Gemini, and twelve from CoPilot. Thirty four entries, which reduce
+to roughly two dozen distinct concepts once the duplicates are collapsed.
 
-## 1. Screening rules applied
+Awaiting approval. Nothing beyond POKER GRID may be built until it is given.
 
-Every candidate below was tested against Section 7.1 before it reached this
-list. The three rules that did the most work:
+## 1. What the pooled review changed
 
-**7.1.4, zero daily content cost.** This is the rule that killed the most
-attractive ideas. A game qualifies only if a Node script can produce a day's
-puzzle from a seed and a second script can prove that puzzle is good without a
-human reading it. "Prove" means a real property, not a smoke test: unique
-solution, reachable target, solvable within the attempt limit, inside a
-difficulty band. Anything whose quality depends on taste rather than on a
-checkable property is out, no matter how well it would play.
+One swap, and one question that has to go back to you.
 
-**7.1.1, distinct cognitive mode.** Five modes are named in the document:
-spatial planning, deduction from feedback, categorization, arithmetic or
-sequence reasoning, and pattern or memory recall. POKER GRID occupies spatial
-planning. The other four slots each admit exactly one game, which means the
-strongest candidate in an already occupied mode loses to a weaker candidate in
-an empty one. Two candidates below are rejected on this rule alone and both are
-better games than one of the five recommended.
+**The swap.** TALLY DROP replaces LADDER in the arithmetic slot. LADDER scored a
+player on how close they got to three targets. TALLY DROP has a **unique
+solution provable by exhaustive search over 7,776 states**, which is a better
+daily property than a closeness score by a wide margin: every player is chasing
+the same single answer, the verifier is twenty lines and cannot be wrong, and
+the difficulty knob is a real measurement rather than a proxy. It is also the
+best verification story of any candidate in the pool, POKER GRID included,
+whose stored scores are a beam result labelled best known.
+
+**The question.** Both external lists independently drifted to **constraint
+satisfaction** as a fifth mode and both dropped **pattern and memory recall**,
+Gemini explicitly ("pure memory recall games perform poorly in daily web
+formats"). That is not a preference, it is a reading of 7.1.1. See Section 4.
+It is the only open decision in this document.
+
+Twenty four fresh concepts produced one upgrade. That is the honest result and
+I am not going to manufacture more churn to make the review look productive.
+
+## 2. Screening
+
+Every candidate from all three lists was run against Section 7.1 before
+ranking. Four rules did the work.
+
+**7.1.4, zero daily content cost.** A game qualifies only if a Node script
+produces the day's puzzle from a seed and a second script proves it good
+without a human reading it. Proves means a checkable property: unique solution,
+reachable target, solvable inside the attempt limit, inside a difficulty band.
+
+**7.1.1, distinct cognitive mode.** POKER GRID holds spatial planning. Every
+remaining slot admits exactly one game, so the strongest candidate in an
+occupied mode loses to a weaker candidate in an empty one. This rule alone
+removes eight otherwise good concepts, listed in Section 5.
 
 **7.1.5, zero licensing exposure.** Playing card ranks, numerals, geometric
-shapes, and public domain word lists. No images, no audio, no trivia, no
-proper nouns.
+shapes, public domain word lists.
 
-## 2. The ten candidates
-
-Columns are as Section 7.2 requires. Full detail for each follows the table.
-
-| # | Name | Mode | Session | Failure model | Verdict |
-|---|---|---|---|---|---|
-| 1 | POKER GRID | Spatial planning | 3 to 5 min | Continuum, no fail state | **Recommended** |
-| 2 | CIPHER | Deduction from feedback | 90 s to 2 min | Pass or fail, 6 guesses | **Recommended** |
-| 3 | RULE OF FOUR | Categorization | 2 to 3 min | Pass or fail, 4 mistakes | **Recommended** |
-| 4 | LADDER | Arithmetic and sequence | 60 to 90 s | Continuum, 3 targets | **Recommended** |
-| 5 | ECHO | Pattern and memory recall | 40 to 60 s | Continuum, cells recalled | **Recommended** |
-| 6 | DRIFT | Pattern and memory recall | 30 to 60 s | Sudden death run length | Rejected, mode taken by ECHO |
-| 7 | GRIDLOCK | Deduction from constraints | 6 to 12 min | Pass or fail | Rejected, mode collision and length |
-| 8 | FIT | Spatial packing | 3 to 5 min | Pass or fail | Rejected, mode collision with POKER GRID |
-| 9 | WORDLINE | Deduction from feedback | 2 to 3 min | Pass or fail, 6 guesses | Rejected, mode collision and localization debt |
-| 10 | SPECTRUM | Estimation and calibration | 60 s | Continuum | Rejected, violates 7.1.4 |
-
-### Candidate 1, POKER GRID
-
-- **Rule sentence.** Clear the board with connected five card poker hands.
-- **Cognitive mode.** Spatial planning, with poker knowledge stacked on top.
-- **Session length.** Three to five minutes. This is the suite's long game, and
-  it satisfies the second half of 7.1.2 on its own.
-- **Generation.** Seeded placement of 35 distinct cards from a 52 card deck,
-  weekday lever schedule, precomputed 365 day manifest. Built and shipping.
-- **Verification.** Solver replay of every manifest entry, difficulty banded on
-  mean greedy shortfall, degenerate boards rejected and regenerated.
-- **Failure model.** Continuum. No failure state, per locked decision 4. The
-  streak is played, not won.
-- **Share encoding.** One row per hand played, one tier glyph per row, up to
-  seven rows. Title carries the tier name.
-
-### Candidate 2, CIPHER
-
-- **Rule sentence.** Break a four symbol code in six guesses, using only the
-  count of symbols you got exactly right and the count you got right in the
-  wrong place.
-- **Cognitive mode.** Deduction from feedback. This is the mode Wordle occupies
-  in the wider genre and the suite needs it, because it is the mode that
-  produces the tightest share block in the whole category.
-- **Session length.** Ninety seconds to two minutes. Fast, but not the sub
-  minute game.
-- **Generation.** Seeded draw of four symbols from a palette of six geometric
-  shapes with repeats allowed, giving 1,296 codes. The seed picks a code and a
-  difficulty lever, where a lever is a structural property of the code such as
-  exactly one repeated symbol or no symbol shared with the previous day.
-- **Verification.** A Knuth style minimax solver plays the code from a fixed
-  opening and asserts three properties: the code is deducible within six
-  guesses against a perfect solver, the optimal line needs at least four
-  guesses so the day is not trivial, and the number of codes still consistent
-  after the fixed opening falls inside a weekday band. That last figure is the
-  difficulty measure, and it is an integer, so verification reproduces it
-  exactly rather than within a tolerance.
-- **Failure model.** Pass or fail. Six guesses, then the code is revealed. This
-  is the suite's first genuine failure state and it is why 7.1.3 is satisfied.
-- **Share encoding.** One row per guess. Each row is four cells: `best` for
-  each exact match, `partial` for each misplaced match, `miss` for the rest,
-  sorted so position never leaks. A solved puzzle's last row is four `best`.
-  Maximum block height is eight lines including title and URL.
-
-### Candidate 3, RULE OF FOUR
-
-- **Rule sentence.** Sort sixteen numbers into the four groups of four that
-  each follow a hidden rule.
-- **Cognitive mode.** Categorization.
-- **Session length.** Two to three minutes.
-- **Generation.** Four rules are drawn from a fixed library of formal integer
-  predicates: multiples of a given number, perfect squares, primes,
-  palindromes, digit sum equal to a constant, and so on. Four members are drawn
-  for each rule. The generator deliberately plants overlap traps, meaning
-  numbers that satisfy a rule they are not assigned to, because a puzzle with
-  no overlap is a sorting exercise rather than a deduction.
-- **Verification.** Exhaustive search over all partitions of the sixteen
-  numbers into four groups of four, checking that exactly one partition is
-  valid under the rule library. That is 2,627,625 partitions, which is a
-  fraction of a second per puzzle in Node and is the entire reason this
-  candidate is admissible under 7.1.4 while a Connections style word game is
-  not: uniqueness here is a computation, not an editor's judgment. Difficulty
-  is the count of planted overlaps, banded by weekday.
-- **Failure model.** Pass or fail with four mistakes allowed, which is the
-  convention players already know from the genre.
-- **Share encoding.** One row per guess made, in order. Each row is four cells
-  carrying the tier token for the group that guess belonged to, or four `miss`
-  tokens for a wrong guess. Groups are never named and the rules are never
-  shown, so the block is spoiler free. Maximum eight guesses, which is four
-  correct plus four mistakes, so the block fits inside the cap exactly.
-
-### Candidate 4, LADDER
-
-- **Rule sentence.** Reach each of three targets by combining six drawn numbers
-  with plus, minus, times, and divide.
-- **Cognitive mode.** Arithmetic and sequence reasoning.
-- **Session length.** Sixty to ninety seconds. Together with ECHO this
-  satisfies the first half of 7.1.2.
-- **Generation.** Seeded draw of six numbers from a weighted pool of small
-  numbers and a few large ones, plus three targets in the hundreds.
-- **Verification.** Exhaustive expression search over all orderings and
-  operator choices, which is a well bounded search for six operands. The
-  verifier asserts every target is exactly reachable, records the shortest
-  solution length, and counts distinct solutions. Difficulty is the count of
-  distinct exact solutions for the hardest target, banded by weekday, so a
-  Monday has many routes and a Saturday has few.
-- **Failure model.** Continuum. Three targets, each scored on exactness and on
-  how few of the six numbers were used, so a player who misses by two still
-  scores. No failure state.
-- **Share encoding.** Three rows, one per target, each a five cell meter filled
-  with that target's tier token. Five lines total, the shortest block in the
-  suite.
-
-### Candidate 5, ECHO
-
-- **Rule sentence.** Study a pattern of lit cells, then reproduce it from
-  memory, three times, with the pattern growing denser each round.
-- **Cognitive mode.** Pattern and memory recall.
-- **Session length.** Forty to sixty seconds. This is the suite's sub minute
-  game.
-- **Generation.** Seeded selection of lit cells on a five by five grid across
-  three rounds, at rising density.
-- **Verification.** Patterns are checked against structural properties rather
-  than solved, because there is nothing to solve. The verifier rejects a
-  pattern that is symmetric under any reflection or rotation, that is a pure
-  row or column fill, or whose lit cells are all contiguous, since each of
-  those collapses the memory task into a one word description. Difficulty is
-  the total lit cell count across the three rounds, banded by weekday.
-- **Failure model.** Continuum, scored on cells recalled correctly across the
-  three rounds. Chosen over sudden death deliberately, see candidate 6.
-- **Share encoding.** Three rows, one per round, each a five cell meter filled
-  with that round's tier token.
-- **Accessibility note.** The study phase is a fixed duration with a visible
-  countdown and a replay control that costs score rather than being forbidden.
-  There is no reaction time component anywhere, which is what keeps this game
-  playable under `prefers-reduced-motion` and with a screen reader.
-
-### Candidate 6, DRIFT, rejected
-
-- **Rule sentence.** Repeat a growing sequence of lit cells until you miss.
-- **Why it loses to ECHO.** Same cognitive mode, so 7.1.1 admits only one of
-  them. DRIFT is the more familiar shape and the more addictive one, and it is
-  rejected anyway for two reasons. First, sudden death on a memory slip
-  produces a share block that says nothing about the day's puzzle, only about
-  the player's night, which weakens the one thing the suite is built to
-  distribute. Second, a growing sequence is inherently a timing exercise, and a
-  timing exercise cannot be made properly accessible without becoming a
-  different game.
-
-### Candidate 7, GRIDLOCK, rejected
-
-- **Rule sentence.** Fill the grid so every row and column matches its number
-  clues.
-- **Why it is rejected.** A nonogram is a genuinely excellent daily puzzle and
-  it verifies beautifully, since unique solvability by pure line logic is a
-  standard checkable property. It loses on two counts. Its mode is deduction,
-  which CIPHER holds, and while deduction from static constraints and deduction
-  from interactive feedback are arguably distinct, they are not distinct enough
-  to survive the "no two games exercise the same core skill" test in front of a
-  player. Its session length is also six to twelve minutes, which collides with
-  POKER GRID at the long end of 7.1.2 and would give the suite two games nobody
-  opens on a weekday morning.
-- **Reconsider it if** the slate ever drops POKER GRID's long session slot, or
-  if the suite grows past five.
-
-### Candidate 8, FIT, rejected
-
-- **Rule sentence.** Pack the given polyomino pieces into the outlined shape.
-- **Why it is rejected.** Pure spatial planning, which POKER GRID holds. It is
-  the cleanest generation and verification story of any candidate here, since
-  a tiling is produced by construction and verified by exact cover search, and
-  none of that matters against 7.1.1.
-
-### Candidate 9, WORDLINE, rejected
-
-- **Rule sentence.** Guess the five letter word in six tries, with each guess
-  telling you which letters are right and which are in the wrong place.
-- **Why it is rejected.** Same mode as CIPHER, and CIPHER wins the slot for
-  three reasons. It is not the thing everybody has already played. It carries
-  no word list to curate, no offensive word screen to maintain, and no
-  vocabulary fairness problem across dialects. And it is the only one of the
-  two that survives Section 11.7 cleanly: a word game is a localization
-  obligation the moment anyone outside English opens it, and the suite has
-  explicitly deferred localization.
-- **Note.** Public domain word lists are permitted by 7.1.5, so this rejection
-  is a design choice and not a constraint. It is the candidate most likely to
-  be raised again.
-
-### Candidate 10, SPECTRUM, rejected
-
-- **Rule sentence.** Put five quantities in order from smallest to largest.
-- **Why it is rejected.** Violates 7.1.4 outright. Interesting quantities come
-  from a curated fact source, which is daily content cost wearing a procedural
-  costume. Generating quantities procedurally produces a puzzle that is either
-  arithmetic, which LADDER already holds, or arbitrary.
+**7.1.6, one rule sentence**, and 8.2, a 360 pixel portrait viewport. Several
+strong concepts fail here rather than on logic, and both external documents
+flagged the same ones.
 
 ## 3. The recommended slate
 
-| Slot | Game | Mode | Session | Failure | Status |
+| Slot | Game | Mode | Session | Failure | Source |
 |---|---|---|---|---|---|
 | 1 | POKER GRID | Spatial planning | 3 to 5 min | Continuum | Built |
-| 2 | CIPHER | Deduction from feedback | 90 s to 2 min | Pass or fail | Phase 11, the abstraction test |
-| 3 | RULE OF FOUR | Categorization | 2 to 3 min | Pass or fail | Phase 13 |
-| 4 | LADDER | Arithmetic and sequence | 60 to 90 s | Continuum | Phase 13 |
-| 5 | ECHO | Pattern and memory recall | 40 to 60 s | Continuum | Phase 13 |
+| 2 | RULE OF FOUR | Categorization | 2 to 3 min | Pass or fail, 4 mistakes | This document |
+| 3 | CIPHER | Deduction from feedback | 90 s to 2 min | Pass or fail, 6 guesses | This document |
+| 4 | TALLY DROP | Arithmetic and sequence | 60 to 90 s | Continuum, shift count | Gemini, concept 2 |
+| 5 | RECALL | Pattern and memory recall | 40 to 60 s | Continuum, cells recalled | This document, renamed |
 
 Section 7.1 conformance:
 
-1. **Distinct cognitive mode.** Five modes, five games, one each, no overlap.
-2. **Distinct session length.** Forty seconds at the short end, five minutes at
-   the long end, with three games in between. Both halves of 7.1.2 are met.
-3. **Distinct failure feel.** Three continuum games and two pass or fail games.
+1. **Distinct mode.** Five modes, five games, one each.
+2. **Distinct session length.** A clean ladder from forty seconds to five
+   minutes with no two games in the same band. TALLY DROP at sixty to ninety
+   seconds is a tighter fit than LADDER was, which lets RECALL hold the sub
+   minute slot without the two crowding each other.
+3. **Distinct failure feel.** Three continuum, two pass or fail.
 4. **Zero daily content cost.** Every one generates from a seed and verifies by
-   a checkable property, and the verification for each is named above.
-5. **Zero licensing exposure.** Playing card ranks, six geometric shapes, and
-   integers. No word list, no image, no audio, no proper noun.
-6. **One rule sentence.** Each is stated above and each fits a hub card.
+   a checkable property, named per game below.
+5. **Zero licensing exposure.** Card ranks, six geometric shapes, and integers.
+   No word list, no image, no audio, no proper noun, no third party game whose
+   trade dress a court would recognise.
+6. **One rule sentence.** Stated per game below, each fitting a hub card.
 
-### Why CIPHER is game two
+### Slot 4, TALLY DROP, new
 
-Section 7.4 makes game two the architecture's trial, and the right game two is
-the one least like game one, because a second game that resembles the first
-proves nothing about the contract. CIPHER differs from POKER GRID on every axis
-the contract touches:
+- **Rule sentence.** Slide the five number strips until every row adds up to
+  the totals in the margins.
+- **Mode.** Arithmetic and sequence reasoning.
+- **Session.** Sixty to ninety seconds. The suite's second fastest game.
+- **Input.** Vertical drag per column, one gesture, no typing and no menus.
+- **Generation.** Five column strips of six digits each. The generator sets the
+  strips to a secret alignment, reads the four row sums off it to use as the
+  margin targets, then shifts each column between one and five steps away.
+- **Verification.** Exhaustive. Six offsets per column across five columns is
+  7,776 states, and checking four row sums per state is about thirty one
+  thousand additions, so the verifier enumerates every state and asserts that
+  **exactly one** produces all four targets. There is no beam, no heuristic and
+  no tolerance anywhere in it. This is the strongest verification claim in the
+  suite.
+- **Difficulty.** Not total shift distance, which measures how far the strips
+  were moved rather than how hard the puzzle is. The measure is the **count of
+  states satisfying three of the four rows**: near misses are what a player
+  actually fights, a board with many of them teases and a board with none is
+  mechanical. It is an integer produced by the same enumeration, so
+  verification reproduces it exactly, the same property generation decision 12
+  gives POKER GRID.
+- **Failure.** Continuum. Unlimited shifts, scored on shifts taken above the
+  minimum. No failure state, so this and POKER GRID are the two games a bad day
+  cannot take from you.
+- **Share block.** Title carries the tier, then one five cell meter row filled
+  with that tier's token. Four lines including the URL, the shortest block in
+  the suite. Gemini's proposed block used loose emoji outside the vocabulary,
+  which contract decision 4 does not allow; games emit tokens and the engine
+  owns the glyphs. A row per column showing how near each ended to its target
+  offset was considered and rejected: it tells a reader which columns were
+  already correct, which narrows their own search.
 
-- Its input is a small fixed palette rather than a lattice, so it exercises the
-  `custom` branch of `InputDescriptor` that `toy-tap` only gestures at.
-- It has a genuine failure state, so `hasWinLoss` is true for the first time and
-  the win rate row of requirement 3.4 renders for the first time.
-- Its distribution buckets are guess counts rather than a remainder ladder.
-- Its puzzle is a few bytes rather than a 35 cell board, which is the case that
-  will reveal whether the manifest and chunking machinery assumes POKER GRID's
-  size anywhere.
-- It has no gravity, no settling, and no board mutation, so `apply` returns a
-  new state that is almost entirely append only.
+### Slots 1, 2, 3 and 5, unchanged in substance
 
-If the engine survives that, the contract is real. If game two were FIT or
-GRIDLOCK, both grid games with a heavy board state, the abstraction test would
-pass without proving anything.
+- **POKER GRID.** Clear the board with connected five card poker hands. Spatial
+  planning, three to five minutes, continuum with no failure state, precomputed
+  365 day manifest verified by solver replay. Built and shipping.
+- **RULE OF FOUR.** Sort sixteen numbers into the four groups that each follow
+  a hidden rule. Categorization, two to three minutes, four mistakes allowed.
+  Four rules drawn from a fixed library of formal integer predicates with
+  overlap traps planted deliberately; verification is exhaustive search over
+  the 2,627,625 partitions of sixteen items into four groups of four, asserting
+  exactly one is valid. Difficulty is the count of planted overlaps. Chosen over
+  Gemini's ORBITAL CLUSTERS, which is the same idea at eight items and two
+  groups, where identifying one group leaves the other forced and the day
+  therefore contains a single decision.
+- **CIPHER.** Break a four symbol code in six guesses from the counts of exact
+  and misplaced matches. Deduction from feedback, ninety seconds to two minutes,
+  pass or fail. Six geometric shapes, repeats allowed, 1,296 codes. Verified by
+  a Knuth style minimax solver asserting the code is deducible in six, that the
+  optimal line needs at least four so the day is not trivial, and that the
+  count of codes still consistent after a fixed opening falls in a weekday band.
+  One row per guess, four cells, sorted so position never leaks.
+- **RECALL**, formerly ECHO. Study a pattern of lit cells, then reproduce it
+  from memory, three times, with the pattern growing denser each round. Pattern
+  and memory recall, forty to sixty seconds, continuum on cells recalled.
+  Verified structurally rather than solved: a pattern symmetric under any
+  reflection or rotation, or a pure row or column fill, or one whose lit cells
+  are all contiguous, is rejected, because each collapses the memory task into
+  a one word description. Difficulty is total lit cells across the rounds.
+  Renamed because all three lists contained something called Echo and they were
+  three different games.
 
-## 4. What approval decides
+## 4. The one open decision
 
-Approving this document sets four things and nothing else:
+**Is the list of five modes in 7.1.1 exhaustive or illustrative?**
+
+The sentence is: "Spatial planning, deduction from feedback, categorization,
+arithmetic or sequence reasoning, and pattern or memory recall are five separate
+modes. Pick five." It can be read as naming the five, or as offering five
+examples of what separate means.
+
+This document has been reading it as exhaustive. Both external lists read it as
+illustrative, and both then reached for **constraint satisfaction**, a sixth
+mode neither the document nor I had on the list, and both dropped memory recall
+to make room. Gemini's stated reason is that memory games play badly daily.
+CoPilot's recommended four contain two deduction variants and no memory game at
+all.
+
+I think their instinct about memory is right and their arithmetic is wrong.
+Memory recall is the weakest of the five modes for a daily format, for exactly
+the reason Gemini gives, and RECALL is the slate's weakest entry. But it is
+also the only mode that naturally produces a forty second game, and 7.1.2
+requires one. Dropping it means the sub minute slot has to be filled by
+speeding another mode up rather than by a game that is genuinely that size.
+
+**If you read 7.1.1 as illustrative**, the swap is RECALL out, **VECTOR** in:
+
+- **Rule sentence.** Place arrows so every numbered cell has exactly that many
+  arrows pointing at it.
+- **Mode.** Deduction from static constraints, the nonogram family.
+- **Session.** Three to five minutes, pass or fail.
+- **Why it is the pick from the constraint satisfaction field.** No prior
+  knowledge, unlike CHESS RECTIFY, which needs piece movement, and CIRCUIT
+  MESH, which needs logic gates. Numerals and arrows only, so it renders at 360
+  pixels, unlike MIRROR MARKS and QUANTUM PATH, whose ray overlap readability
+  both source documents flag as a risk. Exact uniqueness verification from a
+  solved arrow field. Tap to cycle, one gesture.
+- **What it costs.** The suite loses its sub minute game and gains a second
+  three to five minute game, so 7.1.2 fails unless TALLY DROP is tuned down to
+  under sixty seconds. That is plausible, since a five strip slide with a
+  unique answer is fast once a player knows the shape, but it is a design
+  commitment made now rather than a property the slate has for free.
+
+My recommendation is the strict reading and RECALL. The exhaustive reading is
+what the document says, the mode ladder is what 7.1.2 asks for, and RECALL
+being the weakest of five is a smaller problem than a suite whose two longest
+games are both grid deduction. But two independent reviews landing on the other
+side is worth your five minutes, so it is Question 1.
+
+## 5. Rejected, with the reason
+
+Grouped by why, not by source. Nothing here is a bad game.
+
+**Mode already held by POKER GRID, spatial planning.** TAXI GRID, FIT, SYMBOL
+REDUCE, FRACTION, QUANTUM PATH, MIRROR MARKS, SUMLINE, FOLD, WEAVE. Rule 7.1.1
+does not care how good they are. SUMLINE is the sharpest loss: it is arithmetic
+and spatial at once, and its drag a path gesture is POKER GRID's gesture, so it
+would read as a reskin on the hub. MIRROR MARKS is CoPilot's top ranked concept
+and loses on this rule plus small screen readability.
+
+**Mode already held by CIPHER, deduction from feedback.** ECHO SEQUENCE,
+CoPilot's ECHO, PINPOINT WORD, WORDLINE. PINPOINT WORD is Gemini's highest
+scored concept and the closest call in the document: replacing Wordle's colour
+feedback with a single summed alphabetical distance is genuinely novel. It
+loses on three counts. It carries a word list, and Section 11.7 has deferred
+localization, so an English word game is an obligation the day anyone outside
+English opens it. Its actual play is letter index arithmetic, which blurs it
+into TALLY DROP's mode rather than sitting cleanly in deduction. And it asks a
+player to know that E is the fifth letter, which is a different game from the
+one the rule sentence promises.
+
+**Mode already held by RULE OF FOUR, categorization.** ORBITAL CLUSTERS, TRIAD.
+ORBITAL CLUSTERS is thin, see Section 3. TRIAD is a SET variant, and SET is a
+live commercial product with a recognisable trade dress; the mechanic is not
+protectable but the resemblance is exposure 7.1.5 asks us not to take, and
+CoPilot flagged the differentiation risk itself.
+
+**Mode already held by TALLY DROP, arithmetic.** LADDER, CHAIN ORDER, DUAL
+BALANCE, BALANCE. LADDER is this document's own earlier pick and loses on the
+unique solution argument in Section 1. DUAL BALANCE asks for simultaneous mass
+and torque balance, which is two rules in one sentence and a multiplication
+step in the player's head.
+
+**Sixth mode, held only if 7.1.1 is illustrative.** VECTOR, CHESS RECTIFY,
+CIRCUIT MESH, GLYPH LOCK, ORBIT, DOMINO BOUND, GRIDLOCK. VECTOR is the pick of
+this field, see Section 4. CHESS RECTIFY is second and loses on the prior
+knowledge gate. DOMINO BOUND and CIRCUIT MESH both fail 8.2 on drag targets and
+symbol clutter at 360 pixels, which both source documents note.
+
+**Fails 7.1.4.** SPECTRUM, ordering quantities, which needs a curated fact
+source however it is dressed. LEXICON SHIFT, whose row anagram overlaps break
+solution uniqueness, a risk Gemini names itself.
+
+## 6. Why CIPHER is game two
+
+Unchanged from the first pass, and the pooled review strengthens it. Section
+7.4 makes game two the architecture's trial, so the right game two is the one
+least like game one. CIPHER differs from POKER GRID on every axis the contract
+touches: a small fixed palette rather than a lattice, which is the first real
+use of the `custom` branch of `InputDescriptor`; a genuine failure state, so
+`hasWinLoss` is true for the first time and the win rate row of requirement 3.4
+renders for the first time; guess count buckets rather than a remainder ladder;
+a puzzle of a few bytes rather than a 35 cell board, which is the case that
+reveals whether the manifest machinery assumes POKER GRID's size; and no board
+mutation at all, so `apply` is nearly append only.
+
+TALLY DROP would be the wrong game two despite being the cleanest to build.
+Five columns of digits on a grid, scored on a continuum with no failure state,
+is close enough to POKER GRID's shape that passing the abstraction test would
+prove very little.
+
+## 7. What approval decides
 
 1. The four game names and their ids, which become storage key namespaces and
-   RNG stream names and are therefore expensive to change after launch.
-2. Which game is built in Phase 11 as the abstraction test.
-3. The order of the remaining three in Phase 13.
-4. The five hub entries, which Phase 10 ships as data in `src/shell/registry.ts`
-   with the four unbuilt games marked `planned`. Changing the slate later is a
-   one line edit to that file until a game is actually built.
+   RNG stream names and are therefore expensive to change after launch. The
+   current ids are `cipher`, `rule-of-four`, `tally-drop`, `recall`.
+2. Which game is Phase 11's abstraction test. Recommended: CIPHER.
+3. The order of the remaining three in Phase 13. Recommended: RULE OF FOUR,
+   TALLY DROP, RECALL, easiest verification last.
+4. The five hub entries, which Phase 10 already ships as data in
+   `src/shell/registry.ts` with the four unbuilt games marked `planned`.
 
-Nothing in this document commits to a rule detail beyond the one sentence rule.
-Each game gets its own design document at its own phase, in the way POKER GRID
-got `POKER-GRID.md` at Phase 2.
+Nothing here commits to a rule detail beyond the one sentence rule. Each game
+gets its own design document at its own phase, as POKER GRID got `POKER-GRID.md`
+at Phase 2.

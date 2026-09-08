@@ -590,12 +590,19 @@ phase and are not to be reopened without a stated reason.
    and not Perfect, no name collision arises and the zero remaining histogram
    bucket keeps the label **Perfect Clear**. Past the manifest horizon the label
    is the lowercase word `unrated`, which sits where a tier name sits.
-17. **Slate.** POKER GRID is one of the five. Phase 9 proposed ten candidates
-   and recommended CIPHER, RULE OF FOUR, LADDER, and ECHO alongside it, in
-   `SLATE.md`. **Not yet approved.** Until it is, `src/shell/registry.ts`
-   carries the four as `planned` entries and no game beyond POKER GRID may be
-   built. Changing the slate before a game is built is an edit to that one
-   file.
+17. **Slate.** POKER GRID is one of the five. Phase 9 was revised after pooling
+   this document's ten candidates with twelve from Gemini and twelve from
+   CoPilot, and recommends CIPHER, RULE OF FOUR, TALLY DROP, and RECALL
+   alongside it, in `SLATE.md`. TALLY DROP replaced LADDER because its solution
+   is unique and provable by exhaustive search over 7,776 states, where LADDER
+   scored a player on closeness to a target. RECALL is the former ECHO,
+   renamed because all three source lists contained a different game by that
+   name. **Not yet approved**, and `SLATE.md` Section 4 carries the one open
+   question: whether 7.1.1's list of five modes is exhaustive, which decides
+   whether the fifth slot is RECALL or VECTOR. Until approval,
+   `src/shell/registry.ts` carries the four as `planned` entries and no game
+   beyond POKER GRID may be built. Changing the slate before a game is built is
+   an edit to that one file.
 
 ## Resolutions of internal conflicts in the source document
 
