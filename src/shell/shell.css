@@ -1,0 +1,91 @@
+/* Layer 5. Game page layout only. Everything reusable is in ui/chrome.css. */
+
+.dk-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--dk-gap);
+  padding: var(--dk-gap) calc(var(--dk-gap) + var(--dk-safe-left)) calc(var(--dk-gap) + var(--dk-safe-bottom));
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.dk-board {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.dk-notice,
+.dk-banner {
+  margin: 0;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: var(--dk-radius);
+  background: var(--dk-surface);
+  color: var(--dk-text-dim);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.dk-end__tier {
+  margin: 0 0 4px;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--dk-accent);
+}
+
+.dk-end__detail,
+.dk-end__score {
+  margin: 0 0 8px;
+  color: var(--dk-text-dim);
+}
+
+.dk-crosspromo {
+  margin: 16px 0 0;
+  padding-top: 12px;
+  border-top: var(--dk-line-width) solid var(--dk-line);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.dk-crosspromo__link { color: var(--dk-text-dim); }
+
+.dk-archive {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.dk-archive__item {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  min-height: var(--dk-tap);
+  padding: 8px 10px;
+  border: 0;
+  border-bottom: var(--dk-line-width) solid var(--dk-line);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dk-archive__number { font-weight: 700; min-width: 4ch; }
+.dk-archive__date { color: var(--dk-text-dim); }
+.dk-archive__mark { margin-left: auto; color: var(--dk-accent); }
+
+.dk-copybox {
+  width: 100%;
+  font-family: var(--dk-board-font);
+  font-size: 1rem;
+  padding: 10px;
+  border-radius: var(--dk-radius);
+  border: var(--dk-line-width) solid var(--dk-line);
+  background: var(--dk-surface);
+  color: var(--dk-text);
+}

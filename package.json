@@ -10,13 +10,20 @@
     "rng:vectors": "tsx tools/rngvectors.ts",
     "poker-grid:generate": "tsx tools/generate.ts",
     "poker-grid:verify": "tsx tools/verify.ts",
-    "poker-grid:calibrate": "tsx tools/calibrate.ts"
+    "poker-grid:calibrate": "tsx tools/calibrate.ts",
+    "dev": "vite",
+    "build": "vite build",
+    "build:harness": "vite build --mode development",
+    "clean": "rm -rf dist dist-dev",
+    "preview": "vite preview --outDir dist",
+    "build:game": "vite build"
   },
   "devDependencies": {
-    "typescript": "^5.6.0",
-    "vitest": "^2.1.0",
     "@types/node": "^22.0.0",
     "jsdom": "^25.0.0",
-    "tsx": "^4.19.0"
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "vite": "^5.4.0",
+    "vitest": "^2.1.0"
   }
 }

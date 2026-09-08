@@ -4,3 +4,4 @@ dist/
 vitest.config.ts.timestamp-*
 .sf/
 .sfdx/
+dist-dev

@@ -9,8 +9,8 @@ resume work in a fresh conversation with no chat history.
 
 | Field | Value |
 |---|---|
-| Current phase | 8 complete, Phase 9 next |
-| Games playable | POKER GRID interface complete, shell not started |
+| Current phase | 10 complete, Phase 11 next. Phase 9's slate awaits approval |
+| Games playable | POKER GRID, end to end in a browser, inside the suite shell |
 | Engine contract version | 1, drafted and proven against toy-tap |
 | Manifest horizon | 365 days, puzzle 1 through 365, epoch 2026-01-01, all verified with a solver replay |
 
@@ -27,8 +27,8 @@ resume work in a fresh conversation with no chat history.
 | 6 | POKER GRID interface | done | Accessible five by seven card renderer, pointer gestures, keyboard cursor, card art, and reduced motion styling |
 | 7 | Generation pipeline | done | Connected region enumeration, exact search with a measured ceiling falling back to a width 400 beam, empirical scoring table, weekday difficulty bands, degenerate board rejection, obfuscated manifest, and the CI jobs that produce and check it |
 | 8 | Polish and launch readiness | done | Dependency layer check, CI wiring, and project runbook |
-| 9 | Slate approval | not started | |
-| 10 | Suite shell | not started | |
+| 9 | Slate approval | done | SLATE.md. Ten candidates, five recommended. **Awaiting approval**, and nothing beyond POKER GRID may be built until it is given |
+| 10 | Suite shell | done | Hub, shell, per game entries, one pass release build with a shared engine chunk, suite storage and streak, daily card, cross promotion. One contract change and one renderer defect, both below |
 | 11 | Game two and abstraction test | not started | |
 | 12 | Template extraction | not started | |
 | 13 | Games three, four, five | not started | |
@@ -63,6 +63,8 @@ Table columns are fixed as follows and every future entry uses them.
 | BACKLOG.md | n/a | Everything deliberately not built | none |
 | ASSETS.md | n/a | Every asset and its license | none |
 | POKER-GRID.md | n/a | POKER GRID rules, scoring, tiers, and share layout | none |
+| SLATE.md | n/a | The Phase 9 candidate list and the recommended five | none |
+| MISSING.md | n/a | Files this manifest names that do not exist yet | none |
 | src/shared/share-vocabulary.ts | shared | Suite wide share tokens, their glyphs, and their shapes | none |
 | src/shared/poker-hands.ts | shared | Poker hand categories, ordinals, and shared result tier mapping | shared/share-vocabulary |
 | src/core/result.ts | 0 | Result type so rule failures are values rather than throws | none |
@@ -145,6 +147,26 @@ Table columns are fixed as follows and every future entry uses them.
 | .github/workflows/ci.yml | n/a | Typecheck, tests, and manifest verification on every change | none |
 | .github/workflows/generate.yml | n/a | The job that regenerates and verifies the horizon | none |
 | .gitignore | n/a | Keeps dependencies, build output, and runner scratch out of the repo | none |
+| vite.config.ts | n/a | The GAME allow list, the entry set, the pinned engine chunk, and manifest data deployment | none |
+| src/engine/dailycard.ts | 1 | The suite's combined one row per finished game share block | core/types, engine/tiers, shared/share-vocabulary |
+| src/shell/registry.ts | 5 | The five suite games as data, readable without loading a game | none |
+| src/shell/suite.ts | 5 | Suite storage, per game today status, theme port, and daily card assembly | core/date, core/result, core/types, engine/dailycard, engine/scheduler, engine/stats, engine/storage, ui/theme, shell/registry |
+| src/shell/boot.ts | 5 | Manifest index and chunk fetching, prefetch, and the past horizon fallback | contract/game-module, core/result, core/seed, core/types |
+| src/shell/main.ts | 5 | Session lifecycle, chrome, end screen, share, archive, and cross promotion | contract/*, core/*, engine/*, ui/*, shell/boot, shell/registry, shell/suite |
+| src/shell/shell.css | 5 | Game page layout, end screen, and archive list styling | none |
+| src/shell/env.d.ts | 5 | Ambient CSS module and import.meta.env declarations for browser builds | none |
+| src/shell/entries/poker-grid.ts | 5 | The POKER GRID bundler entry, the one file that names it | games/poker-grid/module, shell/main |
+| src/shell/entries/poker-grid.html | 5 | The POKER GRID page | none |
+| src/shell/entries/toy-tap.ts | 5 | The toy-tap entry, excluded from production by the allow list | games/toy-tap/module, shell/main |
+| src/shell/entries/toy-tap.html | 5 | The toy-tap page | none |
+| src/hub/hub.ts | 5 | The hub, its cards, the suite streak, and the daily card control | core/date, engine/*, ui/*, shell/registry, shell/suite |
+| src/hub/boot.ts | 5 | The hub's bundler entry | hub/hub |
+| src/hub/index.html | 5 | The hub page, deployed at the site root | none |
+| src/hub/hub.css | 5 | Hub layout and card styling | none |
+| tests/engine/dailycard.test.ts | n/a | Row shape, the ungraded case, the row cap, and the text equivalent | engine/dailycard, engine/share, engine/tiers |
+| tests/shell/registry.test.ts | n/a | Registry uniqueness, agreement with built modules, and cross promotion | shell/registry, engine/stats, games/poker-grid/module |
+| tests/shell/suite.test.ts | n/a | Today status per game, read only guarantees, daily card input, theme port | shell/suite, shell/registry, engine/* |
+| tests/hub/hub.test.ts | n/a | Card listing, links, the daily card, tier badges, and accessible names | hub/hub, shell/* |
 | tests/games/poker-grid/generator.test.ts | n/a | Determinism, deck legality, weekday levers, and the guarantees each lever makes | games/poker-grid/generator, games/poker-grid/evaluator, core/seed |
 | tests/games/poker-grid/manifest-codec.test.ts | n/a | Round trip across a year, stream keying, and malformed input rejection | games/poker-grid/manifest-codec, games/poker-grid/generator |
 
@@ -211,30 +233,68 @@ dailykit/
 
 ## Build model
 
-One Vite build per game, selected by the `GAME` environment variable, emitting
-to `dist/<game>/`. The hub is its own build emitting to `dist/`. Building one
-game never builds another, satisfying constraint 2.9.
+**A release is one build.** `npm run build` runs Vite once with every entry on
+the production allow list in `vite.config.ts`, and emits:
 
-`GAME=harness` selects the share string harness of requirement 3.5.7 as a fourth
-entry, alongside the game entries and the hub. It is excluded from production by
-the same explicit allow list in `vite.config.ts` that excludes `toy-tap`, per
-contract decision 12. The allow list itself is authored with `vite.config.ts` in
-Phase 6, which is the first phase that needs a browser build.
+```
+dist/
+  index.html                     the hub
+  poker-grid/index.html          one directory per game
+  assets/engine-v<N>.js          the shared chunk, pinned by version
+  assets/engine-v<N>.css
+  assets/<entry>-<hash>.js       one chunk per page
+  assets/suite-<hash>.js         registry and suite services, shared
+  data/poker-grid/*.json         manifest chunks, fetched at runtime
+```
 
-The engine, core, contract, and ui layers compile to a single shared chunk whose
-filename carries an explicit engine version rather than a content hash, so
-independently deployed game builds all reference the same cached URL. Bumping
-the engine version is a deliberate act that redeploys every game together.
-Recorded here because it is the mechanism that reconciles requirement 7.3.2
-with requirement 7.3.9.
+The engine chunk carries an explicit version rather than a content hash, so a
+game only change does not invalidate it and every game references the same
+cached URL. Requirement 7.3.2.
+
+**Why the release build is one pass, revised in Phase 10.** The earlier plan
+was one build per game. That cannot produce a shared chunk: Rollup includes
+only the engine each entry actually reaches, so a hub only build emitted a
+fourteen kilobyte engine and a POKER GRID build a twenty six kilobyte one at
+the same pinned URL, and whichever ran last won. This is not a naming problem
+and no filename scheme fixes it. A build with all entries computes the shared
+chunk across them, which is the only construction that makes the pinned URL
+true. Two properties keep the original constraints intact:
+
+- Constraint 2.9, building one game without building another, is
+  `GAME=<id> vite build`. It emits to `dist-dev/` rather than `dist/`, because
+  a single target's engine chunk is a subset and must never overwrite a release
+  tree's. It is a development and smoke check path, not a deploy path.
+- Requirement 7.3.9, shipping a one game fix without risking the others, holds
+  because the release build is deterministic. Two consecutive builds of an
+  unchanged tree produce byte identical assets, asserted by rebuilding and
+  comparing hashes. A one game fix therefore rewrites that game's chunk and
+  leaves the other four unchanged.
+
+Bumping `ENGINE_VERSION` in `vite.config.ts` is the deliberate act that
+invalidates the shared chunk and redeploys every game together.
+
+**Entries.** Every game has exactly one file that names it,
+`src/shell/entries/<id>.ts`, which imports the module and calls `mountShell`.
+That file plus its sibling HTML is the whole of a game's build surface, it is
+what makes each game its own chunk, and it is why `src/shell/main.ts` names no
+game. The allow list in `vite.config.ts` decides which of those entries a
+production build contains, which is contract decision 12 unchanged.
+
+Measured cold load, gzipped, against the 150 KB budget of constraint 2.7:
+
+| Page | Transferred |
+|---|---|
+| Hub | about 17 KB |
+| POKER GRID | about 25 KB |
 
 Deploy target is Cloudflare Pages at the origin `dailykit.providentia.games`.
 The site is served from the root, so the service worker scope is `/`, asset
 URLs are absolute, and no base path constant exists anywhere in the codebase.
 The subdomain also isolates the `localStorage` origin from anything else ever
 hosted on providentia.games, which matters because 7.3.3 makes storage a suite
-level concern. The last line of every share string is the bare host string
-`dailykit.providentia.games`.
+level concern. The last line of every share string, including the daily card's,
+is the bare host string `dailykit.providentia.games`, held once in
+`src/shell/registry.ts`.
 
 ## Contract decisions
 
@@ -530,8 +590,12 @@ phase and are not to be reopened without a stated reason.
    and not Perfect, no name collision arises and the zero remaining histogram
    bucket keeps the label **Perfect Clear**. Past the manifest horizon the label
    is the lowercase word `unrated`, which sits where a tier name sits.
-17. **Slate.** POKER GRID is one of the five. Phase 9 recommends four more from
-   eight or more candidates and presents the assembled slate.
+17. **Slate.** POKER GRID is one of the five. Phase 9 proposed ten candidates
+   and recommended CIPHER, RULE OF FOUR, LADDER, and ECHO alongside it, in
+   `SLATE.md`. **Not yet approved.** Until it is, `src/shell/registry.ts`
+   carries the four as `planned` entries and no game beyond POKER GRID may be
+   built. Changing the slate before a game is built is an edit to that one
+   file.
 
 ## Resolutions of internal conflicts in the source document
 
@@ -584,3 +648,75 @@ Recorded so a fresh conversation does not rediscover them.
     them agreed, and requirement 7.1.3 guarantees the suite contains continuum
     scored games for which `LOST` would be permanently unreachable. This is a
     stated deviation from the state list in Section 3.2, approved in Phase 3.
+
+## Suite decisions
+
+Settled in Phase 10, in the same standing as the contract, engine,
+presentation, and generation decisions above.
+
+1. **The registry is data with no imports.** `src/shell/registry.ts` restates
+   each game's identity so the hub can render five cards and read five storage
+   keys without loading a single game's code. The hub is the landing page, so a
+   hub that imports a game pays that game's download on the page the player
+   lands on, and requirement 7.3.2 is false at the worst possible moment. The
+   copy is kept true by a test that compares every built module's identity
+   against its entry, which is a line added per game.
+2. **`FinishedOutcome` carries a tier.** This is a contract change, made here
+   because requirement 7.3.5 cannot be built without it: the daily card needs
+   one graded result per game at the suite level, and before this the tier
+   existed only inside a share title string that a module had already
+   formatted. `TierOrdinal` is declared structurally in `core/types.ts` rather
+   than imported from `engine/tiers.ts`, because the layer rule puts tiers
+   above core, and a compile time check in `tiers.ts` fails if the two ever
+   drift. Same mechanism as contract decision 3.
+3. **The daily card is a five cell meter per game.** One row per finished
+   game, the game's tier token repeated once per band at or below the one
+   earned, padded with the neutral token. Five games plus a title and a URL is
+   seven lines, inside the cap. An ungraded game is one neutral cell and never
+   a tier glyph, because past the horizon there is no grade and rendering one
+   as Rough would be a lie the player cannot check.
+4. **The hub never writes.** Opening it resolves five puzzle numbers and reads
+   five records, and touches none of them. A hub that advanced a watermark
+   would discard an in progress board just because the player looked at the
+   list. The hub therefore opens every game store with a migration that
+   refuses, which drops a stale in progress payload it was never going to
+   deserialize and keeps the record it actually reads.
+5. **Theme lives in the suite record.** Requirement 7.3.3 puts settings at the
+   suite level, so a theme chosen inside one game is already chosen in the
+   next. The suite record's `ThemeChoice` admits `contrast` and the kit's does
+   not, per presentation decision 5, so an unrecognised stored value reads as
+   no choice rather than as a fourth state.
+6. **The shell trusts the resolved day, never a timer.** A tab backgrounded
+   across local midnight has had its timers throttled or suspended, so
+   `visibilitychange` re-resolves the puzzle number and reloads when it moved.
+   The countdown is a display, not the authority.
+7. **A manifest that cannot be read is a message, never a generated board.**
+   Past the horizon, generation is correct and the result is labelled unrated.
+   Inside the horizon, generating would hand the player a private board on a
+   day the manifest has an opinion about, which breaks the one property a
+   daily game cannot lose. `boot.ts` reports unavailable instead, and the
+   service worker is what will make that case rare.
+8. **`OPEN_ARCHIVE` is refused from `PLAYING`, visibly.** The transition table
+   allows the archive only from `COMPLETE` and `WAITING_FOR_NEXT`. The shell
+   checks `can` first and shows a line rather than letting the machine report
+   an illegal transition, because the player's unfinished live board is the
+   thing being protected and they should be told why.
+
+## Defects found and corrected in Phase 10
+
+Requirement 7.4 asks for this report from game two onward. Phase 10 produced
+one anyway, because it is the first time any of this code ran in a browser.
+
+1. **`render.ts` assumed `dispatch` was asynchronous.** It decided whether a
+   card completed a hand by reading its own `currentState` *after* dispatching
+   the add. The shell applies synchronously and calls `update` from inside
+   `dispatch`, so that read already showed five: the fourth card committed a
+   four card hand and was rejected with a visible toast, and the fifth card
+   committed nothing. POKER GRID was unplayable in a browser and every headless
+   test passed, because no test had ever supplied a synchronous dispatch. Fixed
+   by deciding from the length read before dispatching, which depends only on
+   actions being applied in the order they were sent. Regression test added.
+2. **Nothing in the contract exposed a graded result.** See suite decision 2.
+3. **Phase 8 closed without a service worker.** Requirement 2.6 and 7.3.1 both
+   need one and there is none. Logged in `BACKLOG.md` under Phase 8 remainder
+   rather than built here, because it is not this phase's work.

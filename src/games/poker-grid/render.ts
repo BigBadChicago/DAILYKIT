@@ -3,6 +3,9 @@ import { el, on, patchKeyed, setAttr, setClass, setText } from "../../ui/dom.js"
 import type { MountContext, GameView } from "../../contract/types.js";
 import { cardRank, cardSuit } from "./evaluator.js";
 import { BOARD_CELLS, BOARD_COLS, BOARD_ROWS, type PokerAction, type PokerState } from "./rules.js";
+
+/** Locked decision 2. A hand is five cards, and the fifth commits it. */
+const HAND_SIZE = 5;
 import type { PokerPuzzle } from "./generator.js";
 
 const RANK_NAMES = ["two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "jack", "queen", "king", "ace"] as const;
@@ -90,14 +93,26 @@ export function mountPokerGrid(
   let pointerId: number | null = null;
   let pointerCell: number | null = null;
 
+  /**
+   * The fifth card commits the hand, by pointer and by keyboard alike.
+   *
+   * The completing card is decided from the selection length read BEFORE the
+   * add is dispatched, never from currentState afterwards. The shell applies a
+   * dispatch synchronously and calls update inside it, so a post dispatch read
+   * already shows five and the commit was skipped; a pre dispatch read is
+   * correct whether the shell updates this renderer now or later, because the
+   * only thing it depends on is that actions are applied in the order they were
+   * dispatched.
+   */
   function activate(cell: number): void {
     const position = currentState.selection.indexOf(cell);
     if (position >= 0) {
       context.dispatch({ kind: "truncate", index: position });
-    } else {
-      context.dispatch({ kind: "add", cell });
-      if (currentState.selection.length === 4) context.dispatch({ kind: "commit" });
+      return;
     }
+    const completing = currentState.selection.length === HAND_SIZE - 1;
+    context.dispatch({ kind: "add", cell });
+    if (completing) context.dispatch({ kind: "commit" });
   }
 
   const disposePointerDown = on(board, "pointerdown", (event) => {
@@ -126,7 +141,6 @@ export function mountPokerGrid(
     pointerId = null;
     if (!pointerMoved && pointerCell !== null) activate(pointerCell);
     pointerCell = null;
-    if (currentState.selection.length === 5) context.dispatch({ kind: "commit" });
     if (pointerMoved) event.preventDefault();
   });
 
@@ -137,7 +151,7 @@ export function mountPokerGrid(
     currentState = next;
     patchKeyed(board, Array.from({ length: BOARD_CELLS }, (_, index) => index), (cell) => String(cell), (cell) => cardNode(cell), (node, cell) => paintCard(node, currentState, cell));
     cursor.refresh();
-    setText(status, `${next.selection.length} of 5 selected. ${next.grid.filter((card) => card !== null).length} cards remain.`);
+    setText(status, `${next.selection.length} of ${HAND_SIZE} selected. ${next.grid.filter((card) => card !== null).length} cards remain.`);
   }
 
   update(currentState);

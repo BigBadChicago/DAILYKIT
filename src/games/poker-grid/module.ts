@@ -166,7 +166,13 @@ export default defineGame<PokerState, PokerAction, PokerPuzzle>({
   inspect(state): Outcome {
     if (!state.terminal) return { kind: "ongoing" };
     const remaining = state.grid.filter((card) => card !== null).length;
-    return { kind: "finished", score: state.score, won: null, detail: `${remaining} cards remaining` };
+    return {
+      kind: "finished",
+      score: state.score,
+      won: null,
+      detail: `${remaining} cards remaining`,
+      tier: tierFor(state.best, state.hands, state.score),
+    };
   },
 
   bucketOf: (_outcome: FinishedOutcome, state): number => Math.min(7, Math.floor(state.grid.filter((card) => card !== null).length / 5)),

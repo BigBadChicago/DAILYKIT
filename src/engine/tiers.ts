@@ -38,3 +38,17 @@ export function tierName(index: TierIndex): string {
 export function tierLabel(index: TierIndex | null): string {
   return index === null ? UNRATED_LABEL : TIER_NAMES[index];
 }
+
+/**
+ * Compile time link to the Layer 0 mirror. If TierOrdinal and TierIndex ever
+ * drift, this assignment stops compiling, which is the only guard the layer
+ * rule permits.
+ */
+import type { TierOrdinal } from "../core/types.js";
+
+const _tierWidthsAgree: TierOrdinal extends TierIndex
+  ? TierIndex extends TierOrdinal
+    ? true
+    : never
+  : never = true;
+void _tierWidthsAgree;

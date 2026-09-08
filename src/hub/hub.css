@@ -1,0 +1,125 @@
+/* Layer 5. Hub layout only. Requirement 7.3.1 wants this page cheap, so it is
+   one column of cards and nothing that needs measuring. */
+
+.hub-app {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 0 calc(var(--dk-gap) + var(--dk-safe-left)) calc(var(--dk-gap) + var(--dk-safe-bottom));
+}
+
+.hub-header { justify-content: space-between; }
+
+.hub-streak {
+  margin: var(--dk-gap) 0 0;
+  text-align: center;
+  color: var(--dk-text-dim);
+}
+
+.hub-streak__value {
+  font-size: 2rem;
+  color: var(--dk-text);
+}
+
+.hub-streak--none .hub-streak__value { color: var(--dk-text-dim); }
+
+.hub-note {
+  margin: var(--dk-gap) 0 0;
+  padding: 10px 12px;
+  border-radius: var(--dk-radius);
+  background: var(--dk-surface);
+  color: var(--dk-text-dim);
+  font-size: 0.9rem;
+}
+
+.hub-list {
+  list-style: none;
+  margin: var(--dk-gap) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--dk-gap);
+}
+
+.hub-card {
+  border: var(--dk-line-width) solid var(--dk-line);
+  border-left: 4px solid var(--dk-accent);
+  border-radius: var(--dk-radius);
+  background: var(--dk-surface-raised);
+}
+
+.hub-card__link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: var(--dk-tap);
+  padding: 12px 14px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.hub-card__link--planned { opacity: 0.6; }
+
+.hub-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.hub-card__name { font-weight: 700; letter-spacing: 0.02em; }
+
+.hub-card__rule {
+  font-size: 0.85rem;
+  color: var(--dk-text-dim);
+}
+
+.hub-card__badge {
+  margin-left: auto;
+  flex: none;
+  font-size: 0.8rem;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: var(--dk-line-width) solid var(--dk-line);
+  color: var(--dk-text-dim);
+  white-space: nowrap;
+}
+
+.hub-card--finished .hub-card__badge {
+  border-color: var(--dk-accent);
+  color: var(--dk-accent);
+  font-weight: 700;
+}
+
+.hub-dailycard {
+  margin-top: calc(var(--dk-gap) * 2);
+  padding: var(--dk-gap);
+  border: var(--dk-line-width) solid var(--dk-line);
+  border-radius: var(--dk-radius);
+  background: var(--dk-surface);
+  text-align: center;
+}
+
+.hub-dailycard__title {
+  margin: 0 0 8px;
+  font-size: 1rem;
+}
+
+.hub-dailycard__block {
+  margin: 0 0 12px;
+  font-family: var(--dk-board-font);
+  font-size: 1rem;
+  line-height: 1.35;
+  white-space: pre;
+  overflow-x: auto;
+}
+
+.hub-footer {
+  margin-top: calc(var(--dk-gap) * 2);
+  text-align: center;
+}
+
+.hub-footer__note {
+  margin: 8px 0 0;
+  font-size: 0.8rem;
+  color: var(--dk-text-dim);
+}

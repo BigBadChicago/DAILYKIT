@@ -11,7 +11,8 @@
     ]
   },
   "include": [
-    "tools"
+    "tools",
+    "vite.config.ts"
   ],
   "exclude": [
     "tools/share-harness"

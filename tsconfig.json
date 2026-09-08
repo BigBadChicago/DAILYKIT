@@ -24,5 +24,8 @@
     "tests",
     "vitest.config.ts",
     "tools/share-harness"
+  ],
+  "exclude": [
+    "vite.config.ts"
   ]
 }

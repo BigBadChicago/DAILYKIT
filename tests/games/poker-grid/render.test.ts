@@ -63,6 +63,55 @@ describe("Poker Grid renderer", () => {
     view.unmount();
   });
 
+  /**
+   * The Phase 10 shell applies a dispatch synchronously and calls update from
+   * inside it, so anything the renderer reads from currentState after
+   * dispatching is already the next state. This is the regression test for the
+   * defect that produced: the commit was decided from a post dispatch read, so
+   * the fourth card committed a four card hand and the fifth never committed at
+   * all. The renderer must decide from the pre dispatch length.
+   */
+  it("commits on the fifth card and never earlier, under a synchronous shell", () => {
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    const actions: PokerAction[] = [];
+    let current = state();
+    const context = {
+      puzzle,
+      initial: current,
+      dispatch: (action: PokerAction) => {
+        actions.push(action);
+        if (action.kind === "add") {
+          current = state({ selection: [...current.selection, action.cell] });
+          view.update(current);
+        }
+      },
+      announce: vi.fn(),
+      reducedMotion: true,
+      readOnly: false,
+    } as MountContext<PokerState, PokerAction, typeof puzzle>;
+    const view = mountPokerGrid(host, context, { reducedMotion: true });
+
+    /* Keyboard rather than pointer, because jsdom has no PointerEvent and
+       because both inputs run through the same activate. A run down column
+       zero is connected under four way adjacency. */
+    const board = host.querySelector<HTMLElement>(".pg-board")!;
+    const key = (name: string): void => {
+      board.dispatchEvent(
+        new KeyboardEvent("keydown", { key: name, bubbles: true, cancelable: true }),
+      );
+    };
+    for (let i = 0; i < 5; i += 1) {
+      key("Enter");
+      key("ArrowDown");
+    }
+
+    const commits = actions.filter((action) => action.kind === "commit");
+    expect(commits).toHaveLength(1);
+    expect(actions[actions.length - 1]).toEqual({ kind: "commit" });
+    view.unmount();
+  });
+
   it("renders empty cells as non navigable spaces and removes its DOM on teardown", () => {
     const { host, view } = mount();
     const nextGrid: (number | null)[] = [...puzzle.cells];

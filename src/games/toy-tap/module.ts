@@ -132,6 +132,8 @@ export default defineGame<State, Action, Puzzle>({
       score: Math.max(0, 100 - state.misses * 10),
       won: state.misses === 0,
       detail: `${state.misses} misses`,
+      /* No manifest and no optimum, so nothing to grade. */
+      tier: null,
     };
   },
 

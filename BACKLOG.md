@@ -71,3 +71,45 @@ work in progress. Adding an item here is how a request is declined.
 - **`rank-clump` and `corner-isolate` levers.** Named in the fixed vocabulary,
   not scheduled on any weekday. Available if the difficulty curve needs more
   separation between Wednesday and Friday.
+
+## Phase 8 remainder, found in Phase 10
+
+Phase 8 was recorded as done and these three items were not built. They are not
+new scope; they are the parts of Section 8 and constraint 2.6 that remain.
+
+- **Service worker and cache versioning.** Constraint 2.6 requires offline play
+  after first load and requirement 7.3.1 requires the hub to render from cache
+  in under a second. Neither is possible without one. The precondition is now
+  in place: the shared chunk has a stable versioned URL and each page has its
+  own, so a cache manifest is a short list rather than a hash chase. Until it
+  exists, `boot.ts` reports that today's puzzle is unavailable offline, which
+  is honest and unpleasant.
+- **A favicon and a web manifest.** Every page currently requests
+  `/favicon.ico` and gets a 404. An asset and an `ASSETS.md` line.
+- **The Section 10.7 manual checklist.** Emoji rendering per platform, share
+  sheet behaviour per platform, and layout on the smallest supported viewport
+  are written down nowhere. The daily card adds a second block shape to check.
+
+## Logged in Phase 10
+
+- **A tutorial board for POKER GRID.** Charter decision 2 says the first
+  session is a fixed easy board played before the first real puzzle, and the
+  contract carries the `firstSessionPuzzle` seam for it. POKER GRID does not
+  implement it, so the `TUTORIAL` lifecycle state is unreachable today and a
+  first time player gets the help panel opened automatically instead, which
+  satisfies requirement 3.7.1 but not the difficulty override of 3.7.3.
+- **Per game builds as a deploy path.** Superseded by the one pass release
+  build. `GAME=<id> vite build` remains, emits to `dist-dev/`, and is a
+  development convenience only. See the Build model.
+- **`ui/countdown.ts` and `engine/scheduler.ts` both count down.** The hub uses
+  the presentation view and the shell's end screen uses the engine class,
+  because only the latter detects a rollover by comparing day numbers. Two
+  mechanisms for one job. Not merged here because the merge belongs with the
+  service worker work, where the offline and rollover paths are decided
+  together.
+- **Archive paging.** `archiveList` takes a limit and an offset and the shell
+  asks for the most recent sixty and never pages. Fine at day 251 and wrong at
+  day 900.
+- **A shared cross promotion component.** The hub and the end screen both
+  render a game's name and path, in two places, from the same registry entry.
+  Worth extracting at game three, not at game one.

@@ -1,10 +1,8 @@
 # MISSING FROM THIS TREE
 
-Files listed in ARCHITECTURE.md that do not exist yet. Everything the Phase 1
-and Phase 3 conversations produced has since been reconstructed, and the CI
-workflows arrived in Phase 7. Delete this file once the table is empty.
+Files listed in ARCHITECTURE.md that do not exist yet. Delete this file once
+the table is empty.
 
 | Path | Phase | Why it is not here yet |
 |---|---|---|
-| vite.config.ts | 0 | No browser build exists yet. It is the file that carries the `GAME` allow list of contract decision 12, so it lands with the shell in Phase 10 at the latest. |
-| README.md | 0 | Never written. |
+| public/sw.js and its registration | 8 | Requirement 2.6 and 7.3.1 both need a service worker and Phase 8 closed without one. Recorded in BACKLOG.md under Phase 8 remainder. |

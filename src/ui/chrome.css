@@ -422,3 +422,49 @@ body.dk-scroll-locked {
   outline: 3px solid var(--dk-focus);
   outline-offset: -3px;
 }
+
+/* App shell and buttons. Added in Phase 10: the shell and the hub are the first
+   surfaces with a primary action, and a button style belongs to the suite
+   chrome rather than to whichever page needed it first. */
+
+body {
+  margin: 0;
+  background: var(--dk-bg);
+  color: var(--dk-text);
+  font-family: var(--dk-font);
+  -webkit-text-size-adjust: 100%;
+}
+
+.dk-app {
+  min-height: 100dvh;
+  padding-top: var(--dk-safe-top);
+}
+
+.dk-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--dk-tap);
+  min-width: var(--dk-tap);
+  margin: 4px;
+  padding: 0 18px;
+  border: var(--dk-line-width) solid var(--dk-line);
+  border-radius: var(--dk-radius);
+  background: var(--dk-surface-raised);
+  color: var(--dk-text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.dk-button--primary {
+  background: var(--dk-accent);
+  border-color: var(--dk-accent);
+  color: var(--dk-accent-text);
+}
+
+.dk-button:focus-visible,
+.dk-iconbutton:focus-visible {
+  outline: 3px solid var(--dk-focus);
+  outline-offset: 2px;
+}

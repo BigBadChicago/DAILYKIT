@@ -66,6 +66,14 @@ export interface OngoingOutcome {
   readonly kind: "ongoing";
 }
 
+/**
+ * Structural mirror of engine/tiers.ts TierIndex. The layer rule puts tiers in
+ * Layer 1 and this file in Layer 0, so the width is restated here rather than
+ * imported, the same mechanism helpPanel.ts uses for HelpContent. A test
+ * asserts the two agree, so widening the tier scale fails loudly.
+ */
+export type TierOrdinal = 0 | 1 | 2 | 3 | 4;
+
 export interface FinishedOutcome {
   readonly kind: "finished";
   readonly score: number;
@@ -74,6 +82,14 @@ export interface FinishedOutcome {
   readonly won: boolean | null;
   /** Short human summary for the end screen, for example cards remaining. */
   readonly detail: string;
+  /**
+   * The graded band, or null where nothing exists to grade against, which is
+   * every board past a game's manifest horizon. Added in Phase 10: requirement
+   * 7.3.5's daily card needs one graded result per game at the suite level, and
+   * the suite cannot reach a module's private tier calculation. Without this
+   * the tier existed only inside a share title string.
+   */
+  readonly tier: TierOrdinal | null;
 }
 
 export type Outcome = OngoingOutcome | FinishedOutcome;
