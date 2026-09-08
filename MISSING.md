@@ -8,4 +8,3 @@ workflows arrived in Phase 7. Delete this file once the table is empty.
 |---|---|---|
 | vite.config.ts | 0 | No browser build exists yet. It is the file that carries the `GAME` allow list of contract decision 12, so it lands with the shell in Phase 10 at the latest. |
 | README.md | 0 | Never written. |
-| tools/depcheck.ts | 0 | Section 5 requires the layer rule enforced in CI rather than by convention. Nothing enforces it today. Logged in BACKLOG.md. |
