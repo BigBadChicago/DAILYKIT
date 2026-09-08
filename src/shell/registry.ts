@@ -39,6 +39,22 @@ export interface SuiteGameEntry {
  *  card, which has no game to take it from. */
 export const SUITE_SHARE_URL = "dailykit.providentia.games";
 
+/**
+ * Ids the engine has already taken under the `dailykit:` prefix. A game with
+ * one of these ids would write its board over the suite record or over the
+ * storage probe, silently and only on the machines of players who had both.
+ *
+ * Uniqueness of a game's namespace rests on three things, and this list is the
+ * third. First, the deployed origin is a dedicated subdomain, so the whole
+ * `localStorage` area belongs to the suite and nothing else on
+ * providentia.games can reach it. Second, every key the suite writes carries
+ * the `dailykit:` prefix, so even a shared origin would not collide with an
+ * unrelated application. Third, no game id may equal a name the engine has
+ * already spent. A test asserts all three, so an id is checked when it is
+ * added rather than when a player loses a streak.
+ */
+export const RESERVED_GAME_IDS: readonly string[] = ["suite", "probe"];
+
 export const HUB_PATH = "/";
 
 const MONO = "ui-monospace, monospace";
@@ -123,6 +139,14 @@ export function entryFor(id: string): SuiteGameEntry | null {
 /** Requirement 7.3.7 offers exactly one other game. A planned game is never
  *  offered, because a cross promotion to a page that does not exist is worse
  *  than none. */
+/**
+ * True when an id is safe to use as a game's storage namespace and RNG stream
+ * name. Called by the test, and by hand before adding a game.
+ */
+export function isUsableGameId(id: string): boolean {
+  return /^[a-z]+(-[a-z]+)*$/.test(id) && !RESERVED_GAME_IDS.includes(id);
+}
+
 export function promotableIds(): readonly string[] {
   return LIVE_GAMES.map((entry) => entry.id);
 }

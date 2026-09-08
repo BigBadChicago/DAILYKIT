@@ -9,7 +9,7 @@ resume work in a fresh conversation with no chat history.
 
 | Field | Value |
 |---|---|
-| Current phase | 10 complete, Phase 11 next. Phase 9's slate awaits approval |
+| Current phase | 10 complete. Slate approved. Phase 8 remainder and Phase 11 both planned and ready to execute, one conversation each |
 | Games playable | POKER GRID, end to end in a browser, inside the suite shell |
 | Engine contract version | 1, drafted and proven against toy-tap |
 | Manifest horizon | 365 days, puzzle 1 through 365, epoch 2026-01-01, all verified with a solver replay |
@@ -27,9 +27,10 @@ resume work in a fresh conversation with no chat history.
 | 6 | POKER GRID interface | done | Accessible five by seven card renderer, pointer gestures, keyboard cursor, card art, and reduced motion styling |
 | 7 | Generation pipeline | done | Connected region enumeration, exact search with a measured ceiling falling back to a width 400 beam, empirical scoring table, weekday difficulty bands, degenerate board rejection, obfuscated manifest, and the CI jobs that produce and check it |
 | 8 | Polish and launch readiness | done | Dependency layer check, CI wiring, and project runbook |
-| 9 | Slate approval | done | SLATE.md. Ten candidates, five recommended. **Awaiting approval**, and nothing beyond POKER GRID may be built until it is given |
+| 9 | Slate approval | done | SLATE.md. Pooled thirty four candidates from three lists. **Approved:** POKER GRID, VECTOR, CIPHER, TALLY DROP, RECALL |
 | 10 | Suite shell | done | Hub, shell, per game entries, one pass release build with a shared engine chunk, suite storage and streak, daily card, cross promotion. One contract change and one renderer defect, both below |
-| 11 | Game two and abstraction test | not started | |
+| 8b | Phase 8 remainder | planned | PHASE-8-PLAN.md. Service worker, offline, changelog, about page, favicon, first session board, performance pass, manual checklist |
+| 11 | Game two and abstraction test | planned | PHASE-11-PLAN.md. CIPHER, with six predicted defects to confirm or strike |
 | 12 | Template extraction | not started | |
 | 13 | Games three, four, five | not started | |
 | 14 | Suite launch readiness | not started | |
@@ -63,7 +64,9 @@ Table columns are fixed as follows and every future entry uses them.
 | BACKLOG.md | n/a | Everything deliberately not built | none |
 | ASSETS.md | n/a | Every asset and its license | none |
 | POKER-GRID.md | n/a | POKER GRID rules, scoring, tiers, and share layout | none |
-| SLATE.md | n/a | The Phase 9 candidate list and the recommended five | none |
+| SLATE.md | n/a | The Phase 9 candidate pool and the approved five | none |
+| PHASE-8-PLAN.md | n/a | Execution plan for the Phase 8 remainder, decisions settled in advance | none |
+| PHASE-11-PLAN.md | n/a | Execution plan for CIPHER and the abstraction test | none |
 | MISSING.md | n/a | Files this manifest names that do not exist yet | none |
 | src/shared/share-vocabulary.ts | shared | Suite wide share tokens, their glyphs, and their shapes | none |
 | src/shared/poker-hands.ts | shared | Poker hand categories, ordinals, and shared result tier mapping | shared/share-vocabulary |
@@ -590,13 +593,11 @@ phase and are not to be reopened without a stated reason.
    and not Perfect, no name collision arises and the zero remaining histogram
    bucket keeps the label **Perfect Clear**. Past the manifest horizon the label
    is the lowercase word `unrated`, which sits where a tier name sits.
-17. **Slate.** POKER GRID is one of the five. Phase 9 pooled this document's
-   ten candidates with twelve from Gemini and twelve from CoPilot, and was then
-   revised again on the ruling that **7.1.1's list of five modes is
-   illustrative, not exhaustive**. The recommended four alongside POKER GRID are
-   **VECTOR, CIPHER, TALLY DROP, and RECALL**, in `SLATE.md`.
-
-   Two changes from the first pass, both worth carrying forward as reasoning:
+17. **Slate, approved.** The five are **POKER GRID, VECTOR, CIPHER, TALLY DROP,
+   and RECALL**. Phase 9 pooled this document's ten candidates with twelve from
+   Gemini and twelve from CoPilot, and was decided on the ruling that **7.1.1's
+   list of five modes is illustrative, not exhaustive**. Two changes from the
+   first pass, both worth carrying forward as reasoning:
 
    - **TALLY DROP replaced LADDER** because its solution is unique and provable
      by exhaustive enumeration of 7,776 states, where LADDER scored a player on
@@ -608,20 +609,32 @@ phase and are not to be reopened without a stated reason.
      has no check for the second, so its generator could ship a board that is
      uniquely solvable and humanly impossible. In VECTOR's family the two proofs
      are the same pass: propagate with no guessing permitted, and a board that
-     resolves is both unique and solvable. Categorization is therefore the mode
-     the suite gives up, because the version that is proven in the market is
-     editorial word association, which 7.1.4 bans, and the version that is
-     generatable is the dry and unverifiable one.
+     resolves is both unique and solvable. Categorization is the mode the suite
+     gives up, because the version proven in the market is editorial word
+     association, which 7.1.4 bans, and the version that is generatable is the
+     dry and unverifiable one.
 
    RECALL is the former ECHO, renamed because all three source lists contained a
-   different game by that name. It stays against both external recommendations
-   because requirement 7.3.4 defines the suite streak as completing at least one
-   game, and that forgiveness is empty unless something on the slate is
-   finishable in forty seconds.
+   different game by that name. It was kept against both external
+   recommendations because requirement 7.3.4 defines the suite streak as
+   completing at least one game, and that forgiveness is empty unless something
+   on the slate is finishable in forty seconds.
 
-   **Not yet approved.** Until it is, `src/shell/registry.ts` carries the four
-   as `planned` entries and no game beyond POKER GRID may be built. Changing the
-   slate before a game is built is an edit to that one file.
+   Build order: CIPHER is game two and the abstraction test, then VECTOR, TALLY
+   DROP, RECALL.
+
+18. **Game ids are storage namespaces, and their uniqueness is asserted.** An id
+   is the game's `localStorage` key under the `dailykit:` prefix and its RNG
+   stream name. Three things keep a namespace from colliding with anything, and
+   the third is the one that needed code: the deployed origin is a dedicated
+   subdomain so the whole storage area belongs to the suite; every key carries
+   the `dailykit:` prefix so even a shared origin would not reach an unrelated
+   application; and no game id may equal a name the engine has already spent.
+   `RESERVED_GAME_IDS` in `src/shell/registry.ts` holds those names, `suite` and
+   `probe`, and `registry.test.ts` asserts that every game's derived key is
+   prefixed, unique, and distinct from both. A game called `suite` would
+   otherwise write its board over the suite record, silently, and only for
+   players who had both.
 
 ## Resolutions of internal conflicts in the source document
 

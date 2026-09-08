@@ -1,9 +1,16 @@
 import { describe, expect, it } from "vitest";
 
 import pokerGrid from "../../src/games/poker-grid/module.js";
-import { LIVE_GAMES, SUITE_GAMES, entryFor, promotableIds } from "../../src/shell/registry.js";
+import {
+  LIVE_GAMES,
+  RESERVED_GAME_IDS,
+  SUITE_GAMES,
+  entryFor,
+  isUsableGameId,
+  promotableIds,
+} from "../../src/shell/registry.js";
 import { crossPromotionTarget } from "../../src/engine/stats.js";
-import { emptySuiteRecord } from "../../src/engine/storage.js";
+import { KEY_PREFIX, SUITE_KEY, emptySuiteRecord, gameKey } from "../../src/engine/storage.js";
 
 describe("suite registry", () => {
   it("lists exactly the five approved games with unique ids and paths", () => {
@@ -15,6 +22,36 @@ describe("suite registry", () => {
 
   it("uses lowercase hyphenated ids, because they are seed and key namespaces", () => {
     for (const entry of SUITE_GAMES) expect(entry.id).toMatch(/^[a-z]+(-[a-z]+)*$/);
+  });
+
+  /**
+   * The namespace guarantee, asserted rather than assumed. A game whose id
+   * collided with the suite record or the storage probe would corrupt them
+   * silently, and only for players who had both games.
+   */
+  it("gives every game a storage key that collides with nothing the engine owns", () => {
+    const engineKeys = new Set([SUITE_KEY, `${KEY_PREFIX}:probe`]);
+    const seen = new Set<string>();
+
+    for (const entry of SUITE_GAMES) {
+      expect(isUsableGameId(entry.id)).toBe(true);
+      expect(RESERVED_GAME_IDS).not.toContain(entry.id);
+
+      const key = gameKey(entry.id);
+      expect(key.startsWith(`${KEY_PREFIX}:`)).toBe(true);
+      expect(engineKeys.has(key)).toBe(false);
+      expect(seen.has(key)).toBe(false);
+      seen.add(key);
+    }
+
+    expect(seen.size).toBe(SUITE_GAMES.length);
+  });
+
+  it("refuses an id the engine has already spent", () => {
+    for (const reserved of RESERVED_GAME_IDS) expect(isUsableGameId(reserved)).toBe(false);
+    expect(isUsableGameId("Vector")).toBe(false);
+    expect(isUsableGameId("tally_drop")).toBe(false);
+    expect(isUsableGameId("vector")).toBe(true);
   });
 
   /**
