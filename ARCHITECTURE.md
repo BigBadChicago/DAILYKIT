@@ -9,7 +9,7 @@ resume work in a fresh conversation with no chat history.
 
 | Field | Value |
 |---|---|
-| Current phase | 7 complete, Phase 8 next |
+| Current phase | 8 complete, Phase 9 next |
 | Games playable | POKER GRID interface complete, shell not started |
 | Engine contract version | 1, drafted and proven against toy-tap |
 | Manifest horizon | 365 days, puzzle 1 through 365, epoch 2026-01-01, all verified with a solver replay |
@@ -26,7 +26,7 @@ resume work in a fresh conversation with no chat history.
 | 5 | POKER GRID logic | done | Pure evaluator, rules, generation, solver surface, snapshots, and module contract pass tests |
 | 6 | POKER GRID interface | done | Accessible five by seven card renderer, pointer gestures, keyboard cursor, card art, and reduced motion styling |
 | 7 | Generation pipeline | done | Connected region enumeration, exact search with a measured ceiling falling back to a width 400 beam, empirical scoring table, weekday difficulty bands, degenerate board rejection, obfuscated manifest, and the CI jobs that produce and check it |
-| 8 | Polish and launch readiness | not started | |
+| 8 | Polish and launch readiness | done | Dependency layer check, CI wiring, and project runbook |
 | 9 | Slate approval | not started | |
 | 10 | Suite shell | not started | |
 | 11 | Game two and abstraction test | not started | |
@@ -95,6 +95,7 @@ Table columns are fixed as follows and every future entry uses them.
 | tools/rngvectors.ts | tools | Regenerates the committed determinism vector table | core/rng, core/seed |
 | tools/generate.ts | tools | Screens, bands, and regenerates candidate boards, then writes monthly chunks and the index | core/date, core/seed, games/poker-grid/generator, games/poker-grid/greedy, games/poker-grid/manifest-codec, games/poker-grid/solver |
 | tools/verify.ts | tools | Re-derives every claim a manifest entry makes, including its seed, band, greedy median, and score bounds | core/seed, games/poker-grid/generator, games/poker-grid/greedy, games/poker-grid/manifest-codec, games/poker-grid/rules, games/poker-grid/scoring, games/poker-grid/solver, tools/generate |
+| tools/depcheck.ts | tools | Enforces the layer rule and prevents cross-game imports in CI | none |
 | tools/calibrate.ts | tools | The Locked decision 5 availability study over whole boards, emitting the derived point table | core/seed, games/poker-grid/generator, games/poker-grid/rules, games/poker-grid/evaluator, games/poker-grid/scoring, shared/poker-hands |
 | tests/core/rng.vectors.ts | n/a | Committed determinism vectors, data not a spec | none |
 | tests/core/rng.test.ts | n/a | Generator vectors, ranges, uniformity, and helper properties | core/rng, core/seed, rng.vectors |

@@ -18,6 +18,7 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm run typecheck:tools
+      - run: npm run depcheck
       - run: npm test
       # Section 10.5. The committed manifest is checked on every change to the
       # rules, the scoring table, or the generator, because all three can
