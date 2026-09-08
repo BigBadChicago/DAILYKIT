@@ -48,14 +48,14 @@ export function installTheme(
   let resolved: ResolvedTheme = "light";
   const handlers = new Set<(r: ResolvedTheme, c: ThemeChoice) => void>();
 
-  const resolve = (): ResolvedTheme =>
-    choice === "system" ? (query.matches ? "dark" : "light") : choice;
+  const resolve = (systemMatches = query.matches): ResolvedTheme =>
+    choice === "system" ? (systemMatches ? "dark" : "light") : choice;
 
   // Subscribers are notified on every apply, not only when resolved changes:
   // system to light while already light changes choice, and the header's glyph
   // reads choice rather than resolved.
-  const apply = (): void => {
-    resolved = resolve();
+  const apply = (systemMatches = query.matches): void => {
+    resolved = resolve(systemMatches);
     root.setAttribute("data-theme", resolved);
     root.setAttribute("data-theme-choice", choice);
     // color-scheme drives form controls and the scrollbar, which no custom
@@ -64,7 +64,9 @@ export function installTheme(
     for (const handler of handlers) handler(resolved, choice);
   };
 
-  const onSystemChange = (): void => { if (choice === "system") apply(); };
+  const onSystemChange = (event: Event): void => {
+    if (choice === "system") apply((event as MediaQueryListEvent).matches);
+  };
   query.addEventListener("change", onSystemChange);
   apply();
 

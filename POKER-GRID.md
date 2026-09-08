@@ -137,12 +137,29 @@ score = sum over played hands of HAND_POINTS[category]
 
 `cardsCleared` is always `5 * handsPlayed`, a consequence of locked decision 3.
 
-**Named constants, values calibrated in Phase 7.**
+**Named constants, calibrated in Phase 7 and now set.** The study is 10,000
+boards and 9,610,000 connected selections, checked in at
+`data/poker-grid/calibration.json` and reproducible with
+`npm run poker-grid:calibrate`.
 
-| Constant | Meaning |
-|---|---|
-| `HAND_POINTS.onePair` through `HAND_POINTS.straightFlush` | eight values, set inversely proportional to measured availability under adjacency, then hand tuned |
-| `CARD_CLEAR_POINTS` | points per card removed from the board |
+| Constant | Value | Share of legal selections measured |
+|---|---|---|
+| `HAND_POINTS.onePair` | 10 | 84.675% |
+| `HAND_POINTS.twoPair` | 18 | 9.543% |
+| `HAND_POINTS.threeOfAKind` | 22 | 4.262% |
+| `HAND_POINTS.straight` | 34 | 0.783% |
+| `HAND_POINTS.flush` | 40 | 0.391% |
+| `HAND_POINTS.fullHouse` | 45 | 0.293% |
+| `HAND_POINTS.fourOfAKind` | 70 | 0.049% |
+| `HAND_POINTS.straightFlush` | 140 | 0.003% |
+| `CARD_CLEAR_POINTS` | 160 | points per card removed from the board |
+
+Raw inverse availability spans four orders of magnitude and a straight flush
+would price at 274,000 points, which would break C2 outright. The measured
+ratios are therefore compressed by an exponent of 0.2583, chosen to land the
+rarest category exactly on the largest value C2 admits, and then two values are
+rounded by a point or two for feel. `scoring.test.ts` asserts both the ordering
+and that no shipped value drifts more than three points from the curve.
 
 There is no perfect clear bonus. A perfect clear already earns the maximum hand count, which under the constraints below is the dominant term, and it already has its own distinguished histogram bucket. A bonus would add a constant to both the player score and the stored optimum and change nothing except the arithmetic.
 
@@ -155,7 +172,10 @@ There is no perfect clear bonus. A perfect clear already earns the maximum hand 
 - **C3, quality floor.** `HAND_POINTS.onePair + 5 * CARD_CLEAR_POINTS >= TIER_QUALITY_THRESHOLD * (HAND_POINTS.straightFlush + 5 * CARD_CLEAR_POINTS)`.
   The `h` terms cancel, so this holds for every hand count at once. It is what guarantees that matching the optimum's hand count with weak hands never drops below the second tier.
 
-A satisfying assignment exists, which is worth recording so Phase 7 does not chase an infeasible target. With `CARD_CLEAR_POINTS = 160`, `onePair = 10`, `straightFlush = 100`, and the six other categories between them, C2 and C3 both hold at `TIER_QUALITY_THRESHOLD = 0.85`. These are not proposed values, only a feasibility witness.
+The assignment above satisfies all three. C2 binds at seven bare pairs, 5,670,
+against six straight flushes, 5,640, a margin of 30 points, which is what fixes
+the straight flush ceiling at 140 rather than anything higher. C3 holds at 810
+against 799.
 
 **Consequence, stated plainly because it shapes the whole game.** C2 makes the score lexicographic: hands played first, hand quality as tiebreak. Playing one more pair always beats upgrading any single hand to a straight flush. That is exactly what locked decision 5 asks for, and it means the honest description of the game is "empty as much of the board as you can, and prefer better hands when you have a free choice". The end screen and the help text should say that rather than implying quality competes with coverage.
 

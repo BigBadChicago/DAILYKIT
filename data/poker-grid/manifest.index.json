@@ -1,0 +1,86 @@
+{
+  "game": "poker-grid",
+  "codec": "xor-v1",
+  "epoch": {
+    "year": 2026,
+    "month": 1,
+    "day": 1
+  },
+  "horizon": 365,
+  "beamWidth": 400,
+  "exactCeiling": 25000,
+  "chunks": [
+    {
+      "month": "2026-01",
+      "from": 1,
+      "to": 31,
+      "url": "/data/poker-grid/manifest.2026-01.json"
+    },
+    {
+      "month": "2026-02",
+      "from": 32,
+      "to": 59,
+      "url": "/data/poker-grid/manifest.2026-02.json"
+    },
+    {
+      "month": "2026-03",
+      "from": 60,
+      "to": 90,
+      "url": "/data/poker-grid/manifest.2026-03.json"
+    },
+    {
+      "month": "2026-04",
+      "from": 91,
+      "to": 120,
+      "url": "/data/poker-grid/manifest.2026-04.json"
+    },
+    {
+      "month": "2026-05",
+      "from": 121,
+      "to": 151,
+      "url": "/data/poker-grid/manifest.2026-05.json"
+    },
+    {
+      "month": "2026-06",
+      "from": 152,
+      "to": 181,
+      "url": "/data/poker-grid/manifest.2026-06.json"
+    },
+    {
+      "month": "2026-07",
+      "from": 182,
+      "to": 212,
+      "url": "/data/poker-grid/manifest.2026-07.json"
+    },
+    {
+      "month": "2026-08",
+      "from": 213,
+      "to": 243,
+      "url": "/data/poker-grid/manifest.2026-08.json"
+    },
+    {
+      "month": "2026-09",
+      "from": 244,
+      "to": 273,
+      "url": "/data/poker-grid/manifest.2026-09.json"
+    },
+    {
+      "month": "2026-10",
+      "from": 274,
+      "to": 304,
+      "url": "/data/poker-grid/manifest.2026-10.json"
+    },
+    {
+      "month": "2026-11",
+      "from": 305,
+      "to": 334,
+      "url": "/data/poker-grid/manifest.2026-11.json"
+    },
+    {
+      "month": "2026-12",
+      "from": 335,
+      "to": 365,
+      "url": "/data/poker-grid/manifest.2026-12.json"
+    }
+  ]
+}

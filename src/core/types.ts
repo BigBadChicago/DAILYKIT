@@ -17,6 +17,33 @@ export type PuzzleNumber = number;
 /** Derived by core/seed.ts from game id, puzzle number, and optional salt. */
 export type Seed = number;
 
+export type PointerMode = "drag" | "tap" | "none";
+
+export interface GridInput {
+  readonly kind: "grid";
+  readonly cols: number;
+  readonly rows: number;
+  readonly pointer: PointerMode;
+}
+
+export interface CustomInput {
+  readonly kind: "custom";
+  readonly pointer: PointerMode;
+  readonly keys: readonly string[];
+}
+
+export type InputDescriptor = GridInput | CustomInput;
+
+export interface HelpContent {
+  readonly headline: string;
+  readonly steps: readonly string[];
+  readonly example: {
+    readonly caption: string;
+    readonly lines: readonly string[];
+    readonly draw?: (host: HTMLElement) => void;
+  };
+}
+
 /** Opaque JSON payload owned by a game. The engine stores it and never reads
  *  inside it. Requirement 5.3. */
 export interface SerializedState {

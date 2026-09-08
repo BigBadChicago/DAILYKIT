@@ -1,0 +1,25 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run typecheck:tools
+      - run: npm test
+      # Section 10.5. The committed manifest is checked on every change to the
+      # rules, the scoring table, or the generator, because all three can
+      # silently invalidate boards that were correct when they were written.
+      - run: npm run poker-grid:verify

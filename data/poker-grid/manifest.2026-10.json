@@ -1,0 +1,639 @@
+{
+  "game": "poker-grid",
+  "codec": "xor-v1",
+  "month": "2026-10",
+  "from": 274,
+  "to": 304,
+  "boards": [
+    {
+      "number": 274,
+      "board": "xWz0nJJeFmpAfCIG8elkqhoE-AQ9GtgSpqh",
+      "best": {
+        "score": 5814,
+        "hands": 7,
+        "nodes": 2231,
+        "method": "beam",
+        "width": 400
+      },
+      "levers": [
+        "sparse-pairs"
+      ],
+      "attempt": 1,
+      "weekday": 4,
+      "difficulty": 0.176203,
+      "greedyTotal": 43106,
+      "greedyMedian": 4966,
+      "openings": 229
+    },
+    {
+      "number": 275,
+      "board": "2lnMbl8pK6WhZyX8_weC0w0mw5b5AjOf40K",
+      "best": {
+        "score": 5878,
+        "hands": 7,
+        "nodes": 2136,
+        "method": "beam",
+        "width": 400
+      },
+      "levers": [
+        "suit-bias",
+        "sparse-pairs"
+      ],
+      "attempt": 2,
+      "weekday": 5,
+      "difficulty": 0.203622,
+      "greedyTotal": 42130,
+      "greedyMedian": 4922,
+      "openings": 134
+    },
+    {
+      "number": 276,
+      "board": "NpJbgwJ6W0rmQ7OgnN1cez9_VXg5_2T6qz7",
+      "best": {
+        "score": 5896,
+        "hands": 7,
+        "nodes": 2219,
+        "method": "beam",
+        "width": 400
+      },
+      "levers": [
+        "sparse-pairs",
+        "guaranteed-straight-flush"
+      ],
+      "attempt": 18,
+      "weekday": 6,
+      "difficulty": 0.218039,
+      "greedyTotal": 41494,
+      "greedyMedian": 4258,
+      "openings": 217
+    },
+    {
+      "number": 277,
+      "board": "SHTE-qxPwyN9bemOrpNMwouo8YikIWdX86p",
+      "best": {
+        "score": 5966,
+        "hands": 7,
+        "nodes": 2402,
+        "method": "beam",
+        "width": 400
+      },
+      "levers": [
+        "suit-bias"
+      ],
+      "attempt": 1,
+      "weekday": 0,
+      "difficulty": 0.173762,
+      "greedyTotal": 44364,
+      "greedyMedian": 4967,
+      "openings": 409
+    },
+    {
+      "number": 278,
+      "board": "DAY8LNHZbmg9l_D4eQ5qcNVVWO1u3858U2L",
+      "best": {
+        "score": 5806,
+        "hands": 7,
+        "nodes": 2372,
+        "method": "beam",
+        "width": 400
+      },
+      "levers": [
+        "none"
+      ],
+      "attempt": 3,
+      "weekday": 1,
+      "difficulty": 0.126076,
+      "greedyTotal": 45666,
+      "greedyMedian": 4996,
+      "openings": 370
+    },
+    {
+      "number": 279,
+      "board": "nH8amJDg5HJ3IaeAgV6BirOyFDhaT7ZNDJs",
+      "best": {
+        "score": 5902,
+        "hands": 7,
+        "nodes": 2398,
+        "method": "beam",
+        "width": 400
+      },
+      "levers": [
+        "none"
+      ],
+      "attempt": 0,
+      "weekday": 2,
+      "difficulty": 0.130351,
+      "greedyTotal": 46194,
+      "greedyMedian": 4954,
+      "openings": 396
+    },
+    {
+      "number": 280,
+      "board": "iUZkxF_UfcTLNW8t0aMoRhmv9y9Q8qZTNHp",
+      "best": {
+        "score": 5880,
+        "hands": 7,
+        "nodes": 2402,
+        "method": "beam",
+        "width": 400
+      },
+      "levers": [
+        "suit-bias"
+      ],
+      "attempt": 0,
+      "weekday": 3,
+      "difficulty": 0.167309,
+      "greedyTotal": 44066,
+      "greedyMedian": 4985,
+      "openings": 480
+    },
+    {
+      "number": 281,
+      "board": "oIHLTgAlPz4bZqKgHCIZNTV3mGmfmMC9S4E",
+      "best": {
+        "score": 5792,
+        "hands": 7,
+        "nodes": 2203,
+        "method": "beam",
+        "width": 400
+      },
+      "levers": [
+        "sparse-pairs"
+      ],
+      "attempt": 12,
+      "weekday": 4,
+      "difficulty": 0.149632,
+      "greedyTotal": 44328,
+      "greedyMedian": 4928,
+      "openings": 201
+    },
+    {
+      "number": 282,
+      "board": "HV8Z4CO8HBozxvOUu_WQqpFyrUbj-Bu2E0O",
+      "best": {
+        "score": 5807,
+        "hands": 7,
+        "nodes": 2159,
+        "method": "beam",
+        "width": 400
+      },
+      "levers": [
+        "suit-bias",
+        "sparse-pairs"
+      ],
+      "attempt": 3,
+      "weekday": 5,
+      "difficulty": 0.210876,
+      "greedyTotal": 41242,
+      "greedyMedian": 4924,
+      "openings": 157
+    },
+    {
+      "number": 283,
+      "board": "tAhQqHuG4C0qqg81_li1wwSXQg3cmcz-e7K",
+      "best": {
+        "score": 5930,
+        "hands": 7,
+        "nodes": 2259,
+        "method": "beam",
+        "width": 400
+      },
+      "levers": [
+        "sparse-pairs",
+        "guaranteed-straight-flush"
+      ],
+      "attempt": 3,
+      "weekday": 6,
+      "difficulty": 0.212366,
+      "greedyTotal": 42036,
+      "greedyMedian": 5028,
+      "openings": 363
+    },
+    {
+      "number": 284,
+      "board": "TSLZQo3TB4HIRr7ZhSgxb489Jcq4vTulxA6",
+      "best": {
+        "score": 5807,
+        "hands": 7,
+        "nodes": 2402,
+        "method": "beam",
+        "width": 400
+      },
+      "levers": [
+        "suit-bias"
+      ],
+      "attempt": 1,
+      "weekday": 0,
+      "difficulty": 0.173067,
+      "greedyTotal": 43218,
+      "greedyMedian": 4974,
+      "openings": 464
+    },
+    {
+      "number": 285,
+      "board": "GWjRNMb2SH3lmmAYeL5lXKEoQbRjU3iGSmy",
+      "best": {
+        "score": 5828,
+        "hands": 7,
+        "nodes": 2402,
+        "method": "beam",
+        "width": 400
+      },
+      "levers": [
+        "none"
+      ],
+      "attempt": 20,
+      "weekday": 1,
+      "difficulty": 0.111778,
+      "greedyTotal": 46589,
+      "greedyMedian": 5001,
+      "openings": 512
+    },
+    {
+      "number": 286,
+      "board": "GBKAD_mdBFgiqDnc3m-u13EzGFtmSrXTGTg",
+      "best": {
+        "score": 5862,
+        "hands": 7,
+        "nodes": 2402,
+        "method": "beam",
+        "width": 400
+      },
+      "levers": [
+        "none"
+      ],
+      "attempt": 2,
+      "weekday": 2,
+      "difficulty": 0.12963,
+      "greedyTotal": 45919,
+      "greedyMedian": 5015,
+      "openings": 539
+    },
+    {
+      "number": 287,
+      "board": "nU5h8RuyFUkgkTmSZz8pnkmGMFY4PZgQ_zW",
+      "best": {
+        "score": 5795,
+        "hands": 7,
+        "nodes": 2309,
+        "method": "beam",
+        "width": 400
+      },
+      "levers": [
+        "suit-bias"
+      ],
+      "attempt": 0,
+      "weekday": 3,
+      "difficulty": 0.143764,
+      "greedyTotal": 44657,
+      "greedyMedian": 4957,
+      "openings": 307
+    },
+    {
+      "number": 288,
+      "board": "tQxqsbxsYFzlDsbaKN4HKwbJYTcIMSmsLaq",
+      "best": {
+        "score": 5826,
+        "hands": 7,
+        "nodes": 2200,
+        "method": "beam",
+        "width": 400
+      },
+      "levers": [
+        "sparse-pairs"
+      ],
+      "attempt": 0,
+      "weekday": 4,
+      "difficulty": 0.175401,
+      "greedyTotal": 43237,
+      "greedyMedian": 4987,
+      "openings": 198
+    },
+    {
+      "number": 289,
+      "board": "VTs0BMy3KqJEEXouxtNHfFv39MwumeY5BRk",
+      "best": {
+        "score": 5789,
+        "hands": 7,
+        "nodes": 2158,
+        "method": "beam",
+        "width": 400
+      },
+      "levers": [
+        "suit-bias",
+        "sparse-pairs"
+      ],
+      "attempt": 0,
+      "weekday": 5,
+      "difficulty": 0.194238,
+      "greedyTotal": 41981,
+      "greedyMedian": 4928,
+      "openings": 156
+    },
+    {
+      "number": 290,
+      "board": "TVc1FpO3mWsF_cpUSSEOEq28vcrpXbVQ1Sk",
+      "best": {
+        "score": 5916,
+        "hands": 7,
+        "nodes": 2364,
+        "method": "beam",
+        "width": 400
+      },
+      "levers": [
+        "sparse-pairs",
+        "guaranteed-straight-flush"
+      ],
+      "attempt": 3,
+      "weekday": 6,
+      "difficulty": 0.265344,
+      "greedyTotal": 39116,
+      "greedyMedian": 4260,
+      "openings": 362
+    },
+    {
+      "number": 291,
+      "board": "iG4OZo5djxX1kthcx0vQ2y386DBNv1fm_Jo",
+      "best": {
+        "score": 5815,
+        "hands": 7,
+        "nodes": 2296,
+        "method": "beam",
+        "width": 400
+      },
+      "levers": [
+        "suit-bias"
+      ],
+      "attempt": 0,
+      "weekday": 0,
+      "difficulty": 0.175791,
+      "greedyTotal": 43135,
+      "greedyMedian": 4955,
+      "openings": 583
+    },
+    {
+      "number": 292,
+      "board": "oEialaE1mmac8kDTiJi75TGFEiBINKqtRtk",
+      "best": {
+        "score": 5853,
+        "hands": 7,
+        "nodes": 2402,
+        "method": "beam",
+        "width": 400
+      },
+      "levers": [
+        "none"
+      ],
+      "attempt": 4,
+      "weekday": 1,
+      "difficulty": 0.100328,
+      "greedyTotal": 47392,
+      "greedyMedian": 5017,
+      "openings": 580
+    },
+    {
+      "number": 293,
+      "board": "e7sR8PzzKzfld40E8b3d_CujgFwXXediEhG",
+      "best": {
+        "score": 5816,
+        "hands": 7,
+        "nodes": 2402,
+        "method": "beam",
+        "width": 400
+      },
+      "levers": [
+        "none"
+      ],
+      "attempt": 8,
+      "weekday": 2,
+      "difficulty": 0.099916,
+      "greedyTotal": 47114,
+      "greedyMedian": 4974,
+      "openings": 488
+    },
+    {
+      "number": 294,
+      "board": "iUzFG9U7AAOGMGZafIl1Ku-aOwRcHMssoV3",
+      "best": {
+        "score": 5819,
+        "hands": 7,
+        "nodes": 2402,
+        "method": "beam",
+        "width": 400
+      },
+      "levers": [
+        "suit-bias"
+      ],
+      "attempt": 1,
+      "weekday": 3,
+      "difficulty": 0.147887,
+      "greedyTotal": 44626,
+      "greedyMedian": 4962,
+      "openings": 422
+    },
+    {
+      "number": 295,
+      "board": "z3wsRLlDagWyhxdmu05UID3IUsbWEzx9nmN",
+      "best": {
+        "score": 5798,
+        "hands": 7,
+        "nodes": 2097,
+        "method": "beam",
+        "width": 400
+      },
+      "levers": [
+        "sparse-pairs"
+      ],
+      "attempt": 0,
+      "weekday": 4,
+      "difficulty": 0.177398,
+      "greedyTotal": 42925,
+      "greedyMedian": 4940,
+      "openings": 144
+    },
+    {
+      "number": 296,
+      "board": "ggEutc4WBY_w_SA-pRVfIQ6iVfg6W5BHYIp",
+      "best": {
+        "score": 5814,
+        "hands": 7,
+        "nodes": 2159,
+        "method": "beam",
+        "width": 400
+      },
+      "levers": [
+        "suit-bias",
+        "sparse-pairs"
+      ],
+      "attempt": 1,
+      "weekday": 5,
+      "difficulty": 0.193135,
+      "greedyTotal": 42220,
+      "greedyMedian": 4970,
+      "openings": 157
+    },
+    {
+      "number": 297,
+      "board": "yiJAjCiDe0YJIQNnF0pAGevuW2UmFxTrqQ8",
+      "best": {
+        "score": 5854,
+        "hands": 7,
+        "nodes": 2402,
+        "method": "beam",
+        "width": 400
+      },
+      "levers": [
+        "sparse-pairs",
+        "guaranteed-straight-flush"
+      ],
+      "attempt": 0,
+      "weekday": 6,
+      "difficulty": 0.313404,
+      "greedyTotal": 36174,
+      "greedyMedian": 4196,
+      "openings": 408
+    },
+    {
+      "number": 298,
+      "board": "xuC1oeDlhC65u8UkiFDgQfcfYVjgZvQV3jw",
+      "best": {
+        "score": 5819,
+        "hands": 7,
+        "nodes": 2387,
+        "method": "beam",
+        "width": 400
+      },
+      "levers": [
+        "suit-bias"
+      ],
+      "attempt": 2,
+      "weekday": 0,
+      "difficulty": 0.179641,
+      "greedyTotal": 42963,
+      "greedyMedian": 4940,
+      "openings": 385
+    },
+    {
+      "number": 299,
+      "board": "juAMbtrx2CwZBY21KtGtqp0cTMMNgQk6Rj7",
+      "best": {
+        "score": 5833,
+        "hands": 7,
+        "nodes": 2402,
+        "method": "beam",
+        "width": 400
+      },
+      "levers": [
+        "none"
+      ],
+      "attempt": 30,
+      "weekday": 1,
+      "difficulty": 0.117721,
+      "greedyTotal": 46317,
+      "greedyMedian": 4979,
+      "openings": 520
+    },
+    {
+      "number": 300,
+      "board": "-6m4bxFWBZM81hCcTwnIL80LiyKv_7KMhxx",
+      "best": {
+        "score": 5818,
+        "hands": 7,
+        "nodes": 2345,
+        "method": "beam",
+        "width": 400
+      },
+      "levers": [
+        "none"
+      ],
+      "attempt": 0,
+      "weekday": 2,
+      "difficulty": 0.139414,
+      "greedyTotal": 45062,
+      "greedyMedian": 4920,
+      "openings": 343
+    },
+    {
+      "number": 301,
+      "board": "8c-arfxMdWpKOF6gNL2Wj8AaTfy2CpwOs8x",
+      "best": {
+        "score": 5889,
+        "hands": 7,
+        "nodes": 2402,
+        "method": "beam",
+        "width": 400
+      },
+      "levers": [
+        "suit-bias"
+      ],
+      "attempt": 1,
+      "weekday": 3,
+      "difficulty": 0.149771,
+      "greedyTotal": 45063,
+      "greedyMedian": 5007,
+      "openings": 449
+    },
+    {
+      "number": 302,
+      "board": "KvRt7jRcKa0eCa2yB0sgUBy9nylr4BJTpPu",
+      "best": {
+        "score": 5786,
+        "hands": 7,
+        "nodes": 2280,
+        "method": "beam",
+        "width": 400
+      },
+      "levers": [
+        "sparse-pairs"
+      ],
+      "attempt": 3,
+      "weekday": 4,
+      "difficulty": 0.147194,
+      "greedyTotal": 44409,
+      "greedyMedian": 4941,
+      "openings": 281
+    },
+    {
+      "number": 303,
+      "board": "_MiALF8EKD1vkAzosrIYua34joBOHbH6DsW",
+      "best": {
+        "score": 5822,
+        "hands": 7,
+        "nodes": 2229,
+        "method": "beam",
+        "width": 400
+      },
+      "levers": [
+        "suit-bias",
+        "sparse-pairs"
+      ],
+      "attempt": 1,
+      "weekday": 5,
+      "difficulty": 0.180446,
+      "greedyTotal": 42943,
+      "greedyMedian": 4958,
+      "openings": 227
+    },
+    {
+      "number": 304,
+      "board": "8R0MPiS3B-z9gZUVS-7NMZA8ah6E4jWNabQ",
+      "best": {
+        "score": 5884,
+        "hands": 7,
+        "nodes": 2012,
+        "method": "beam",
+        "width": 400
+      },
+      "levers": [
+        "sparse-pairs",
+        "guaranteed-straight-flush"
+      ],
+      "attempt": 6,
+      "weekday": 6,
+      "difficulty": 0.244543,
+      "greedyTotal": 40006,
+      "greedyMedian": 4260,
+      "openings": 245
+    }
+  ]
+}

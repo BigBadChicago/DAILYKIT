@@ -53,3 +53,21 @@ work in progress. Adding an item here is how a request is declined.
 | React or any framework | Constraint 2.2 |
 | Runtime dependency of any kind | Constraint 2.3 |
 | Shipping all 365 boards on first load | Conflicts with the 150 KB budget and with 8.4, see Q6 |
+
+## Logged in Phase 7
+
+- **`tools/depcheck.ts`.** Section 5 requires the engine never imports a game
+  and a game never imports another game, enforced in CI. It is convention only
+  today. Not built here because it belongs to the Phase 0 toolchain and Phase 7
+  is the generation pipeline.
+- **Exact optima for the full horizon.** A 35 card board exceeds any workable
+  exhaustive search, so every stored score is a width 400 beam result labelled
+  `beam`, and the end screen must read best known rather than optimal. A
+  dominance pruned or bitboard search could plausibly close this later, and
+  would change only the manifest, not the game.
+- **Rounding drift in the scoring table.** Two categories sit one or two points
+  off the measured curve because round numbers feel better. Recorded so a later
+  retune does not treat the drift as a bug.
+- **`rank-clump` and `corner-isolate` levers.** Named in the fixed vocabulary,
+  not scheduled on any weekday. Available if the difficulty curve needs more
+  separation between Wednesday and Friday.
