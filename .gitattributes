@@ -1,0 +1,4 @@
+# Line endings are normalised to LF in the repository and in the working tree.
+# Without this a Windows editor rewrites every file it touches to CRLF and git
+# then reports a phantom diff across the whole tree that hides real changes.
+* text=auto eol=lf
