@@ -1,0 +1,57 @@
+{
+  "samples": 10000,
+  "selections": 9610000,
+  "boardsWithOpeningMove": 10000,
+  "categoryCounts": {
+    "high-card": 4818476,
+    "one-pair": 4057232,
+    "two-pair": 457266,
+    "three-of-a-kind": 204198,
+    "straight": 37534,
+    "flush": 18736,
+    "full-house": 14057,
+    "four-of-a-kind": 2353,
+    "straight-flush": 148
+  },
+  "shareOfLegal": {
+    "one-pair": 0.8467518893779933,
+    "two-pair": 0.09543226747898999,
+    "three-of-a-kind": 0.04261650364268237,
+    "straight": 0.00783341584013771,
+    "flush": 0.003910238162221456,
+    "full-house": 0.0029337221309963177,
+    "four-of-a-kind": 0.0004910754908041783,
+    "straight-flush": 0.000030887876174678455
+  },
+  "compressionExponent": 0.258255130036355,
+  "derivedPoints": {
+    "one-pair": 10,
+    "two-pair": 18,
+    "three-of-a-kind": 22,
+    "straight": 34,
+    "flush": 40,
+    "full-house": 43,
+    "four-of-a-kind": 69,
+    "straight-flush": 140
+  },
+  "currentPoints": {
+    "one-pair": 10,
+    "two-pair": 18,
+    "three-of-a-kind": 22,
+    "straight": 34,
+    "flush": 40,
+    "full-house": 45,
+    "four-of-a-kind": 70,
+    "straight-flush": 140
+  },
+  "greedyHandCounts": [
+    0,
+    0,
+    0,
+    3,
+    153,
+    2522,
+    6705,
+    617
+  ]
+}

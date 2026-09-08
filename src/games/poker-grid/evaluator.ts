@@ -16,31 +16,58 @@ export function cardSuit(card: number): number {
   return card % 4;
 }
 
-function isStraight(ranks: readonly number[]): boolean {
-  const unique = [...new Set(ranks)].sort((a, b) => a - b);
-  if (unique.length !== HAND_SIZE) return false;
-  if ((unique[4] as number) - (unique[0] as number) === 4) return true;
-  return unique[0] === 2 && unique[1] === 3 && unique[2] === 4 && unique[3] === 5 && unique[4] === 14;
-}
+/* Called once per candidate selection, which is 961 times per board state and
+   millions of times across a generation run, so this counts ranks into a
+   reused scratch array rather than allocating a map, a values array, and a
+   sort per call. Single threaded and non reentrant by construction: nothing
+   inside this function can call it again. */
+const RANK_LOW = 2;
+const RANK_HIGH = 14;
+const rankCounts = new Uint8Array(RANK_HIGH + 1);
 
 export function classifyHand(cards: readonly number[]): HandCategory {
   if (cards.length !== HAND_SIZE) throw new RangeError("a poker hand must contain five cards");
-  const ranks = cards.map(cardRank);
-  const frequency = new Map<number, number>();
-  for (const rank of ranks) {
-    frequency.set(rank, (frequency.get(rank) ?? 0) + 1);
+  rankCounts.fill(0);
+  let suitMask = 0;
+  for (const card of cards) {
+    const rank = cardRank(card);
+    rankCounts[rank] = (rankCounts[rank] as number) + 1;
+    suitMask |= 1 << cardSuit(card);
   }
-  const groups = [...frequency.values()].sort((a, b) => b - a);
-  const flush = cards.every((card) => cardSuit(card) === cardSuit(cards[0] as number));
-  const straight = isStraight(ranks);
+  const flush = (suitMask & (suitMask - 1)) === 0;
+
+  let distinct = 0;
+  let pairs = 0;
+  let trips = 0;
+  let quads = 0;
+  let lowest = RANK_HIGH + 1;
+  let highest = 0;
+  for (let rank = RANK_LOW; rank <= RANK_HIGH; rank += 1) {
+    const count = rankCounts[rank] as number;
+    if (count === 0) continue;
+    distinct += 1;
+    if (rank < lowest) lowest = rank;
+    if (rank > highest) highest = rank;
+    if (count === 2) pairs += 1;
+    else if (count === 3) trips += 1;
+    else if (count === 4) quads += 1;
+  }
+
+  /* The wheel is the only straight that is not a contiguous run, because the
+     ace is stored high and plays low only here. */
+  const wheel = distinct === HAND_SIZE
+    && rankCounts[RANK_HIGH] === 1
+    && rankCounts[2] === 1 && rankCounts[3] === 1 && rankCounts[4] === 1 && rankCounts[5] === 1;
+  const straight = (distinct === HAND_SIZE && highest - lowest === HAND_SIZE - 1) || wheel;
+
   if (straight && flush) return "straight-flush";
-  if (groups[0] === 4) return "four-of-a-kind";
-  if (groups[0] === 3 && groups[1] === 2) return "full-house";
+  if (quads === 1) return "four-of-a-kind";
+  if (trips === 1 && pairs === 1) return "full-house";
   if (flush) return "flush";
   if (straight) return "straight";
-  if (groups[0] === 3) return "three-of-a-kind";
-  if (groups[0] === 2 && groups[1] === 2) return "two-pair";
-  if (groups[0] === 2) return "one-pair";
+  if (trips === 1) return "three-of-a-kind";
+  if (pairs === 2) return "two-pair";
+  if (pairs === 1) return "one-pair";
   return "high-card";
 }
 

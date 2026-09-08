@@ -1,11 +1,14 @@
 {
   "game": "poker-grid",
+  "codec": "xor-v1",
   "epoch": {
     "year": 2026,
     "month": 1,
     "day": 1
   },
   "horizon": 365,
+  "beamWidth": 400,
+  "exactCeiling": 25000,
   "chunks": [
     {
       "month": "2026-01",

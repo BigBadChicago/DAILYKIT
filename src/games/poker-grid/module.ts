@@ -14,7 +14,8 @@ import { tierLabel } from "../../engine/tiers.js";
 import { HAND_SHARE_TIER, categoryFromOrdinal, HAND_ORDINAL, type HandCategory } from "../../shared/poker-hands.js";
 import { defineGame } from "../../contract/game-module.js";
 import type { GameView, HelpContent, MountContext, PuzzleFailure, StateFailure } from "../../contract/types.js";
-import { generatePuzzle as makePuzzle, isValidBoard, type PokerPuzzle } from "./generator.js";
+import { generatePuzzle as makePuzzle, isValidBoard, type Lever, type PokerPuzzle } from "./generator.js";
+import { decodeBoard } from "./manifest-codec.js";
 import {
   BOARD_CELLS,
   applyPokerAction,
@@ -24,7 +25,7 @@ import {
   type PokerState,
 } from "./rules.js";
 import { scoreHands, tierFor } from "./scoring.js";
-import { CARD_CLEAR_POINTS } from "./scoring.js";
+import { CLEAR_VALUE_PER_HAND } from "./scoring.js";
 import { POKER_GRID_HELP } from "./help.js";
 import { mountPokerGrid } from "./render.js";
 
@@ -34,7 +35,8 @@ const HAND_COUNT_LIMIT = 7;
 function validPuzzleBest(value: unknown): value is PokerPuzzle["best"] {
   if (value === null) return true;
   if (typeof value !== "object" || value === null) return false;
-  const best = value as { score?: unknown; hands?: unknown; method?: unknown };
+  const best = value as { score?: unknown; hands?: unknown; method?: unknown; width?: unknown };
+  if (best.width !== undefined && !Number.isInteger(best.width)) return false;
   return Number.isInteger(best.score) && Number.isInteger(best.hands) && (best.method === "exact" || best.method === "beam");
 }
 
@@ -111,12 +113,13 @@ export default defineGame<PokerState, PokerAction, PokerPuzzle>({
 
   parsePuzzle(puzzleNumber, raw): Result<PokerPuzzle, PuzzleFailure> {
     if (typeof raw !== "object" || raw === null) return err({ code: "malformed", detail: "puzzle must be an object" });
-    const value = raw as { cells?: unknown; best?: unknown; levers?: unknown };
-    if (!Array.isArray(value.cells) || !isValidBoard(value.cells)) return err({ code: "malformed", detail: "cells must contain 35 distinct cards" });
+    const value = raw as { board?: unknown; best?: unknown; levers?: unknown };
+    const cells = decodeBoard(puzzleNumber, value.board);
+    if (cells === null || !isValidBoard(cells)) return err({ code: "malformed", detail: "board does not decode to 35 distinct cards" });
     if (!validPuzzleBest(value.best)) return err({ code: "malformed", detail: "best is invalid" });
     const levers = value.levers === undefined ? ["none"] : value.levers;
     if (!Array.isArray(levers) || !levers.every((lever) => typeof lever === "string")) return err({ code: "malformed", detail: "levers must be strings" });
-    return ok({ number: puzzleNumber, cells: value.cells, best: value.best, levers });
+    return ok({ number: puzzleNumber, cells, best: value.best, levers: levers as readonly Lever[] });
   },
 
   generatePuzzle(puzzleNumber: PuzzleNumber, seed: Seed): Result<PokerPuzzle, PuzzleFailure> {
@@ -148,7 +151,7 @@ export default defineGame<PokerState, PokerAction, PokerPuzzle>({
     for (const rawHand of data.h) {
       if (!Array.isArray(rawHand) || rawHand.length !== 2 || !Number.isInteger(rawHand[0]) || !Number.isInteger(rawHand[1])) return err({ code: "malformed", detail: "hand is invalid" });
       const category = categoryFromOrdinal(rawHand[0]);
-      if (category === null || category === "high-card" || rawHand[1] !== scoreHands([{ category, points: rawHand[1] }]) - CARD_CLEAR_POINTS * 5) return err({ code: "malformed", detail: "hand points are invalid" });
+      if (category === null || category === "high-card" || rawHand[1] !== scoreHands([{ category, points: rawHand[1] }]) - CLEAR_VALUE_PER_HAND) return err({ code: "malformed", detail: "hand points are invalid" });
       hands.push({ category, points: rawHand[1] });
     }
     if (hands.length > HAND_COUNT_LIMIT || !cardsMatchPuzzle(grid, puzzle, hands.length)) return err({ code: "puzzle-mismatch", detail: "saved cards do not match this puzzle" });

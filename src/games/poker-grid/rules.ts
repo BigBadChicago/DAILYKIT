@@ -72,41 +72,76 @@ export function legalSelection(grid: Grid, selection: readonly number[]): boolea
 }
 
 export function hasLegalMove(grid: Grid): boolean {
-  for (const selection of enumerateSelections(grid)) {
-    if (handOrdinal(selection.map((cell) => grid[cell] as number)) > HAND_ORDINAL["high-card"]) return true;
-  }
-  return false;
-}
-
-export function enumerateSelections(grid: Grid): readonly (readonly number[])[] {
-  if (grid.length !== BOARD_CELLS) throw new RangeError("grid must contain 35 cells");
-  const occupied = grid.flatMap((card, index) => card === null ? [] : [index]);
-  const found: number[][] = [];
-  const choose = (start: number, picked: number[]): void => {
-    if (picked.length === HAND_SIZE) {
-      if (isConnected(picked)) found.push(picked.slice());
-      return;
-    }
-    for (let i = start; i < occupied.length; i += 1) {
-      picked.push(occupied[i] as number);
-      choose(i + 1, picked);
-      picked.pop();
-    }
-  };
-  choose(0, []);
+  let found = false;
+  visitSelections(grid, (selection) => {
+    found = handOrdinal(selection.map((cell) => grid[cell] as number)) > HAND_ORDINAL["high-card"];
+    return found;
+  });
   return found;
 }
 
-function isConnected(cells: readonly number[]): boolean {
-  const pending = [cells[0] as number];
-  const remaining = new Set(cells.slice(1));
-  while (pending.length > 0) {
-    const current = pending.pop() as number;
-    for (const next of neighbours(current)) {
-      if (remaining.delete(next)) pending.push(next);
+export function enumerateSelections(grid: Grid): readonly (readonly number[])[] {
+  const found: (readonly number[])[] = [];
+  visitSelections(grid, (selection) => {
+    found.push(selection);
+    return false;
+  });
+  return found;
+}
+
+/* Selections are grown outward from a root cell rather than filtered out of
+   every five cell combination of occupied cells. A full board holds 961
+   connected selections against 324,632 combinations, and this walk sits
+   inside both the terminal check and every solver node, so the difference is
+   the difference between a usable pipeline and an unusable one.
+
+   Each set is reached exactly once. A root admits only cells above itself,
+   and a cell already tried on a branch is withheld from every frontier below
+   and after it, which is what stops the same set arriving by a second growth
+   order. Returning true from visit stops the walk. */
+export function visitSelections(
+  grid: Grid,
+  visit: (selection: readonly number[]) => boolean,
+): void {
+  if (grid.length !== BOARD_CELLS) throw new RangeError("grid must contain 35 cells");
+  const picked: number[] = [];
+  const withheld = new Set<number>();
+  let stopped = false;
+
+  const grow = (frontier: readonly number[], root: number): void => {
+    if (stopped) return;
+    if (picked.length === HAND_SIZE) {
+      stopped = visit(picked.slice());
+      return;
     }
+    /* No frontier left means this branch can never reach five cells. */
+    const withheldHere: number[] = [];
+    for (const cell of frontier) {
+      if (stopped) break;
+      if (withheld.has(cell)) continue;
+      picked.push(cell);
+      withheld.add(cell);
+      withheldHere.push(cell);
+      const next: number[] = frontier.filter((candidate) => !withheld.has(candidate));
+      for (const neighbour of neighbours(cell)) {
+        if (neighbour <= root) continue;
+        if (grid[neighbour] === null) continue;
+        if (withheld.has(neighbour) || next.includes(neighbour)) continue;
+        next.push(neighbour);
+      }
+      grow(next, root);
+      picked.pop();
+    }
+    for (const cell of withheldHere) withheld.delete(cell);
+  };
+
+  for (let root = 0; root < BOARD_CELLS; root += 1) {
+    if (stopped) return;
+    if (grid[root] === null) continue;
+    picked.push(root);
+    grow(neighbours(root).filter((cell) => cell > root && grid[cell] !== null), root);
+    picked.pop();
   }
-  return remaining.size === 0;
 }
 
 export function applyPokerAction(state: PokerState, action: PokerAction): Result<PokerState, Rejection> {

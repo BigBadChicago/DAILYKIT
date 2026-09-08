@@ -6,6 +6,8 @@ import {
   applyPokerAction,
   enumerateSelections,
   hasLegalMove,
+  neighbours,
+  visitSelections,
   settle,
   type PokerState,
 } from "../../../src/games/poker-grid/rules.js";
@@ -34,12 +36,47 @@ describe("poker grid rules", () => {
     expect(settled[31]).toBe(3);
   });
 
-  it("enumerates connected sets once", () => {
+  /* The count is the specification. A full five by seven board holds exactly
+     961 connected five cell sets, and the walk must produce each one once: a
+     duplicate would double count a hand in the calibration study and inflate
+     the solver's branching factor. */
+  it("enumerates every connected five cell set exactly once", () => {
     const selections = enumerateSelections(fullGrid());
-    const keys = selections.map((selection) => selection.join(","));
-    expect(new Set(keys).size).toBe(selections.length);
+    expect(selections).toHaveLength(961);
+    const canonical = selections.map((selection) => [...selection].sort((a, b) => a - b).join(","));
+    expect(new Set(canonical).size).toBe(961);
     expect(selections.every((selection) => selection.length === 5)).toBe(true);
+  });
+
+  it("only walks occupied cells and yields connected sets", () => {
+    const grid = fullGrid().map((card, index) => index % 5 === 0 ? null : card);
+    const selections = enumerateSelections(grid);
     expect(selections.length).toBeGreaterThan(0);
+    for (const selection of selections) {
+      expect(selection.every((cell) => grid[cell] !== null)).toBe(true);
+      const remaining = new Set(selection.slice(1));
+      const queue = [selection[0] as number];
+      while (queue.length > 0) {
+        for (const next of neighbours(queue.pop() as number)) {
+          if (remaining.delete(next)) queue.push(next);
+        }
+      }
+      expect(remaining.size).toBe(0);
+    }
+  });
+
+  it("stops the walk as soon as the visitor says so", () => {
+    let seen = 0;
+    visitSelections(fullGrid(), () => {
+      seen += 1;
+      return seen === 3;
+    });
+    expect(seen).toBe(3);
+  });
+
+  it("finds no legal move on an empty board and one on a full board", () => {
+    expect(hasLegalMove(Array<number | null>(BOARD_CELLS).fill(null))).toBe(false);
+    expect(hasLegalMove(fullGrid())).toBe(true);
   });
 
   it("returns the specified rejection values", () => {

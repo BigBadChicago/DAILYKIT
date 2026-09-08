@@ -4,6 +4,7 @@ import type { GameModule } from "../../../src/contract/game-module.js";
 import { generatePuzzle } from "../../../src/games/poker-grid/generator.js";
 import { BOARD_CELLS, type PokerAction, type PokerState } from "../../../src/games/poker-grid/rules.js";
 import type { PokerPuzzle } from "../../../src/games/poker-grid/generator.js";
+import { encodeBoard } from "../../../src/games/poker-grid/manifest-codec.js";
 
 const game = module as unknown as GameModule<PokerState, PokerAction, PokerPuzzle>;
 
@@ -42,6 +43,36 @@ describe("POKER GRID module", () => {
     const second = generatePuzzle(2, 5678);
     const raw = game.serialize(game.initialState(first));
     expect(game.deserialize(second, raw).ok).toBe(false);
+  });
+
+  /* The shell hands parsePuzzle a manifest entry verbatim, so the entry shape
+     the generator writes and the shape the module reads are one contract. */
+  it("parses a manifest entry, decoding the board the generator encoded", () => {
+    const cells = puzzle().cells;
+    const entry = {
+      number: 1,
+      board: encodeBoard(1, cells),
+      best: { score: 5670, hands: 7, method: "beam" as const, width: 400 },
+      levers: ["sparse-pairs"],
+    };
+    const parsed = game.parsePuzzle(1, entry);
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+    expect(parsed.value.cells).toEqual(cells);
+    expect(parsed.value.best).toEqual(entry.best);
+    expect(parsed.value.levers).toEqual(["sparse-pairs"]);
+  });
+
+  it("refuses a manifest entry it cannot trust rather than guessing", () => {
+    const cells = puzzle().cells;
+    const good = { number: 1, board: encodeBoard(1, cells), best: null, levers: [] };
+    expect(game.parsePuzzle(1, good).ok).toBe(true);
+    expect(game.parsePuzzle(1, null).ok).toBe(false);
+    expect(game.parsePuzzle(1, { ...good, board: "nonsense" }).ok).toBe(false);
+    /* The right board under the wrong day number does not decode. */
+    expect(game.parsePuzzle(2, good).ok).toBe(false);
+    expect(game.parsePuzzle(1, { ...good, best: { score: 1, hands: 1, method: "guess" } }).ok).toBe(false);
+    expect(game.parsePuzzle(1, { ...good, levers: [7] }).ok).toBe(false);
   });
 
   it("reports the unrated share form without a streak", () => {

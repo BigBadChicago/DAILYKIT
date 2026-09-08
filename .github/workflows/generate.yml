@@ -1,0 +1,54 @@
+name: poker-grid manifest
+
+# Requirement 6.3.1 and 6.3.3. The horizon is regenerated here and nowhere
+# else, so a manifest in the repo is always one a machine produced and checked.
+# Manual by default: regenerating rewrites every board, which is a deliberate
+# act. The monthly run exists so the horizon can never quietly run out.
+
+on:
+  workflow_dispatch:
+    inputs:
+      horizon:
+        description: Days to generate from the epoch
+        required: false
+        default: "365"
+  schedule:
+    - cron: "0 4 1 * *"
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - name: Generate the horizon
+        env:
+          POKER_GRID_FROM: "1"
+          POKER_GRID_TO: ${{ github.event.inputs.horizon || '365' }}
+        run: npm run poker-grid:generate
+      # Verification is a separate process from generation on purpose. A bug
+      # that produces a bad board and a bug that fails to notice it should not
+      # be able to be the same bug.
+      - name: Verify every board, replaying the solver
+        env:
+          POKER_GRID_REPLAY_SOLVER: "1"
+        run: npm run poker-grid:verify
+      - name: Commit the manifest if it changed
+        run: |
+          if [ -z "$(git status --porcelain data/poker-grid)" ]; then
+            echo "manifest unchanged"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/poker-grid
+          git commit -m "chore(poker-grid): regenerate verified manifest"
+          git push

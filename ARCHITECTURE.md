@@ -9,10 +9,10 @@ resume work in a fresh conversation with no chat history.
 
 | Field | Value |
 |---|---|
-| Current phase | 7 in progress |
+| Current phase | 7 complete, Phase 8 next |
 | Games playable | POKER GRID interface complete, shell not started |
 | Engine contract version | 1, drafted and proven against toy-tap |
-| Manifest horizon | none |
+| Manifest horizon | 365 days, puzzle 1 through 365, epoch 2026-01-01, all verified with a solver replay |
 
 ## Phase log
 
@@ -25,7 +25,7 @@ resume work in a fresh conversation with no chat history.
 | 4 | Presentation kit | done | Layer 2 in full with tests. jsdom approved for tests/ui only. Header carries the hub link from this phase. High contrast is a CSS layer, not a theme choice |
 | 5 | POKER GRID logic | done | Pure evaluator, rules, generation, solver surface, snapshots, and module contract pass tests |
 | 6 | POKER GRID interface | done | Accessible five by seven card renderer, pointer gestures, keyboard cursor, card art, and reduced motion styling |
-| 7 | Generation pipeline | in progress | Node-only manifest generation, verification, and calibration tools are being added |
+| 7 | Generation pipeline | done | Connected region enumeration, exact search with a measured ceiling falling back to a width 400 beam, empirical scoring table, weekday difficulty bands, degenerate board rejection, obfuscated manifest, and the CI jobs that produce and check it |
 | 8 | Polish and launch readiness | not started | |
 | 9 | Slate approval | not started | |
 | 10 | Suite shell | not started | |
@@ -55,8 +55,7 @@ bundled into a browser build.
 
 ## File manifest
 
-Nothing built yet. Table columns are fixed as follows and every future entry
-uses them.
+Table columns are fixed as follows and every future entry uses them.
 
 | Path | Layer | Responsibility | Imports |
 |---|---|---|---|
@@ -72,16 +71,16 @@ uses them.
 | src/contract/game-module.ts | 3 | The GameModule interface and the single erasure boundary | core/result, core/types, contract/types |
 | src/games/toy-tap/module.ts | 4 | Contract regression fixture, never shipped | core/result, core/types, contract/* |
 | src/games/poker-grid/evaluator.ts | 4 | Five card hand classification and card decoding | shared/poker-hands |
-| src/games/poker-grid/scoring.ts | 4 | POKER GRID hand and card point constants plus tier calculation | shared/poker-hands |
-| src/games/poker-grid/rules.ts | 4 | Pure selection, gravity, commit, terminal, and connected move rules | core/result, core/types, shared/poker-hands, games/poker-grid/evaluator, games/poker-grid/scoring, games/poker-grid/generator |
-| src/games/poker-grid/generator.ts | 4 | Seeded distinct card board construction and puzzle shape validation | core/rng, core/seed, core/types, games/poker-grid/rules |
-| src/games/poker-grid/solver.ts | 4 | Offline search over legal connected hands with exact or bounded result | shared/poker-hands, games/poker-grid/evaluator, games/poker-grid/rules |
+| src/games/poker-grid/scoring.ts | 4 | Empirically calibrated hand point table, the clearing dominance constants, and tier calculation | shared/poker-hands, games/poker-grid/evaluator |
+| src/games/poker-grid/rules.ts | 4 | Pure selection, gravity, commit, terminal, and connected move rules with lazy enumeration | core/result, core/types, shared/poker-hands, games/poker-grid/evaluator, games/poker-grid/scoring, games/poker-grid/generator |
+| src/games/poker-grid/generator.ts | 4 | Seeded board construction, the weekday lever schedule, and puzzle shape validation | core/rng, core/seed, core/types, games/poker-grid/rules, games/poker-grid/evaluator |
+| src/games/poker-grid/solver.ts | 4 | Exact memoized search under a node ceiling, falling back to a width carrying beam | games/poker-grid/evaluator, games/poker-grid/rules, games/poker-grid/scoring |
 | src/games/poker-grid/module.ts | 4 | POKER GRID GameModule implementation, puzzle parsing, state snapshots, and share data | core/result, core/types, engine/tiers, shared/poker-hands, contract/*, games/poker-grid/evaluator, games/poker-grid/generator, games/poker-grid/rules, games/poker-grid/scoring |
 | src/games/poker-grid/render.ts | 4 | POKER GRID board renderer with card faces, pointer gestures, keyboard activation, and state repaint | ui/dom, ui/gridCursor, contract/types, games/poker-grid/evaluator, games/poker-grid/rules, games/poker-grid/generator |
 | src/games/poker-grid/style.css | 4 | POKER GRID board layout, card styling, suit shapes, responsive sizing, and motion layers | none |
 | src/games/poker-grid/help.ts | 4 | POKER GRID structured help content and worked example | core/types |
-| data/poker-grid/manifest.index.json | n/a | Generated 2026 Poker Grid horizon and monthly chunk pointers | none |
-| data/poker-grid/manifest.<chunk>.json | n/a | Generated monthly Poker Grid boards and bounded solver best results | none |
+| data/poker-grid/manifest.index.json | n/a | Horizon, codec name, solver settings, and monthly chunk pointers | none |
+| data/poker-grid/manifest.<chunk>.json | n/a | Monthly obfuscated boards with stored best, difficulty, band inputs, levers, and attempt | none |
 | src/core/rng.ts | 0 | Deterministic seedable PRNG plus integer range, shuffle, and weighted pick helpers | none |
 | src/core/seed.ts | 0 | Derives a uint32 seed from game id, puzzle number, and optional salt, and expands it into a generator | core/rng, core/types |
 | src/core/date.ts | 0 | Local day arithmetic, epoch math, next midnight target, and clock jump classification | core/types |
@@ -94,9 +93,9 @@ uses them.
 | src/engine/share.ts | 1 | Share string assembly and the delivery fallback chain | core/types, shared/share-vocabulary, engine/telemetry |
 | vitest.config.ts | n/a | Test runner configuration | none |
 | tools/rngvectors.ts | tools | Regenerates the committed determinism vector table | core/rng, core/seed |
-| tools/generate.ts | tools | Generates seeded monthly Poker Grid manifest chunks with stored solver results | core/date, core/seed, games/poker-grid/generator, games/poker-grid/rules, games/poker-grid/solver |
-| tools/verify.ts | tools | Validates Poker Grid manifest shape, opening moves, and stored best metadata | games/poker-grid/rules, games/poker-grid/solver |
-| tools/calibrate.ts | tools | Measures generated board opening availability and hand category distribution | core/seed, games/poker-grid/generator, games/poker-grid/rules, games/poker-grid/evaluator, shared/poker-hands |
+| tools/generate.ts | tools | Screens, bands, and regenerates candidate boards, then writes monthly chunks and the index | core/date, core/seed, games/poker-grid/generator, games/poker-grid/greedy, games/poker-grid/manifest-codec, games/poker-grid/solver |
+| tools/verify.ts | tools | Re-derives every claim a manifest entry makes, including its seed, band, greedy median, and score bounds | core/seed, games/poker-grid/generator, games/poker-grid/greedy, games/poker-grid/manifest-codec, games/poker-grid/rules, games/poker-grid/scoring, games/poker-grid/solver, tools/generate |
+| tools/calibrate.ts | tools | The Locked decision 5 availability study over whole boards, emitting the derived point table | core/seed, games/poker-grid/generator, games/poker-grid/rules, games/poker-grid/evaluator, games/poker-grid/scoring, shared/poker-hands |
 | tests/core/rng.vectors.ts | n/a | Committed determinism vectors, data not a spec | none |
 | tests/core/rng.test.ts | n/a | Generator vectors, ranges, uniformity, and helper properties | core/rng, core/seed, rng.vectors |
 | tests/core/seed.test.ts | n/a | Seed stability, separation, and input validation | core/seed |
@@ -131,6 +130,7 @@ uses them.
 | tests/ui/statsPanel.test.ts | n/a | Win rate suppression, suite streak null state, bucket marking, node reuse | ui/statsPanel |
 | tests/ui/helpPanel.test.ts | n/a | Text example, drawn example with a hidden text equivalent, teardown | ui/helpPanel |
 | tests/ui/gridCursor.test.ts | n/a | Movement, edge behaviour, empty cell skipping, activation, relocation | ui/gridCursor |
+| tests/tools/poker-grid-pipeline.test.ts | n/a | Entry determinism, band conformance, rejection reasons, and tamper detection | tools/generate, tools/verify, tools/calibrate |
 | tests/tools/share-harness.test.ts | n/a | Grapheme width measurement and case coverage | share-harness/main, share-harness/cases |
 | tests/games/poker-grid/evaluator.test.ts | n/a | Poker category, ordinal, wheel, and wrapped straight coverage | games/poker-grid/evaluator |
 | tests/games/poker-grid/rules.test.ts | n/a | Gravity, selection rejection, commit, move uniqueness, and terminal coverage | games/poker-grid/evaluator, games/poker-grid/rules |
@@ -138,6 +138,14 @@ uses them.
 | tests/games/poker-grid/scoring.test.ts | n/a | Hand count dominance, quality floor, and deficit tier properties | games/poker-grid/scoring |
 | tests/games/poker-grid/solver.test.ts | n/a | Exact search coverage on a compact legal board | games/poker-grid/solver, games/poker-grid/rules |
 | tests/games/poker-grid/render.test.ts | n/a | Accessible board creation, keyboard activation, repaint, empty cells, and teardown | games/poker-grid/render, games/poker-grid/generator, games/poker-grid/rules |
+| src/games/poker-grid/greedy.ts | 4 | Legal move listing and the naive reference player difficulty is measured against | core/rng, games/poker-grid/evaluator, games/poker-grid/rules, games/poker-grid/scoring |
+| src/games/poker-grid/manifest-codec.ts | 4 | Reversible board obfuscation keyed to the puzzle number, shared by the tools and the module | games/poker-grid/rules |
+| data/poker-grid/calibration.json | n/a | The checked in availability study behind the scoring table | none |
+| .github/workflows/ci.yml | n/a | Typecheck, tests, and manifest verification on every change | none |
+| .github/workflows/generate.yml | n/a | The job that regenerates and verifies the horizon | none |
+| .gitignore | n/a | Keeps dependencies, build output, and runner scratch out of the repo | none |
+| tests/games/poker-grid/generator.test.ts | n/a | Determinism, deck legality, weekday levers, and the guarantees each lever makes | games/poker-grid/generator, games/poker-grid/evaluator, core/seed |
+| tests/games/poker-grid/manifest-codec.test.ts | n/a | Round trip across a year, stream keying, and malformed input rejection | games/poker-grid/manifest-codec, games/poker-grid/generator |
 
 ## Planned repository layout
 
@@ -390,6 +398,100 @@ Settled in Phase 4.
     `refresh` relocates by nearest ring search when the cursor's own cell is
     cleared.
 
+## Generation decisions
+
+Settled in Phase 7, in the same standing as the contract, engine, and
+presentation decisions above.
+
+1. **Selections are grown, not filtered.** A full board holds 961 connected
+   five cell sets. Enumerating every five cell combination of occupied cells
+   and testing each for connectivity examines 324,632, a 338 times overshoot,
+   inside both the terminal check and every solver node. `visitSelections`
+   grows regions outward from a root cell and withholds a cell already tried on
+   a branch from every frontier below and after it, so each set arrives exactly
+   once. This is the change that made the phase possible at all: the previous
+   pipeline could not verify 365 boards in two and a half minutes.
+2. **`classifyHand` allocates nothing.** It counts ranks into a reused scratch
+   array rather than building a map, a values array, and a sort per call. It
+   runs 961 times per board state and tens of millions of times across a
+   generation run.
+3. **Exact first, beam second, per board.** `solve` attempts an exhaustive
+   memoized search over reachable boards, not over move orders, since two move
+   orders leaving the same board have the same future. A full 35 card board
+   exceeds any workable ceiling, so the ceiling is set at 25,000 states, where
+   the attempt costs about half a second and still completes on small boards
+   and late game positions. Everything else falls back to a beam of width 400.
+   A beam result carries its width in the data and an exact result carries no
+   width, so no reader has to guess which claim it is holding.
+4. **The scoring table is measured.** 10,000 boards and 9,610,000 selections.
+   84.7 percent of legal selections on a fresh board are a bare pair and three
+   in a hundred thousand are a straight flush. Raw inverse availability spans
+   four orders of magnitude, so the ratios are compressed by an exponent chosen
+   to land the rarest category on the largest value the clearing dominance rule
+   admits, then rounded for feel. The study is checked in at
+   `data/poker-grid/calibration.json` and the exponent, the measured shares,
+   and the rounding drift are all asserted in `scoring.test.ts`.
+5. **Availability is measured on unlevered deals.** Levers move supply by
+   design: `sparse-pairs` caps a rank at three cards and removes four of a kind
+   entirely, `guaranteed-straight-flush` plants one. Calibrating on scheduled
+   boards prices four of a kind above a straight flush, inverting the shared
+   hand ordering, which no player would accept on any day. The table is a
+   property of the game and is measured on the base deal; levers shift what a
+   day offers against a fixed table. The greedy hand count distribution is
+   measured the other way, on the scheduled boards, because that is a fact
+   about real days: greedy reaches seven hands on 6 percent of them, six on 67
+   percent, five on 25 percent, which is the ladder tiers 2 through 4 read.
+6. **Clearing dominance is a property, not a hope.** Locked decision 5's second
+   sub rule is enforced as: the worst score with n hands beats the best score
+   with n-1. The binding case is seven bare pairs at 5,670 against six straight
+   flushes at 5,640, which is what caps a straight flush at 140 points.
+7. **Difficulty is the mean greedy shortfall, not the median.** Nine runs of a
+   naive player that always takes the highest scoring hand and never looks
+   ahead, as a fraction of best known score. The mean matters: greedy either
+   strands a hand or it does not, so its median is bimodal and sits at 0.148 to
+   0.160 across the whole middle of the distribution. Bands built on it
+   produced five consecutive days with a median difficulty of 0.149, a flat
+   week wearing a curve's clothing. The mean reads how often greedy strands
+   rather than whether it usually does, and spreads smoothly from 0.10 to 0.25.
+8. **Bands run Monday gentle to Saturday hard**, Sunday between Thursday and
+   Friday, each admitting roughly a fifth of candidates. Boards below their
+   band have no decisions in them and boards above it are punishing, and both
+   are regenerated under a salt. The stored inputs are integers, so
+   verification reproduces a difficulty exactly rather than within a tolerance
+   that could hide a drift. The horizon as generated: Monday 0.113, Tuesday
+   0.130, Wednesday 0.148, Thursday 0.170, Sunday 0.180, Friday 0.206,
+   Saturday 0.249, as median difficulty across 52 of each. That is the curve,
+   and it is the thing to re-check after any change to the rules, the scoring
+   table, or the levers.
+9. **Candidates are screened cheaply.** A candidate is banded against a width
+   100 beam and only the survivor pays for the width 400 search and has its
+   score stored. Most of a generation run is boards being thrown away.
+10. **Retries are recorded.** Attempt 0 is the board an offline client
+   reproduces past the horizon; a higher attempt is a board only the manifest
+   knows. `verify.ts` regenerates from the recorded attempt, so a manifest
+   entry proves it came from the seed it claims.
+11. **The manifest is obfuscated, not encrypted.** A per puzzle keystream over
+    a 64 symbol alphabet, one character per cell. It is forty lines and a
+    determined player can lift it. Stated plainly in the code, and never
+    described as security in the UI.
+12. **Verification re-derives rather than re-reads.** Every stored field is
+    recomputed from the board: the seed, the weekday, the levers, the opening
+    count, the greedy median, the band, and the score bounds. Corrupting any
+    single field fails the check, which is asserted field by field in
+    `poker-grid-pipeline.test.ts`.
+13. **Generation and verification are separate processes in CI.** A bug that
+    writes a bad board and a bug that fails to notice one should not be able to
+    be the same bug.
+14. **A month is written the moment it closes.** A full horizon takes over an
+    hour, and the first version of this tool held every chunk in memory until
+    the end, so the first day that could not be filled threw away 169 good
+    boards. Chunks land as each month completes and a run resumes with
+    `POKER_GRID_FROM`. The attempt ceiling is 96 for the same reason: Friday
+    and Saturday reject the easy cluster deliberately, roughly one board in
+    eight clears their floor, and a ceiling of 24 failed a run outright on a
+    day that was unlucky rather than wrong.
+
+
 ## Settled charter decisions
 
 These were resolved in Phase 0 and approved. They are inputs to every later
@@ -417,17 +519,17 @@ phase and are not to be reopened without a stated reason.
    date plus one. The epoch is a date and not a UTC instant, because rollover is
    at local midnight per 3.1.2. 2026-01-01 is a Thursday, so the weekly
    difficulty curve carries a named weekday offset constant of four.
-6. **Origin and hosting.** Cloudflare Pages at `dailykit.providentia.games`,
+14. **Origin and hosting.** Cloudflare Pages at `dailykit.providentia.games`,
    root scope. See Build model above.
-7. **Share title.** Game name only. No suite mark. Family recognition is carried
+15. **Share title.** Game name only. No suite mark. Family recognition is carried
    entirely by the shared glyph vocabulary of 7.3.6.
-8. **Tier names.** The five tier names are a suite wide engine constant, plain
+16. **Tier names.** The five tier names are a suite wide engine constant, plain
    spoken rather than poker flavored. Approved in Phase 3: **Excellent, Great,
    Good, Fair, Rough**, held in `engine/tiers.ts`. Because tier 0 is Excellent
    and not Perfect, no name collision arises and the zero remaining histogram
    bucket keeps the label **Perfect Clear**. Past the manifest horizon the label
    is the lowercase word `unrated`, which sits where a tier name sits.
-9. **Slate.** POKER GRID is one of the five. Phase 9 recommends four more from
+17. **Slate.** POKER GRID is one of the five. Phase 9 recommends four more from
    eight or more candidates and presents the assembled slate.
 
 ## Resolutions of internal conflicts in the source document
