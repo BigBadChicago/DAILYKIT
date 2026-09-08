@@ -590,19 +590,38 @@ phase and are not to be reopened without a stated reason.
    and not Perfect, no name collision arises and the zero remaining histogram
    bucket keeps the label **Perfect Clear**. Past the manifest horizon the label
    is the lowercase word `unrated`, which sits where a tier name sits.
-17. **Slate.** POKER GRID is one of the five. Phase 9 was revised after pooling
-   this document's ten candidates with twelve from Gemini and twelve from
-   CoPilot, and recommends CIPHER, RULE OF FOUR, TALLY DROP, and RECALL
-   alongside it, in `SLATE.md`. TALLY DROP replaced LADDER because its solution
-   is unique and provable by exhaustive search over 7,776 states, where LADDER
-   scored a player on closeness to a target. RECALL is the former ECHO,
-   renamed because all three source lists contained a different game by that
-   name. **Not yet approved**, and `SLATE.md` Section 4 carries the one open
-   question: whether 7.1.1's list of five modes is exhaustive, which decides
-   whether the fifth slot is RECALL or VECTOR. Until approval,
-   `src/shell/registry.ts` carries the four as `planned` entries and no game
-   beyond POKER GRID may be built. Changing the slate before a game is built is
-   an edit to that one file.
+17. **Slate.** POKER GRID is one of the five. Phase 9 pooled this document's
+   ten candidates with twelve from Gemini and twelve from CoPilot, and was then
+   revised again on the ruling that **7.1.1's list of five modes is
+   illustrative, not exhaustive**. The recommended four alongside POKER GRID are
+   **VECTOR, CIPHER, TALLY DROP, and RECALL**, in `SLATE.md`.
+
+   Two changes from the first pass, both worth carrying forward as reasoning:
+
+   - **TALLY DROP replaced LADDER** because its solution is unique and provable
+     by exhaustive enumeration of 7,776 states, where LADDER scored a player on
+     closeness to a target.
+   - **VECTOR replaced RULE OF FOUR** because 7.1.4's "machine verified" covers
+     two different properties. Uniqueness, that one answer exists, is provable
+     for every candidate considered. Fairness, that a human can reach it by
+     reasoning rather than guessing, is not. RULE OF FOUR proves the first and
+     has no check for the second, so its generator could ship a board that is
+     uniquely solvable and humanly impossible. In VECTOR's family the two proofs
+     are the same pass: propagate with no guessing permitted, and a board that
+     resolves is both unique and solvable. Categorization is therefore the mode
+     the suite gives up, because the version that is proven in the market is
+     editorial word association, which 7.1.4 bans, and the version that is
+     generatable is the dry and unverifiable one.
+
+   RECALL is the former ECHO, renamed because all three source lists contained a
+   different game by that name. It stays against both external recommendations
+   because requirement 7.3.4 defines the suite streak as completing at least one
+   game, and that forgiveness is empty unless something on the slate is
+   finishable in forty seconds.
+
+   **Not yet approved.** Until it is, `src/shell/registry.ts` carries the four
+   as `planned` entries and no game beyond POKER GRID may be built. Changing the
+   slate before a game is built is an edit to that one file.
 
 ## Resolutions of internal conflicts in the source document
 
