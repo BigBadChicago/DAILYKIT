@@ -43,7 +43,6 @@ import {
 } from "./rules.js";
 import { tierFor } from "./rules.js";
 
-const MANIFEST_URL = "/data/cipher/manifest.horizon.json";
 
 function encodeCodeString(code: Code): string {
   return code.join("");
@@ -101,10 +100,9 @@ export default defineGame<CipherState, CipherAction, CipherPuzzle>({
     keys: ["1", "2", "3", "4", "5", "6", "Backspace", "Enter", "ArrowLeft", "ArrowRight"],
   },
 
-  /* A year of CIPHER is 36 kilobytes and wants one file, so every day resolves
-     to the same chunk. */
+  /* A year of CIPHER is 36 kilobytes and wants one file, so the index carries a
+     single pointer covering the whole horizon. */
   manifest: {
-    urlForChunk: () => MANIFEST_URL,
     indexUrl: "/data/cipher/manifest.index.json",
     lookaheadDays: 7,
   },
@@ -196,7 +194,8 @@ export default defineGame<CipherState, CipherAction, CipherPuzzle>({
       won: state.solved,
       detail: state.solved ? `Solved in ${guesses}` : "Not solved",
       /* Derived from the guess count, so it is correct past the manifest
-         horizon. The shell blanks it there anyway, which is defect 4. */
+         horizon, where CIPHER owes the stored optimum nothing. Engine decision
+         16 leaves it to the module. */
       tier: tierFor(guesses, state.solved),
     };
   },
@@ -204,9 +203,8 @@ export default defineGame<CipherState, CipherAction, CipherPuzzle>({
   bucketOf: (_outcome: FinishedOutcome, state): number => bucketFor(state.guesses.length, state.solved),
 
   shareBlock(state, context: ShareContext): ShareBlock {
-    /* The tier is written into the title by the module, because the shell
-       blanks FinishedOutcome.tier past the horizon and CIPHER's grade owes the
-       manifest nothing. Defect 4's workaround. */
+    /* The tier is written into the title by the module, which owns its own
+       grade. Requirement 3.5.1 puts the result summary on the title line. */
     const label = tierLabel(tierFor(state.guesses.length, state.solved));
     const streak = context.currentStreak >= 2 ? `, streak ${context.currentStreak}` : "";
     return {

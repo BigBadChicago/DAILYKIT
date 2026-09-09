@@ -157,6 +157,7 @@ Table columns are fixed as follows and every future entry uses them.
 | vite.config.ts | n/a | The GAME allow list, the entry set, the pinned engine chunk, static root file emission, and manifest data deployment | none |
 | src/engine/dailycard.ts | 1 | The suite's combined one row per finished game share block | core/types, engine/tiers, shared/share-vocabulary |
 | src/shell/registry.ts | 5 | The five suite games as data, readable without loading a game | none |
+| src/shell/share-context.ts | 5 | What a share block is told about the session, so a replay carries no streak | none |
 | src/shell/suite.ts | 5 | Suite storage, per game today status, theme port, and daily card assembly | core/date, core/result, core/types, engine/dailycard, engine/scheduler, engine/stats, engine/storage, ui/theme, shell/registry |
 | src/shell/boot.ts | 5 | Manifest index and chunk fetching, prefetch, and the past horizon fallback | contract/game-module, core/result, core/seed, core/types |
 | src/shell/main.ts | 5 | Session lifecycle, chrome, end screen, share, archive, and cross promotion | contract/*, core/*, engine/*, ui/*, shell/boot, shell/registry, shell/suite |
@@ -171,6 +172,7 @@ Table columns are fixed as follows and every future entry uses them.
 | src/games/poker-grid/tutorial.ts | 4 | The fixed first session board and how it was chosen | games/poker-grid/generator |
 | MANUAL-CHECKS.md | n/a | The Section 10.7 list, with a results table to fill in per run | none |
 | tests/shell/changelog.test.ts | n/a | Version windowing, game scoping, and the two cases that must show nothing | shell/changelog |
+| tests/shell/share-context.test.ts | n/a | A replay and a tutorial carry no streak, a live session carries its own | shell/share-context |
 | tests/games/poker-grid/tutorial.test.ts | n/a | Board legality, that it is graded by nothing, and that it is easier than a scheduled day | games/poker-grid/tutorial |
 | tsconfig.sw.json | n/a | The worker's own program, because the WebWorker lib cannot share a program with DOM | none |
 | tests/tools/sw-manifest.test.ts | n/a | Precache coverage, worker exclusion, and cache name movement | tools/sw-manifest |
@@ -428,6 +430,14 @@ Settled in Phase 1. Inputs to every later phase.
 16. **A module's tier is the module's.** Phase 11 correction, defect 4. The
     shell no longer blanks it past the manifest horizon; a module with nothing
     to grade against returns null itself.
+17. **A module states where its index is, and nothing more.** The first
+    onboarding review found `ManifestDescriptor.urlForChunk` implemented by all
+    three modules, asserted by three tests, and called by nothing: `boot.ts`
+    takes chunk URLs from the index pointers, which is what makes the index
+    authoritative. A contract field nothing calls is worse than a missing one,
+    because the next game's author implements it carefully and then wonders why
+    it never fires. Removed, with `indexUrl` carrying the chunk format
+    documentation it used to hold.
 
 ## Engine decisions
 
@@ -655,12 +665,21 @@ presentation decisions above.
 These were resolved in Phase 0 and approved. They are inputs to every later
 phase and are not to be reopened without a stated reason.
 
-1. **Share block height.** Nine lines maximum: title, up to seven hand rows,
-   URL. The streak count rides on the title line. Amended in Phase 2: the
+1. **Share block height.** Ten lines maximum: title, up to `SHARE_MAX_ROWS`
+   rows, URL. The streak count rides on the title line. Amended in Phase 2: the
    summary bar row of requirement 6.5.3 is dropped because cards cleared is
    exactly five times the hand row count under locked decisions 1 and 3, so the
    bar carries no information, and keeping it made requirement 6.5.5 impossible
    to satisfy on a perfect clear. See POKER-GRID.md Section 14.1.
+
+   Amended again after the first onboarding review, which found the code and
+   this decision disagreeing. `SHARE_MAX_ROWS` is 8 and has been since the suite
+   gained a second game, which makes the block ten lines rather than the nine
+   this decision used to name. Eight rows is inside requirement 3.5.6's "never
+   taller than about eight rows", and it is what CIPHER's six guesses and POKER
+   GRID's seven hands both fit inside with one row of headroom. The constant is
+   the authority and this line now matches it. What is capped is rows, and the
+   two extra lines are the title and the URL.
 2. **First session.** The difficulty override seam stays in the contract. POKER
    GRID implements it as a fixed easy tutorial board that is not today's puzzle,
    played before the first real puzzle, never shareable and never counted in
@@ -795,6 +814,14 @@ presentation, and generation decisions above.
    day the manifest has an opinion about, which breaks the one property a
    daily game cannot lose. `boot.ts` reports unavailable instead, and the
    service worker is what will make that case rare.
+9. **A replay is told its streak is zero.** Requirement 3.6.1 and resolution 6
+   keep archive results out of every live aggregate, and the share title is the
+   only place that separation reaches another person. Passing the live streak
+   into a replay's block advertised a number the puzzle in the title had
+   nothing to do with. `shareStreakFor` in `src/shell/share-context.ts` holds
+   the rule, so it is one testable line rather than a habit each of five games
+   has to keep.
+
 8. **`OPEN_ARCHIVE` is refused from `PLAYING`, visibly.** The transition table
    allows the archive only from `COMPLETE` and `WAITING_FOR_NEXT`. The shell
    checks `can` first and shows a line rather than letting the machine report
@@ -933,6 +960,13 @@ worth more than six seconds.
 
 
 ## Phase 11 defect report, the abstraction test
+
+**This section is a historical record.** It says what was true while game two
+was being built, which is the whole of its value: a defect that leaves no trace
+gets reintroduced. It is never edited to match today. The corrections it
+proposes are live in the decisions sections above, and the current contract is
+whatever `src/contract/` says. A reader checking present behaviour is in the
+wrong section.
 
 Requirement 7.4. CIPHER was built under the zero engine changes rule and every
 change wanted was logged instead of made. Six defects were predicted in

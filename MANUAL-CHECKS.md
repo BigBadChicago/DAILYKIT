@@ -94,6 +94,20 @@ actually breaks.
 | Reconnect, reload | No stale asset, no duplicated state |
 | First ever visit while offline | An honest unavailable message, never a generated board inside the horizon |
 
+### 5a. After a deploy
+
+Run this against the live origin, not a local preview, within a few minutes of
+every deploy. Nothing in CI checks it.
+
+| Step | Pass condition |
+|---|---|
+| Load the hub at the live origin | Five cards, no console error, no 404 in the network tab |
+| Application panel, Service Workers | One worker, status activated, scope is the site root |
+| Application panel, Cache Storage | Exactly one `dailykit-` cache, and its build id matches the deployed `sw-manifest.json` |
+| Open a game, then reload | Assets served from the service worker, not the network |
+| Disconnect and reload | Today's puzzle still plays |
+| Reconnect, hard reload | The new build is live and no old cache remains |
+
 ## 6. First session, requirement 3.7.3
 
 | Step | Pass condition |

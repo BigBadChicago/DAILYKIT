@@ -1,5 +1,4 @@
 import { err, ok, type Result } from "../../core/result.js";
-import { dateForPuzzleNumber } from "../../core/date.js";
 import type {
   FinishedOutcome,
   Outcome,
@@ -96,10 +95,6 @@ export default defineGame<PokerState, PokerAction, PokerPuzzle>({
   },
   input: { kind: "grid", cols: 5, rows: 7, pointer: "drag" },
   manifest: {
-    urlForChunk: (number) => {
-      const date = dateForPuzzleNumber({ year: 2026, month: 1, day: 1 }, number);
-      return `/data/poker-grid/manifest.${date.year}-${String(date.month).padStart(2, "0")}.json`;
-    },
     indexUrl: "/data/poker-grid/manifest.index.json",
     lookaheadDays: 7,
   },

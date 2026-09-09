@@ -54,6 +54,7 @@ import { PuzzleSource } from "./boot.js";
 import { APP_VERSION, pendingChangelog, type ChangelogEntry } from "./changelog.js";
 import { registerServiceWorker } from "./register-sw.js";
 import { HUB_PATH, SUITE_SHARE_URL, entryFor, promotableIds } from "./registry.js";
+import { shareStreakFor } from "./share-context.js";
 import { openGameStore, openSuite, suiteThemePort } from "./suite.js";
 
 const ARCHIVE_PAGE = 60;
@@ -610,7 +611,7 @@ export function bootGame(game: AnyGameModule, root: HTMLElement): void {
     if (session === null) return;
     const block = game.shareBlock(session.state, {
       puzzleNumber: session.puzzleNumber,
-      currentStreak: record.currentStreak,
+      currentStreak: shareStreakFor(session.mode, record.currentStreak),
       rated: session.rated,
     });
     const composed = composeShare(block, { shareUrl: SUITE_SHARE_URL });

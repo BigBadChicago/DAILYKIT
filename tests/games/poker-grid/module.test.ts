@@ -15,7 +15,7 @@ function puzzle() {
 describe("POKER GRID module", () => {
   it("points the shell at the generated data manifest", () => {
     expect(module.manifest.indexUrl).toBe("/data/poker-grid/manifest.index.json");
-    expect(module.manifest.urlForChunk(1)).toBe("/data/poker-grid/manifest.2026-01.json");
+    expect(module.manifest.indexUrl).toBe("/data/poker-grid/manifest.index.json");
   });
 
   it("generates deterministic 35 card puzzles", () => {

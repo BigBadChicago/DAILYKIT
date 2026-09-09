@@ -66,8 +66,7 @@ describe("cipher module identity", () => {
   });
 
   it("resolves every day to the one horizon chunk", () => {
-    expect(cipher.manifest.urlForChunk(1)).toBe("/data/cipher/manifest.horizon.json");
-    expect(cipher.manifest.urlForChunk(364)).toBe(cipher.manifest.urlForChunk(1));
+    expect(cipher.manifest.indexUrl).toBe("/data/cipher/manifest.index.json");
     expect(cipher.manifest.indexUrl).toBe("/data/cipher/manifest.index.json");
   });
 

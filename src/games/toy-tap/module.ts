@@ -62,7 +62,6 @@ export default defineGame<State, Action, Puzzle>({
   },
   input: { kind: "grid", cols: 3, rows: 3, pointer: "tap" },
   manifest: {
-    urlForChunk: (n) => `/toy-tap/manifest.${String(Math.floor(n / 30))}.json`,
     indexUrl: "/toy-tap/manifest.index.json",
     lookaheadDays: 7,
   },

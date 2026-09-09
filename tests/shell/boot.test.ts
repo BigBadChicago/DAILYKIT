@@ -9,7 +9,6 @@ function moduleStub(overrides: Partial<AnyGameModule> = {}): AnyGameModule {
   return {
     identity: { id: "stub" },
     manifest: {
-      urlForChunk: () => "/data/stub/chunk.json",
       indexUrl: "/data/stub/index.json",
       lookaheadDays: 7,
     },

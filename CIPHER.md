@@ -322,15 +322,16 @@ one. An entry carries the obfuscated code, the recorded lever, the
 difficulty and line length under `best`, and the attempt it was drawn on, so
 verification regenerates it from the seed it claims.
 
-Two contract frictions show up here, both recorded rather than fixed:
+Two contract frictions showed up here during the build. Both were confirmed by
+the abstraction test and both are corrected in the engine, so what follows
+describes the contract as it stands:
 
-- The descriptor admits only monthly granularity, so `urlForChunk` returns the
-  same year file for every day and `granularity` states a chunking the data
-  does not have. Predicted defect 1.
-- `src/shell/boot.ts` looks for a `boards` array whose entries carry a `number`
-  field, so CIPHER's chunk uses the key `boards` for a game with no board. That
-  is the engine knowing a chunk's internal shape, and it was not predicted.
-  Section 12.
+- The index owns chunking. A module states where its index is and nothing more,
+  so CIPHER's single year file needs no pretence of monthly chunks. The
+  `granularity` field and the unused `urlForChunk` function are both gone.
+- A chunk holds `entries`, keyed by puzzle number as a string, and the shell
+  looks up one key without inspecting its value. CIPHER's chunk uses that shape
+  like every other game's.
 
 Entries are obfuscated per requirement 8.4, at the same strength and with the
 same honesty as POKER GRID's: a per puzzle keystream, stated plainly in the code
@@ -440,20 +441,22 @@ predicted defect 3. Section 12.
 
 ## 12. Where this design meets the contract, and where it does not
 
-Written before implementation, as a prediction to be confirmed or struck. The
-zero changes rule of section 7.4 stands: each of these is confirmed only by
-actually hitting it during the build, and the workaround named here is what the
-game does instead.
+Written before implementation, as a prediction to be confirmed or struck, and
+kept as written. **This table is history.** Every defect it names was confirmed
+or struck during the build, and the engine has since been corrected for all of
+them. The corrections are in the Phase 11 defect report in `ARCHITECTURE.md`,
+and the current contract is what `src/contract/` says today. Read this table for
+what game two ran into, never for how the code behaves now.
 
 | # | Defect | Workaround inside the rule |
 |---|---|---|
-| 1 | `ManifestDescriptor.granularity` admits only `"month"` | `urlForChunk` returns the same single year file for every puzzle number, and `granularity` states a chunking the data does not have |
+| 1 | `ManifestDescriptor.granularity` admits only `"month"` | `urlForChunk` returned the same single year file for every puzzle number. **Corrected:** `granularity` is gone, and `urlForChunk` went with it once a review found nothing ever called it |
 | 2 | Obfuscation lives in a game, and is the same problem for every game | Copy the codec into `games/cipher/manifest-codec.ts` with a comment naming the defect |
 | 3 | **Confirmed.** `custom` input promises keyboard support Layer 2 cannot supply | `render.ts` carries its own cursor, digit keys, backspace, arrows, and Enter, about forty lines that every later non grid game will write again |
-| 4 | The shell blanks a tier that did not come from the manifest | The module writes the tier name into its own share title, which the shell does not touch. The daily card row is still neutral past the horizon |
+| 4 | The shell blanks a tier that did not come from the manifest | The module wrote the tier name into its own share title. **Corrected:** engine decision 16 gives a module its own tier and the shell no longer blanks it. The daily card row is still neutral past the horizon |
 | 5 | `hasWinLoss: true` has never run | Nothing to work around. Expect a wrong label rather than a structural defect |
-| 6 | `deserialize` cannot detect a puzzle mismatch | None available. CIPHER accepts the stale save risk and the defect report proposes the engine check |
-| 7 | **Not predicted.** `src/shell/boot.ts` requires a chunk to hold `boards: [{ number, ... }]`, which is POKER GRID's vocabulary and shape reaching into the shell | CIPHER names its entry array `boards`. Proposed correction: the engine looks up an entry by puzzle number under a neutral key, or the module supplies the lookup |
+| 6 | `deserialize` cannot detect a puzzle mismatch | None available inside the module. **Corrected:** engine decision 14 puts puzzle identity in `stats.resumableState`, so no game has to detect it. The module test that proves CIPHER cannot is deliberate and stays |
+| 7 | **Not predicted.** `src/shell/boot.ts` required a chunk to hold `boards: [{ number, ... }]`, which is POKER GRID's vocabulary and shape reaching into the shell | CIPHER named its entry array `boards`. **Corrected:** a chunk holds `entries` keyed by puzzle number, stated on the contract rather than enforced silently by shell code |
 
 ## 13. Files
 

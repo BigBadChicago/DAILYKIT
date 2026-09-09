@@ -129,7 +129,8 @@ export interface ShareContext {
   readonly rated: boolean;
 }
 
-/** Title plus rows plus URL. Charter decision 1 caps the block at ten lines. */
+/** Rows only. A block is this plus a title line and a URL line, so charter
+ *  decision 1's ten line cap is eight rows. */
 export const SHARE_MAX_ROWS = 8;
 
 /**

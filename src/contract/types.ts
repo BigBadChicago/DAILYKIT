@@ -44,7 +44,9 @@ export interface GameIdentity {
  */
 export interface ManifestDescriptor {
   /**
-   * Returns the absolute URL of the chunk containing this puzzle number.
+   * Absolute URL of the index, which carries the horizon and one pointer per
+   * chunk. The index is the only thing that says where a day lives: a module
+   * states where the index is and nothing more.
    *
    * A chunk is a JSON object holding `entries`, keyed by puzzle number as a
    * string, whose values are whatever `parsePuzzle` reads. The engine looks up
@@ -53,12 +55,11 @@ export interface ManifestDescriptor {
    * so game two had to discover it by watching a puzzle fail to load.
    *
    * How many chunks a horizon has, and how days divide between them, is the
-   * index's business and not this descriptor's. Phase 11 correction, defect 1
-   * removed a `granularity` field that nothing read and that a game with one
-   * chunk could only fill in falsely.
+   * index's business. Phase 11 correction, defect 1 removed a `granularity`
+   * field that nothing read and that a game with one chunk could only fill in
+   * falsely, and the first onboarding review removed `urlForChunk`, which every
+   * module implemented and nothing ever called.
    */
-  urlForChunk(puzzleNumber: PuzzleNumber): string;
-  /** Absolute URL of the index carrying the horizon and chunk pointers. */
   readonly indexUrl: string;
   /** How many days past today to prefetch. Charter decision 3 says seven. */
   readonly lookaheadDays: number;
