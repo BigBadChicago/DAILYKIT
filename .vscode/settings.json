@@ -1,0 +1,27 @@
+{
+  "chat.useAgentsMdFile": true,
+  "chat.useClaudeMdFile": false,
+  "chat.includeApplyingInstructions": true,
+  "chat.includeReferencedInstructions": true,
+  "chat.instructionsFilesLocations": {
+    ".github/instructions": true
+  },
+  "chat.promptFilesLocations": {
+    ".github/prompts": true
+  },
+  "chat.promptFilesRecommendations": true,
+  "chat.todoListTool.enabled": true,
+  "files.eol": "\n",
+  "editor.formatOnSave": false,
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "search.exclude": {
+    "**/dist": true,
+    "**/dist-dev": true,
+    "**/node_modules": true,
+    "**/data/*/manifest.*.json": true
+  },
+  "files.watcherExclude": {
+    "**/dist/**": true,
+    "**/dist-dev/**": true
+  }
+}
