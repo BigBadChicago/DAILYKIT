@@ -11,6 +11,7 @@ import { solve, DEFAULT_BEAM_WIDTH } from "../src/games/poker-grid/solver.js";
 import { DIFFICULTY_BANDS, GREEDY_TRIALS, MIN_BEST_HANDS, MIN_OPENING_MOVES, OUTPUT_DIR, saltFor, type GeneratedEntry, type ManifestChunk } from "./generate.js";
 
 export type { GeneratedEntry, ManifestChunk } from "./generate.js";
+import { entriesOf } from "./generate.js";
 
 export interface VerifyOptions {
   /* Replaying the solver on every board doubles the cost of the job, so CI
@@ -79,14 +80,15 @@ export function verifyEntry(entry: GeneratedEntry, options: VerifyOptions = {}):
 
 export function verifyChunk(chunk: ManifestChunk, options: VerifyOptions = {}): number {
   if (chunk.codec !== MANIFEST_CODEC) throw new Error(`${chunk.month}: unknown codec ${chunk.codec}`);
+  const boards = entriesOf(chunk);
   let previous = chunk.from - 1;
-  for (const entry of chunk.boards) {
+  for (const entry of boards) {
     if (entry.number !== previous + 1) throw new Error(`${chunk.month}: puzzle numbers are not contiguous at ${entry.number}`);
     previous = entry.number;
     verifyEntry(entry, options);
   }
   if (previous !== chunk.to) throw new Error(`${chunk.month}: chunk ends at ${previous} but claims ${chunk.to}`);
-  return chunk.boards.length;
+  return boards.length;
 }
 
 export function verifyDirectory(directory = OUTPUT_DIR, options: VerifyOptions = {}): number {

@@ -7,6 +7,16 @@ vocabulary, a share block layout, the chrome, or the board.
 Record a run by copying the Results table at the bottom, dating it, and filling
 it in. A check with no result recorded has not been run.
 
+## Reporting a failure
+
+Failures found here are handed to GitHub Copilot in VS Code. Open a new chat in
+Agent mode, type `/manual-check`, and give it the section, the exact check, the
+platform and client, and what you saw against what the check says should happen.
+A screenshot helps for anything visual.
+
+`COPILOT.md` covers the setup and what a good report looks like. The rules
+Copilot follows while fixing are in `.github/copilot-instructions.md`.
+
 ## How to produce the blocks
 
 1. `npm run build:harness` and open `/harness/`. It renders a sample block for

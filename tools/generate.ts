@@ -56,6 +56,8 @@ export const MIN_OPENING_MOVES = 50;
 export const MAX_ATTEMPTS = 96;
 
 export interface GeneratedEntry {
+  /** Kept in memory for verification and rejection reporting. It is not written
+   *  to disk: the chunk keys every entry by puzzle number instead. */
   readonly number: number;
   readonly board: string;
   readonly best: { readonly score: number; readonly hands: number; readonly method: "exact" | "beam"; readonly width?: number };
@@ -79,7 +81,35 @@ export interface ManifestChunk {
   readonly month: string;
   readonly from: number;
   readonly to: number;
-  readonly boards: readonly GeneratedEntry[];
+  /** Keyed by puzzle number as a string. Phase 11 correction, defect 7. */
+  readonly entries: Readonly<Record<string, Omit<GeneratedEntry, "number">>>;
+}
+
+/** The on disk shape, built from the in memory list. */
+export function chunkOf(
+  month: string,
+  boards: readonly GeneratedEntry[],
+): ManifestChunk {
+  const entries: Record<string, Omit<GeneratedEntry, "number">> = {};
+  for (const board of boards) {
+    const { number, ...rest } = board;
+    entries[String(number)] = rest;
+  }
+  return {
+    game: "poker-grid",
+    codec: MANIFEST_CODEC,
+    month,
+    from: boards[0]?.number ?? 0,
+    to: boards[boards.length - 1]?.number ?? 0,
+    entries,
+  };
+}
+
+/** The in memory list, read back from a chunk. The key is the puzzle number. */
+export function entriesOf(chunk: ManifestChunk): readonly GeneratedEntry[] {
+  return Object.keys(chunk.entries)
+    .map((key) => ({ number: Number(key), ...(chunk.entries[key] as Omit<GeneratedEntry, "number">) }))
+    .sort((left, right) => left.number - right.number);
 }
 
 export type RejectionReason = "no-opening-move" | "too-few-openings" | "strands-cards" | "below-band" | "above-band";
@@ -168,14 +198,7 @@ export function generateEntry(number: number): { readonly entry: GeneratedEntry;
 
 function writeChunk(month: string, boards: readonly GeneratedEntry[]): string {
   const path = `${OUTPUT_DIR}/manifest.${month}.json`;
-  const chunk: ManifestChunk = {
-    game: "poker-grid",
-    codec: MANIFEST_CODEC,
-    month,
-    from: boards[0]?.number ?? 0,
-    to: boards[boards.length - 1]?.number ?? 0,
-    boards,
-  };
+  const chunk = chunkOf(month, boards);
   mkdirSync(dirname(path), { recursive: true });
   writeFileSync(path, `${JSON.stringify(chunk, null, 2)}\n`, "utf8");
   return path;

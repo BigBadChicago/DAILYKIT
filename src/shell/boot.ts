@@ -55,12 +55,26 @@ function parseIndex(value: unknown): ManifestIndex | null {
   return { horizon: value["horizon"] as number, chunks };
 }
 
-function boardFrom(value: unknown, puzzleNumber: PuzzleNumber): unknown | null {
-  if (!isRecord(value) || !Array.isArray(value["boards"])) return null;
-  for (const raw of value["boards"] as readonly unknown[]) {
-    if (isRecord(raw) && raw["number"] === puzzleNumber) return raw;
-  }
-  return null;
+/**
+ * Phase 11 correction, defect 7. A chunk holds `entries`, keyed by puzzle
+ * number, and the engine reads one entry by key. It used to require an array
+ * called `boards` whose elements carried a `number` field, which was game one's
+ * vocabulary and game one's shape, enforced here and documented nowhere.
+ *
+ * The two failures are distinguished because they are different faults. A chunk
+ * with no entries object is a format error and a chunk missing one key is a
+ * content error, and telling a developer their content is missing when their
+ * format is wrong costs a debugging session per game.
+ */
+type ChunkLookup =
+  | { readonly kind: "entry"; readonly entry: unknown }
+  | { readonly kind: "missing" }
+  | { readonly kind: "malformed" };
+
+function entryFrom(value: unknown, puzzleNumber: PuzzleNumber): ChunkLookup {
+  if (!isRecord(value) || !isRecord(value["entries"])) return { kind: "malformed" };
+  const entry = (value["entries"] as Record<string, unknown>)[String(puzzleNumber)];
+  return entry === undefined ? { kind: "missing" } : { kind: "entry", entry };
 }
 
 /**
@@ -107,12 +121,15 @@ export class PuzzleSource {
       this.chunks.set(pointer.url, chunk);
     }
 
-    const raw = boardFrom(chunk, puzzleNumber);
-    if (raw === null) {
+    const lookup = entryFrom(chunk, puzzleNumber);
+    if (lookup.kind === "malformed") {
+      return { kind: "unavailable", detail: "The puzzle list is in an unexpected format." };
+    }
+    if (lookup.kind === "missing") {
       return { kind: "unavailable", detail: `No puzzle is published for day ${puzzleNumber}.` };
     }
 
-    const parsed = this.game.parsePuzzle(puzzleNumber, raw);
+    const parsed = this.game.parsePuzzle(puzzleNumber, lookup.entry);
     if (isErr(parsed)) {
       return { kind: "unavailable", detail: `The puzzle for day ${puzzleNumber} is unreadable.` };
     }

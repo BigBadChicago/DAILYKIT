@@ -27,6 +27,10 @@ jobs:
       # rules, the scoring table, or the generator, because all three can
       # silently invalidate boards that were correct when they were written.
       - run: npm run poker-grid:verify
+      # The same check for game two. Separate from generation on purpose: a bug
+      # that writes a bad day and a bug that fails to notice one must not be
+      # able to be the same bug.
+      - run: npm run cipher:verify
       # Phase 10. The release build is the only build that produces the shared
       # engine chunk, so a change that breaks bundling must fail here rather
       # than at deploy time.

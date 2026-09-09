@@ -45,3 +45,15 @@ as a separate process so a generation defect cannot also hide in verification.
 
 The browser shell and hub are scheduled for a later phase. See
 `ARCHITECTURE.md` for the phase log and complete file manifest.
+
+## Working with Copilot
+
+`.github/copilot-instructions.md` carries the full agent instructions:
+constraints, the layer rule, the locked decisions, the invariants, the
+verification gate, and the protocol for fixing a failure found in
+`MANUAL-CHECKS.md`. Path scoped rules live in `.github/instructions/`, and
+`.github/prompts/` holds reusable commands: `/onboard`, `/manual-check`,
+`/verify`, `/review-change`, and `/changelog-entry`.
+
+`COPILOT.md` is the human's guide to driving all of it during a manual checks
+run.

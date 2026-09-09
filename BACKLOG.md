@@ -135,3 +135,29 @@ the result, which is a human pass across real devices.
 - **A tutorial board for the other four games.** POKER GRID has one and the
   seam is proven. Each new game supplies its own or leaves `firstSessionPuzzle`
   undefined, which falls back to the help panel over today's board.
+
+## Logged in Phase 11
+
+- **CIPHER band supply past about five years.** Saturday's band holds 265
+  eligible codes and spends 52 a year, so a horizon beyond roughly five years
+  either repeats a code or needs a second opening. Not solved now because the
+  manifest horizon is 365 days and a repeat five years apart is invisible to a
+  player.
+- **A shared list cursor in Layer 2.** Phase 11 defect 3's correction was to
+  document that `custom` input owns its own keyboard. CIPHER's forty lines are
+  one example, and an abstraction drawn from one example is the more expensive
+  mistake. Revisit at game three if VECTOR or TALLY DROP wants the same thing.
+- **A CIPHER tutorial code.** `firstSessionPuzzle` is unimplemented, so a first
+  time player gets the help panel over today's real code. The seam is proven by
+  POKER GRID and each new game either supplies one or does not.
+- **A scheduled shape lever for CIPHER.** Measured out in Phase 11: four of the
+  seven weekday pairings hold fewer codes than a year spends and one holds none.
+  The shape is recorded instead. A schedule becomes available again if the
+  opening ever changes, since the classes would move with it.
+- **The `fresh-shapes` lever.** Named in the plan, cut from the vocabulary
+  because it constrains a day against its neighbour rather than against itself,
+  which the per day generation loop has no place to check.
+- **A second CIPHER opening as a difficulty lever.** The whole difficulty scale
+  is a property of the one fixed opening. Rotating it yearly would widen the
+  bands, and it would also invalidate every stored difficulty, so it is a
+  migration rather than a knob.

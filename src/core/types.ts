@@ -26,6 +26,13 @@ export interface GridInput {
   readonly pointer: PointerMode;
 }
 
+/**
+ * A game whose focus model is not a lattice. Phase 11 correction, defect 3:
+ * `custom` means the game owns its own keyboard handling, because ui/gridCursor
+ * serves a grid and nothing in the kit serves anything else yet. `keys` is a
+ * declaration of what the game listens for, so the engine can keep its own
+ * shortcuts out of the way, and not a promise that the engine will wire them.
+ */
 export interface CustomInput {
   readonly kind: "custom";
   readonly pointer: PointerMode;

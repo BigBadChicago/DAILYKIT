@@ -69,6 +69,12 @@ const TARGETS: Readonly<Record<string, Target>> = {
     gameId: "poker-grid",
     productionSafe: true,
   },
+  cipher: {
+    outPath: "cipher",
+    html: "src/shell/entries/cipher.html",
+    gameId: "cipher",
+    productionSafe: true,
+  },
   "toy-tap": {
     outPath: "toy-tap",
     html: "src/shell/entries/toy-tap.html",

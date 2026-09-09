@@ -4,9 +4,8 @@
   "month": "2026-02",
   "from": 32,
   "to": 59,
-  "boards": [
-    {
-      "number": 32,
+  "entries": {
+    "32": {
       "board": "R2Y1IOl0RSehxbZvrQum7QI8qeDA-8c5lne",
       "best": {
         "score": 5902,
@@ -25,8 +24,7 @@
       "greedyMedian": 4952,
       "openings": 458
     },
-    {
-      "number": 33,
+    "33": {
       "board": "wMfswenNiHd_QJqjZOdedVis1OZ0dY47_sM",
       "best": {
         "score": 5836,
@@ -45,8 +43,7 @@
       "greedyMedian": 4998,
       "openings": 664
     },
-    {
-      "number": 34,
+    "34": {
       "board": "NZzkkYAfg9oEQfCMklbJrtKBKDJXMGt30Vz",
       "best": {
         "score": 5913,
@@ -65,8 +62,7 @@
       "greedyMedian": 5016,
       "openings": 363
     },
-    {
-      "number": 35,
+    "35": {
       "board": "y7qqQU5JkLWhgN6xOECIlkHIL9iTYXrwlMb",
       "best": {
         "score": 5803,
@@ -85,8 +81,7 @@
       "greedyMedian": 4976,
       "openings": 359
     },
-    {
-      "number": 36,
+    "36": {
       "board": "P1LM0ju7ujcZi7Kfb3-mnIHTjT8r_nfODtk",
       "best": {
         "score": 5793,
@@ -105,8 +100,7 @@
       "greedyMedian": 4936,
       "openings": 236
     },
-    {
-      "number": 37,
+    "37": {
       "board": "eDQpiicjoA57sF2T02besZEjQ4dBRa8ID9y",
       "best": {
         "score": 5890,
@@ -126,8 +120,7 @@
       "greedyMedian": 4952,
       "openings": 151
     },
-    {
-      "number": 38,
+    "38": {
       "board": "ntGR_sWQliIbgSMB0pjjYtycMUkFIyNaJsR",
       "best": {
         "score": 5896,
@@ -147,8 +140,7 @@
       "greedyMedian": 4224,
       "openings": 326
     },
-    {
-      "number": 39,
+    "39": {
       "board": "HHMLgUqXPYlnMq0hKI0vL-iKmOPV5vxuo5_",
       "best": {
         "score": 5862,
@@ -167,8 +159,7 @@
       "greedyMedian": 4977,
       "openings": 460
     },
-    {
-      "number": 40,
+    "40": {
       "board": "i5Ia6UUXJKq0n-ww0bklc-G1ENGfQuB7W2y",
       "best": {
         "score": 5943,
@@ -187,8 +178,7 @@
       "greedyMedian": 5137,
       "openings": 622
     },
-    {
-      "number": 41,
+    "41": {
       "board": "Yo5Uog6g7daVlTX9G4A7tiOFvluMpE6glMP",
       "best": {
         "score": 5805,
@@ -207,8 +197,7 @@
       "greedyMedian": 4936,
       "openings": 502
     },
-    {
-      "number": 42,
+    "42": {
       "board": "vVLXwXosHSYfduCyt5rn_RAICG9SkDvH6Xm",
       "best": {
         "score": 5867,
@@ -227,8 +216,7 @@
       "greedyMedian": 4970,
       "openings": 463
     },
-    {
-      "number": 43,
+    "43": {
       "board": "xo_HyNJ34ezSSDqqDWaEsssAyxuwFq1Wthr",
       "best": {
         "score": 5800,
@@ -247,8 +235,7 @@
       "greedyMedian": 4934,
       "openings": 195
     },
-    {
-      "number": 44,
+    "44": {
       "board": "zN7WC00vx_ifxEg1FwiTKaOc4Ia0ZFm7jko",
       "best": {
         "score": 5807,
@@ -268,8 +255,7 @@
       "greedyMedian": 4954,
       "openings": 195
     },
-    {
-      "number": 45,
+    "45": {
       "board": "Lt8QmAmrUKPIdpAlau7dEDfE-YQCtI22J8X",
       "best": {
         "score": 5868,
@@ -289,8 +275,7 @@
       "greedyMedian": 4204,
       "openings": 274
     },
-    {
-      "number": 46,
+    "46": {
       "board": "4XNeHpYvW27rdHMOVMCnpCE7yFaLm3Z1_e4",
       "best": {
         "score": 5818,
@@ -309,8 +294,7 @@
       "greedyMedian": 4972,
       "openings": 530
     },
-    {
-      "number": 47,
+    "47": {
       "board": "iLYEYHGe9gzwSK5VPQBVWl6u-21yh5sD3wW",
       "best": {
         "score": 5826,
@@ -329,8 +313,7 @@
       "greedyMedian": 4970,
       "openings": 557
     },
-    {
-      "number": 48,
+    "48": {
       "board": "8tV8owpOyWaoUuusD9NhiirRSR2y1XnmbRL",
       "best": {
         "score": 5932,
@@ -349,8 +332,7 @@
       "greedyMedian": 5105,
       "openings": 349
     },
-    {
-      "number": 49,
+    "49": {
       "board": "JbcUbWkYEOuBARgTTGO03K6Dwqty3yxrQ8w",
       "best": {
         "score": 5846,
@@ -369,8 +351,7 @@
       "greedyMedian": 4963,
       "openings": 577
     },
-    {
-      "number": 50,
+    "50": {
       "board": "_e-AiseY8_uVdfElwLDYQFxgwG9nB1UC8JA",
       "best": {
         "score": 5792,
@@ -389,8 +370,7 @@
       "greedyMedian": 4916,
       "openings": 172
     },
-    {
-      "number": 51,
+    "51": {
       "board": "lNyimqfaOUp7jO9k34X_f0kU9Nxfh75enBj",
       "best": {
         "score": 5878,
@@ -410,8 +390,7 @@
       "greedyMedian": 4960,
       "openings": 255
     },
-    {
-      "number": 52,
+    "52": {
       "board": "G2YWBtmdkMtBzYnsmvJf0rF04-1m5NlCr5s",
       "best": {
         "score": 5927,
@@ -431,8 +410,7 @@
       "greedyMedian": 4288,
       "openings": 290
     },
-    {
-      "number": 53,
+    "53": {
       "board": "LBExb-QH1SzV1V1R1i8r5mxhGx_IVcQn5wu",
       "best": {
         "score": 5938,
@@ -451,8 +429,7 @@
       "greedyMedian": 4993,
       "openings": 477
     },
-    {
-      "number": 54,
+    "54": {
       "board": "UFRLbXdM8F2egKikcJxr4NUxuhuK9F3OxY8",
       "best": {
         "score": 5838,
@@ -471,8 +448,7 @@
       "greedyMedian": 4959,
       "openings": 443
     },
-    {
-      "number": 55,
+    "55": {
       "board": "6aqcyBH1CYTpsG1GU1Vw-0qwr69c3bU2_Vg",
       "best": {
         "score": 5885,
@@ -491,8 +467,7 @@
       "greedyMedian": 4959,
       "openings": 534
     },
-    {
-      "number": 56,
+    "56": {
       "board": "Au2NCyB-ncRpzhQl05b4kShC2pSUZQ5x31I",
       "best": {
         "score": 5875,
@@ -511,8 +486,7 @@
       "greedyMedian": 4972,
       "openings": 519
     },
-    {
-      "number": 57,
+    "57": {
       "board": "SXzgYBCyl8_mNGbJ8jRsmI4CBy3WYbaen7c",
       "best": {
         "score": 5830,
@@ -531,8 +505,7 @@
       "greedyMedian": 4970,
       "openings": 204
     },
-    {
-      "number": 58,
+    "58": {
       "board": "P6Gbp0X3V4nmKXQQ5TdUpX4X4zdTqP3AGFL",
       "best": {
         "score": 5892,
@@ -552,8 +525,7 @@
       "greedyMedian": 4150,
       "openings": 170
     },
-    {
-      "number": 59,
+    "59": {
       "board": "1kXgZR0LkmP2d3RH6aoKNP9kcKkNrwXQrVs",
       "best": {
         "score": 5897,
@@ -573,5 +545,5 @@
       "greedyMedian": 4244,
       "openings": 318
     }
-  ]
+  }
 }

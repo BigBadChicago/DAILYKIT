@@ -2,7 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { emptyGameRecord } from "../../src/engine/storage.js";
-import { entryFor } from "../../src/shell/registry.js";
+import { LIVE_GAMES, SUITE_GAMES, entryFor } from "../../src/shell/registry.js";
 import { openGameStore } from "../../src/shell/suite.js";
 import { mountHub } from "../../src/hub/hub.js";
 
@@ -41,15 +41,19 @@ describe("the hub", () => {
   it("lists every game in the suite, whether or not it is built", () => {
     const root = mount();
     const cards = root.querySelectorAll(".hub-card");
-    expect(cards).toHaveLength(5);
-    expect(root.querySelectorAll(".hub-card--planned")).toHaveLength(4);
+    expect(cards).toHaveLength(SUITE_GAMES.length);
+    /* Derived rather than counted, so shipping a game is one registry edit and
+       not also a test edit. */
+    expect(root.querySelectorAll(".hub-card--planned"))
+      .toHaveLength(SUITE_GAMES.length - LIVE_GAMES.length);
   });
 
   it("links only to built games", () => {
     const root = mount();
     const links = Array.from(root.querySelectorAll("a.hub-card__link"));
-    expect(links).toHaveLength(1);
-    expect(links[0]!.getAttribute("href")).toBe("/poker-grid/");
+    expect(links).toHaveLength(LIVE_GAMES.length);
+    expect(links.map((link) => link.getAttribute("href")))
+      .toEqual(LIVE_GAMES.map((entry) => entry.path));
   });
 
   it("states each game's one sentence rule", () => {

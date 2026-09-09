@@ -86,6 +86,6 @@ describe("game scoping", () => {
   });
 
   it("shows a suite wide entry to every game", () => {
-    expect(pendingFrom(fixture, 0, "echo").map((entry) => entry.version)).toEqual([1]);
+    expect(pendingFrom(fixture, 0, "recall").map((entry) => entry.version)).toEqual([1]);
   });
 });

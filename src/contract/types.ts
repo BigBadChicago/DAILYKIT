@@ -43,9 +43,20 @@ export interface GameIdentity {
  * fallback, and the past horizon unrated path in one place instead of five.
  */
 export interface ManifestDescriptor {
-  /** Monthly chunking per charter decision 3. */
-  readonly granularity: "month";
-  /** Returns the absolute URL of the chunk containing this puzzle number. */
+  /**
+   * Returns the absolute URL of the chunk containing this puzzle number.
+   *
+   * A chunk is a JSON object holding `entries`, keyed by puzzle number as a
+   * string, whose values are whatever `parsePuzzle` reads. The engine looks up
+   * one entry by key and never inspects it further. Phase 11 correction,
+   * defect 7: this format used to be enforced by shell code and stated nowhere,
+   * so game two had to discover it by watching a puzzle fail to load.
+   *
+   * How many chunks a horizon has, and how days divide between them, is the
+   * index's business and not this descriptor's. Phase 11 correction, defect 1
+   * removed a `granularity` field that nothing read and that a game with one
+   * chunk could only fill in falsely.
+   */
   urlForChunk(puzzleNumber: PuzzleNumber): string;
   /** Absolute URL of the index carrying the horizon and chunk pointers. */
   readonly indexUrl: string;
@@ -85,6 +96,13 @@ export interface PuzzleFailure {
   readonly detail: string;
 }
 
+/**
+ * `puzzle-mismatch` is optional, not obligatory. Phase 11 correction, defect 6:
+ * the engine owns puzzle identity and restores stored state only when the saved
+ * puzzle number equals the day being opened, so a game whose state cannot tell
+ * one puzzle from another is safe. A game that can detect it cheaply, as POKER
+ * GRID does by checking its cards, should still say so.
+ */
 export interface StateFailure {
   readonly code: "malformed" | "unsupported-version" | "puzzle-mismatch";
   readonly detail: string;

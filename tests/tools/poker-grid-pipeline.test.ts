@@ -1,26 +1,22 @@
 import { describe, expect, it } from "vitest";
 import {
   DIFFICULTY_BANDS,
+  chunkOf as chunkFrom,
   evaluateCandidate,
   generateEntry,
   MIN_BEST_HANDS,
   MIN_OPENING_MOVES,
   saltFor,
 } from "../../tools/generate.js";
-import { verifyChunk, verifyEntry, type ManifestChunk } from "../../tools/verify.js";
+import { verifyChunk, verifyEntry, type GeneratedEntry, type ManifestChunk } from "../../tools/verify.js";
 import { calibrate } from "../../tools/calibrate.js";
 import { MANIFEST_CODEC } from "../../src/games/poker-grid/manifest-codec.js";
 import { weekdayFor } from "../../src/games/poker-grid/generator.js";
 import { HAND_POINTS, HAND_POINTS_FLOOR } from "../../src/games/poker-grid/scoring.js";
 
-const chunkOf = (boards: ManifestChunk["boards"]): ManifestChunk => ({
-  game: "poker-grid",
-  codec: MANIFEST_CODEC,
-  month: "2026-01",
-  from: boards[0]?.number ?? 0,
-  to: boards[boards.length - 1]?.number ?? 0,
-  boards,
-});
+/* Phase 11 correction, defect 7. A chunk keys its entries by puzzle number, so
+   the test builds one the same way the tool does. */
+const chunkOf = (boards: readonly GeneratedEntry[]): ManifestChunk => chunkFrom("2026-01", boards);
 
 describe("Poker Grid generation pipeline", () => {
   it("generates a deterministic entry that its own verifier accepts", () => {

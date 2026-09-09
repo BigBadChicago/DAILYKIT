@@ -1,0 +1,110 @@
+/* CIPHER play area only. The engine owns the chrome. Requirement 7.3.8 gives a
+   game its identity through accent and board typography and nothing else. */
+
+.cipher {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: center;
+  font-family: var(--dk-board-font, ui-monospace, monospace);
+}
+
+.cipher-history {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  max-width: 20rem;
+}
+
+.cipher-row {
+  display: grid;
+  grid-template-columns: repeat(4, 2.25rem) 1fr;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.cipher-feedback {
+  font-size: 0.8rem;
+  text-align: right;
+  color: var(--dk-text-muted, inherit);
+}
+
+.cipher-slots,
+.cipher-palette {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.cipher-slot,
+.cipher-key {
+  /* Requirement 8.2. Never below a 44 by 44 pixel touch target. */
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: var(--dk-line-width, 1px) solid var(--dk-line, currentColor);
+  border-radius: 0.4rem;
+  background: var(--dk-surface, transparent);
+  color: var(--dk-accent, currentColor);
+  cursor: pointer;
+}
+
+.cipher-slot[data-empty="true"] {
+  border-style: dashed;
+  color: var(--dk-text-muted, currentColor);
+}
+
+.cipher-slot:focus-visible,
+.cipher-key:focus-visible,
+.cipher-submit:focus-visible {
+  outline: 3px solid var(--dk-focus, currentColor);
+  outline-offset: 2px;
+}
+
+.cipher-shape {
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+
+/* Shape, not colour, carries the meaning. Requirement 8.1. */
+.cipher-shape[data-filled="true"] {
+  fill: currentColor;
+  stroke: none;
+}
+
+.cipher-submit {
+  min-block-size: 2.75rem;
+  padding: 0 1.25rem;
+  border-radius: 0.4rem;
+  border: var(--dk-line-width, 1px) solid var(--dk-line, currentColor);
+  background: var(--dk-accent, transparent);
+  color: var(--dk-on-accent, inherit);
+  cursor: pointer;
+}
+
+.cipher-submit[disabled] {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.cipher-status {
+  font-size: 0.85rem;
+  text-align: center;
+  min-block-size: 1.2rem;
+}
+
+.cipher-answer {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+}

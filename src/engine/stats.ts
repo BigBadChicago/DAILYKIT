@@ -6,7 +6,7 @@
  * scheduler.ts and only calls completeLive for a live puzzle.
  */
 
-import type { PuzzleNumber } from "../core/types.js";
+import type { PuzzleNumber, SerializedState } from "../core/types.js";
 import {
   HISTORY_CAP,
   type GameRecord,
@@ -96,6 +96,25 @@ export function resultFor(record: GameRecord, puzzleNumber: PuzzleNumber): Store
   if (live !== null && live.puzzleNumber === puzzleNumber && live.result !== null) return live.result;
   const entry = record.history.find((item) => item.puzzleNumber === puzzleNumber);
   return entry?.result ?? null;
+}
+
+/**
+ * The stored board a session may resume, or null. Phase 11 correction, defect
+ * 6: the engine owns puzzle identity. A module whose serialized state cannot
+ * tell one puzzle from another, which is every guessing game, would otherwise
+ * be handed yesterday's save and show feedback that never happened. Archive
+ * sessions never resume, because requirement 3.6.1 keeps replays out of the
+ * live record entirely.
+ */
+export function resumableState(
+  record: GameRecord,
+  mode: "live" | "archive" | "tutorial",
+  puzzleNumber: PuzzleNumber,
+): SerializedState | null {
+  if (mode !== "live") return null;
+  const live = record.live;
+  if (live === null || live.puzzleNumber !== puzzleNumber) return null;
+  return live.state;
 }
 
 export function archiveResultFor(

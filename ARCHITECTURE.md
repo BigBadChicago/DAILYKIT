@@ -9,10 +9,10 @@ resume work in a fresh conversation with no chat history.
 
 | Field | Value |
 |---|---|
-| Current phase | Phase 8 remainder done but for the manual checklist. Phase 11 next, and the slate is approved |
-| Games playable | POKER GRID, end to end in a browser, inside the suite shell |
-| Engine contract version | 1, drafted and proven against toy-tap |
-| Manifest horizon | 365 days, puzzle 1 through 365, epoch 2026-01-01, all verified with a solver replay |
+| Current phase | Phase 11 done. Phase 12, template extraction, is next. Phase 8's manual checklist is still unrun |
+| Games playable | POKER GRID and CIPHER, end to end in a browser, inside the suite shell |
+| Engine contract version | 2, corrected by the Phase 11 defect report. Chunks are keyed entries, granularity is gone, tiers belong to the module |
+| Manifest horizon | POKER GRID 365 days from epoch 2026-01-01, verified with a solver replay. CIPHER 365 days from epoch 2026-01-05, the first Monday, verified against the fixed opening |
 
 ## Phase log
 
@@ -27,9 +27,9 @@ resume work in a fresh conversation with no chat history.
 | 6 | POKER GRID interface | done | Accessible five by seven card renderer, pointer gestures, keyboard cursor, card art, and reduced motion styling |
 | 7 | Generation pipeline | done | Connected region enumeration, exact search with a measured ceiling falling back to a width 400 beam, empirical scoring table, weekday difficulty bands, degenerate board rejection, obfuscated manifest, and the CI jobs that produce and check it |
 | 8 | Polish and launch readiness | in progress | First pass delivered the dependency layer check, CI wiring, and the runbook only. The remainder is being worked through PHASE-8-PLAN.md. Done since: favicon, web manifest, about page, service worker, offline caching proved with the network disabled, the changelog, POKER GRID's first session board, the byte budget check in CI, and time to interactive measured. Open: running MANUAL-CHECKS.md once and recording the result |
-| 9 | Slate approval | done | SLATE.md. Ten candidates, five recommended, approved 2026-09-08. POKER GRID, CIPHER, RULE OF FOUR, LADDER, ECHO |
+| 9 | Slate approval | done | SLATE.md, second revision. Thirty four pooled candidates, five recommended, approved 2026-09-08. POKER GRID, VECTOR, CIPHER, TALLY DROP, RECALL |
 | 10 | Suite shell | done | Hub, shell, per game entries, one pass release build with a shared engine chunk, suite storage and streak, daily card, cross promotion. One contract change and one renderer defect, both below |
-| 11 | Game two and abstraction test | not started | |
+| 11 | Game two and abstraction test | done | CIPHER ships at 24.0 KB gzipped. Defect report written, eight defects, and the engine corrected for all of them. Both games rebuilt against the corrected contract and the full suite is green: 43 files, 463 tests, 57 seconds |
 | 12 | Template extraction | not started | |
 | 13 | Games three, four, five | not started | |
 | 14 | Suite launch readiness | not started | |
@@ -62,8 +62,15 @@ Table columns are fixed as follows and every future entry uses them.
 | ARCHITECTURE.md | n/a | This manifest | none |
 | BACKLOG.md | n/a | Everything deliberately not built | none |
 | ASSETS.md | n/a | Every asset and its license | none |
+| COPILOT.md | n/a | The human's guide to driving Copilot through a manual checks run | none |
+| AGENTS.md | n/a | The open standard pointer to the Copilot instructions, for other agents | none |
+| .github/copilot-instructions.md | n/a | Always on agent instructions: constraints, layers, invariants, the gate, the defect protocol, the diagnosis table | none |
+| .github/instructions/*.instructions.md | n/a | Path scoped agent rules, one file per area, applied by glob | none |
+| .github/prompts/*.prompt.md | n/a | Reusable agent commands: onboard, manual-check, verify, review-change, changelog-entry | none |
+| .vscode/settings.json | n/a | Turns the instruction and prompt files on for this workspace | none |
 | POKER-GRID.md | n/a | POKER GRID rules, scoring, tiers, and share layout | none |
 | SLATE.md | n/a | The Phase 9 candidate list and the recommended five | none |
+| CIPHER.md | n/a | CIPHER rules, feedback algorithm, verification, tiers, and share layout | none |
 | src/shared/share-vocabulary.ts | shared | Suite wide share tokens, their glyphs, and their shapes | none |
 | src/shared/poker-hands.ts | shared | Poker hand categories, ordinals, and shared result tier mapping | shared/share-vocabulary |
 | src/core/result.ts | 0 | Result type so rule failures are values rather than throws | none |
@@ -81,11 +88,12 @@ Table columns are fixed as follows and every future entry uses them.
 | src/games/poker-grid/style.css | 4 | POKER GRID board layout, card styling, suit shapes, responsive sizing, and motion layers | none |
 | src/games/poker-grid/help.ts | 4 | POKER GRID structured help content and worked example | core/types |
 | data/poker-grid/manifest.index.json | n/a | Horizon, codec name, solver settings, and monthly chunk pointers | none |
-| data/poker-grid/manifest.<chunk>.json | n/a | Monthly obfuscated boards with stored best, difficulty, band inputs, levers, and attempt | none |
+| data/poker-grid/manifest.<chunk>.json | n/a | Monthly entries keyed by puzzle number, obfuscated, with stored best, difficulty, band inputs, levers, and attempt | none |
 | src/core/rng.ts | 0 | Deterministic seedable PRNG plus integer range, shuffle, and weighted pick helpers | none |
 | src/core/seed.ts | 0 | Derives a uint32 seed from game id, puzzle number, and optional salt, and expands it into a generator | core/rng, core/types |
 | src/core/date.ts | 0 | Local day arithmetic, epoch math, next midnight target, and clock jump classification | core/types |
 | src/engine/tiers.ts | 1 | Suite wide tier names and the unrated label | none |
+| src/engine/manifest-codec.ts | 1 | The suite wide manifest keystream, parameterised by radix and keyed by puzzle number | none |
 | src/engine/telemetry.ts | 1 | Telemetry interface and its no operation default | none |
 | src/engine/storage.ts | 1 | Versioned persistence, envelope migration, quota and disabled storage fallback | core/result, core/types, engine/tiers |
 | src/engine/stats.ts | 1 | Streak, distribution, and suite aggregate computation as pure functions | core/types, engine/storage |
@@ -141,7 +149,7 @@ Table columns are fixed as follows and every future entry uses them.
 | tests/games/poker-grid/solver.test.ts | n/a | Exact search coverage on a compact legal board | games/poker-grid/solver, games/poker-grid/rules |
 | tests/games/poker-grid/render.test.ts | n/a | Accessible board creation, keyboard activation, repaint, empty cells, and teardown | games/poker-grid/render, games/poker-grid/generator, games/poker-grid/rules |
 | src/games/poker-grid/greedy.ts | 4 | Legal move listing and the naive reference player difficulty is measured against | core/rng, games/poker-grid/evaluator, games/poker-grid/rules, games/poker-grid/scoring |
-| src/games/poker-grid/manifest-codec.ts | 4 | Reversible board obfuscation keyed to the puzzle number, shared by the tools and the module | games/poker-grid/rules |
+| src/games/poker-grid/manifest-codec.ts | 4 | Board sized wrapper over the engine codec: 35 cells drawn from 52 cards | engine/manifest-codec, games/poker-grid/rules |
 | data/poker-grid/calibration.json | n/a | The checked in availability study behind the scoring table | none |
 | .github/workflows/ci.yml | n/a | Typecheck, tests, and manifest verification on every change | none |
 | .github/workflows/generate.yml | n/a | The job that regenerates and verifies the horizon | none |
@@ -181,10 +189,34 @@ Table columns are fixed as follows and every future entry uses them.
 | static/site.webmanifest | n/a | Web app manifest, deployed at the site root | none |
 | tests/engine/dailycard.test.ts | n/a | Row shape, the ungraded case, the row cap, and the text equivalent | engine/dailycard, engine/share, engine/tiers |
 | tests/shell/registry.test.ts | n/a | Registry uniqueness, agreement with built modules, and cross promotion | shell/registry, engine/stats, games/poker-grid/module |
+| tests/shell/boot.test.ts | n/a | Chunk lookup by puzzle number, the format and missing day messages, the horizon fallback, and chunk caching | shell/boot |
 | tests/shell/suite.test.ts | n/a | Today status per game, read only guarantees, daily card input, theme port | shell/suite, shell/registry, engine/* |
 | tests/hub/hub.test.ts | n/a | Card listing, links, the daily card, tier badges, and accessible names | hub/hub, shell/* |
 | tests/games/poker-grid/generator.test.ts | n/a | Determinism, deck legality, weekday levers, and the guarantees each lever makes | games/poker-grid/generator, games/poker-grid/evaluator, core/seed |
 | tests/games/poker-grid/manifest-codec.test.ts | n/a | Round trip across a year, stream keying, and malformed input rejection | games/poker-grid/manifest-codec, games/poker-grid/generator |
+| src/games/cipher/rules.ts | 4 | CIPHER feedback scoring, guess composition, rejections, terminal detection, tier and bucket mapping | core/result, core/types |
+| src/games/cipher/solver.ts | 4 | Knuth style minimax over the 1,296 code space, with a precomputed feedback table | games/cipher/rules |
+| tools/cipher-study.ts | tools | Measures line length and consistent set size across the whole code space, the input to CIPHER's weekday bands | games/cipher/rules, games/cipher/solver |
+| data/cipher/study.json | n/a | The checked in study behind CIPHER's fairness floor and difficulty bands | none |
+| tests/games/cipher/rules.test.ts | n/a | Feedback worked examples, every rejection path, the guess limit, and a random legal sequence property | games/cipher/rules |
+| tests/games/cipher/solver.test.ts | n/a | Index round trip, table agreement, opening partition, tie break determinism, and line correctness | games/cipher/rules, games/cipher/solver |
+| src/games/cipher/generator.ts | 4 | Seeded code construction, the weekday difficulty bands, and the shape lever a day records | core/rng, core/seed, core/types, games/cipher/rules |
+| src/games/cipher/manifest-codec.ts | 4 | Code sized wrapper over the engine codec: four symbols drawn from six shapes | engine/manifest-codec, games/cipher/rules |
+| data/cipher/manifest.index.json | n/a | Horizon, codec, fixed opening, and the single chunk pointer | none |
+| data/cipher/manifest.horizon.json | n/a | The 365 day CIPHER horizon as entries keyed by puzzle number, obfuscated, with difficulty, line length, lever, and attempt | none |
+| tools/cipher-generate.ts | tools | Draws, bands, and screens codes, then writes the year chunk and the index | core/seed, games/cipher/generator, games/cipher/manifest-codec, games/cipher/rules, games/cipher/solver |
+| tools/cipher-verify.ts | tools | Re-derives every claim a CIPHER entry makes, including its seed, attempt, lever, band, and solver line | core/seed, games/cipher/generator, games/cipher/manifest-codec, games/cipher/rules, games/cipher/solver, tools/cipher-generate |
+| tests/games/cipher/generator.test.ts | n/a | Weekday mapping, band ordering, seeded determinism, lever totality, and unrated fallback | games/cipher/generator, games/cipher/solver |
+| tests/games/cipher/manifest-codec.test.ts | n/a | Round trip across a year, stream keying, and malformed input rejection | games/cipher/generator, games/cipher/manifest-codec |
+| tests/tools/cipher-pipeline.test.ts | n/a | Entry determinism, band conformance, rejection accounting, tamper detection, and the committed manifest | tools/cipher-generate, tools/cipher-verify, games/cipher/* |
+| src/games/cipher/module.ts | 4 | CIPHER GameModule implementation, puzzle parsing, snapshot state, outcome, and share data | core/result, core/types, engine/tiers, contract/*, games/cipher/generator, games/cipher/help, games/cipher/manifest-codec, games/cipher/render, games/cipher/rules |
+| src/games/cipher/render.ts | 4 | CIPHER play area: shape palette, four slots, guess history, and its own keyboard model | ui/dom, contract/types, games/cipher/generator, games/cipher/rules |
+| src/games/cipher/style.css | 4 | CIPHER slot, palette, and history styling with 44 pixel touch targets | none |
+| src/games/cipher/help.ts | 4 | CIPHER structured help content and worked example | core/types |
+| src/shell/entries/cipher.ts | 5 | The CIPHER bundler entry, the one file that names it | games/cipher/module, shell/main |
+| src/shell/entries/cipher.html | 5 | The CIPHER page | none |
+| tests/games/cipher/module.test.ts | n/a | Identity, manifest resolution, parse rejection, snapshot round trip, outcome grading, and share rows | games/cipher/module, games/cipher/rules |
+| tests/games/cipher/render.test.ts | n/a | Palette and slot accessibility, tap and keyboard play, announcement, reveal on loss, and teardown | games/cipher/render, games/cipher/rules |
 
 ## Planned repository layout
 
@@ -379,6 +411,23 @@ Settled in Phase 1. Inputs to every later phase.
     keys. The presentation kit therefore serves grid games without assuming one.
 12. **`toy-tap` is permanent**, CI enforced, and excluded from production builds
     by an explicit `GAME` allow list in `vite.config.ts`.
+13. **A manifest chunk is `entries`, keyed by puzzle number, and the contract
+    says so.** Phase 11 correction, defect 7. The engine reads one entry by key
+    and never inspects it; how many chunks a horizon has is the index's
+    business. `granularity` was removed in the same pass, defect 1, because
+    nothing read it and a one chunk game could only fill it in falsely.
+14. **The engine owns puzzle identity.** Phase 11 correction, defect 6.
+    `stats.resumableState` is the single place a stored board is matched to the
+    day being opened, so a module whose state cannot tell one puzzle from
+    another is safe by construction. `StateFailure`'s `puzzle-mismatch` stays
+    available for games that can detect it cheaply.
+15. **`custom` input means the game owns its keyboard.** Phase 11 correction,
+    defect 3. Stated on the type rather than discovered. A shared list cursor
+    waits for a second example, because an abstraction drawn from one is the
+    more expensive mistake.
+16. **A module's tier is the module's.** Phase 11 correction, defect 4. The
+    shell no longer blanks it past the manifest horizon; a module with nothing
+    to grade against returns null itself.
 
 ## Engine decisions
 
@@ -638,12 +687,14 @@ phase and are not to be reopened without a stated reason.
    and not Perfect, no name collision arises and the zero remaining histogram
    bucket keeps the label **Perfect Clear**. Past the manifest horizon the label
    is the lowercase word `unrated`, which sits where a tier name sits.
-17. **Slate.** POKER GRID is one of the five. Phase 9 proposed ten candidates
-   and recommended CIPHER, RULE OF FOUR, LADDER, and ECHO alongside it, in
+17. **Slate.** POKER GRID is one of the five. Phase 9's second revision
+   recommended VECTOR, CIPHER, TALLY DROP, and RECALL alongside it, in
    `SLATE.md`. **Approved 2026-09-08.** `src/shell/registry.ts` carries the
-   four as `planned` entries until each is built, and Phase 11 is now
-   unblocked. Changing the slate before a game is built is an edit to that one
-   file.
+   four as `planned` entries until each is built, in session length order, and
+   was corrected in Phase 11 from the first revision's list of RULE OF FOUR,
+   LADDER, and ECHO, which it still held. Game two is CIPHER. Phase 13 order is
+   VECTOR, TALLY DROP, RECALL. Changing the slate before a game is built is an
+   edit to that one file.
 
 ## Resolutions of internal conflicts in the source document
 
@@ -810,6 +861,189 @@ presentation, generation, and suite decisions above.
     five cards from cache and POKER GRID renders all 35 cells with the manifest
     index and the current chunk served from the cache. Redone after any change
     to the worker or to the build's asset naming.
+
+## CIPHER generation decisions
+
+Settled in Phase 11, in the same standing as the decisions above. They govern
+game two only where they name it.
+
+1. **Difficulty is the size of the class the fixed opening leaves.** One
+   integer, reproducible exactly, no tolerance. `OPENING_GUESS` is `[0, 0, 1, 2]`
+   and changing it invalidates every stored difficulty, which is stated beside
+   the constant.
+2. **A band is a set of classes, not a numeric window.** The opening partitions
+   1,296 codes into fourteen classes and two of them hold 40 percent of the
+   space, so a band sized as a share of the distribution is not available.
+   Monday admits 44 or fewer, then 81, 84, 105, Sunday 182, Friday 222 or 230,
+   Saturday 276. Every band holds more than the 52 days a year spends, and the
+   larger classes carry longer solver lines, so the ordering grades difficulty.
+3. **The shape lever is recorded, not scheduled.** Measurement killed the
+   scheduled version: all distinct has no codes at all in Tuesday's class, and
+   four of the seven weekday pairings hold fewer than the 52 a year needs. A day
+   records the shape it drew, which is what requirement 6.3.6 asks of POKER GRID
+   and is all an audit needs.
+4. **The fairness floor is four guesses**, measured to admit 1,221 of 1,296
+   codes, so screening is cheap. 75 codes fall out in three or fewer and are
+   rejected under a salt.
+5. **No code repeats inside a horizon.** Two days with the same answer is
+   visible to any player who opens the archive, and the thinnest band still
+   holds 73 codes against 52 days.
+6. **The solver never reaches the browser.** Its table is 1.7 megabytes, so
+   `generator.ts` is written to be importable by the module and `solver.ts` is
+   not. That is why difficulty and line length live in the manifest and a code
+   generated past the horizon is unrated.
+7. **A candidate is banded before it is solved.** `solveLine` is the only
+   expensive call in the pipeline, so it runs on the roughly one draw in ten
+   the band accepts. A full horizon generates in two seconds and verifies in
+   five.
+8. **The horizon is one chunk.** 365 codes are 36 kilobytes, which does not
+   want twelve files. It is named for the span it covers rather than a calendar
+   year, because a 5 January epoch runs a horizon four days into the following
+   one.
+   `granularity` still says `"month"` because the contract admits nothing else,
+   which is defect 1 of the Phase 11 report.
+9. **CIPHER's epoch is 2026-01-05, the first Monday of the epoch year.** Puzzle
+   1 therefore lands in the gentlest band rather than mid week, which is the
+   launch day property a new game wants and which POKER GRID's 1 January epoch
+   cannot give it. Four days apart rather than five months, so the two games
+   stay on the same calendar year and their puzzle numbers differ by four. Per game epochs are what the contract has always carried, and
+   recorded conflict resolution 4 already keeps the suite streak honest across
+   games that start on different days: the suite record holds its own epoch and
+   day number, so a later launching game inherits no fake history.
+
+## Running the test suite
+
+`npm test` is 43 files, 463 tests, and **57 seconds** end to end, of which 6.6
+seconds is environment setup. That number is from a normal filesystem and it is
+what CI measures.
+
+It is written down because of a trap that cost a working day in Phase 11. When
+this repository is worked on through a mounted network or bridge filesystem, the
+run appears to hang. The cause is not the tests. `require("jsdom")` alone was
+measured at **61 seconds** on the mount against **0.5 seconds** on local disk,
+because Node's module resolution makes thousands of small reads and the mount
+costs about 17 milliseconds each. Every `jsdom` test file pays it again, so a
+suite that takes under a minute anywhere else takes twenty and looks broken.
+
+The fix is the filesystem, not the configuration. Copy the tree to local disk
+and run there. Do not reach for `isolate: false` or a single fork to make the
+numbers look better: environment setup is 6.6 seconds across the whole suite on
+a real disk, so there is nothing to win, and isolation between test files is
+worth more than six seconds.
+
+
+## Phase 11 defect report, the abstraction test
+
+Requirement 7.4. CIPHER was built under the zero engine changes rule and every
+change wanted was logged instead of made. Six defects were predicted in
+`PHASE-11-PLAN.md` before a line was written. Four were confirmed, one was
+struck, one was downgraded, and two that nobody predicted were found. The
+predictions that missed matter more than the ones that hit, because they are
+where the design review could not see.
+
+**The sentence requirement 7.4 asks for: could a new game have been authored in
+one file plus assets?** No. CIPHER is nine files plus a manifest, and three of
+those exist only because the engine does not carry something every game needs.
+The cheapest change that would have closed the gap is defect 7's, a documented
+chunk format the engine reads by puzzle number, because it removes a format
+every game must guess at and it is what unblocks a scaffolding script in Phase
+12.
+
+### Confirmed
+
+**Defect 1. `ManifestDescriptor.granularity` admits only `"month"`.**
+A year of CIPHER is 36 kilobytes and wants one file. CIPHER declares `"month"`
+and returns the same URL from `urlForChunk` for every day, so the field states a
+chunking the data does not have. Nothing reads it, which is the tell: it is a
+decoration that can only ever be wrong. **Correction: remove it.** The index's
+chunk pointers are the truth about chunking and they always were.
+
+**Defect 2. Manifest obfuscation is a game's problem, and it is the same problem
+every time.** Requirement 8.4 applies to every game and the keystream lived in
+`games/poker-grid/manifest-codec.ts`. CIPHER copied it, which is how forty lines
+become five copies that drift. **Correction: the keystream moves to
+`engine/manifest-codec.ts`, keyed by puzzle number and position and parameterised
+by radix.** Both games keep byte identical manifests, because both were already
+running the same algorithm, so no data is regenerated.
+
+**Defect 3. `custom` input promises keyboard support Layer 2 cannot supply.**
+`ui/gridCursor.ts` serves a lattice. CIPHER needs a write cursor over four slots
+and a palette of six, which is two lists, so `render.ts` carries about forty
+lines of its own key handling. **Correction: documentation, not code.** The
+contract now states plainly that `custom` means the game owns its keyboard
+model, so a game author learns it from the type rather than from a surprise. A
+shared list cursor is logged for game three, because one instance is not a
+pattern and an abstraction drawn from a single example is the more expensive
+mistake.
+
+**Defect 4. The shell blanks a tier the module already computed.**
+`main.ts` stored `tier: session.rated ? outcome.tier : null`, which assumes a
+tier can only come from the manifest. CIPHER's tier is the guess count, correct
+past the horizon and everywhere else. **Correction: the shell stops second
+guessing.** A module that has nothing to grade against returns null itself,
+which POKER GRID already does when `best` is null, so the engine gains nothing
+by overriding and loses a true grade whenever a game does not need a manifest.
+
+### Struck
+
+**Defect 5. `hasWinLoss: true` had never run outside a unit test.** It ran, and
+nothing was wrong. The win rate row renders, `completeLive` counts a win, and the
+stats panel suppression logic behaves. A regression test was added so the first
+true value is not also the last thing that exercised it. No engine change.
+
+### Downgraded
+
+**Defect 6. `deserialize` cannot detect a puzzle mismatch.** True of CIPHER and
+unfixable inside it: every four symbol guess is legal against every code, so a
+stale save deserializes cleanly. But the engine already gates it. `main.ts`
+restores stored state only when `record.live.puzzleNumber` equals the day being
+opened, and the archive path never restores at all. So the check POKER GRID
+performs is defence in depth that its data shape happens to afford, not a
+contract obligation CIPHER fails. **Correction: say who owns it.** The engine
+owns puzzle identity, `StateFailure`'s `puzzle-mismatch` code stays available for
+games that can cheaply detect it, and the shell guard gains a test so a later
+refactor cannot quietly remove the thing every game is relying on.
+
+### Not predicted
+
+**Defect 7. The shell knows a chunk's internal shape, and calls it `boards`.**
+`boot.ts` requires every game's manifest chunk to be an object with a `boards`
+array whose entries carry a `number` field. That is game one's vocabulary and
+game one's structure, enforced two layers away from any game and documented
+nowhere: `ManifestDescriptor` says nothing about what a chunk contains. It also
+fails dishonestly. A chunk with any other shape produces "No puzzle is published
+for day N", which is a true statement about a manifest with a gap and a false one
+about a manifest with the wrong envelope, so the engine reports missing content
+when the real fault is format. CIPHER shipped a `boards` key for a game with no
+board. **Correction: a documented neutral format.** A chunk holds `entries`
+keyed by puzzle number, the engine reads it by key rather than scanning, and
+`ManifestDescriptor` states the format so a game author reads it in the contract.
+POKER GRID's twelve chunks are transformed rather than regenerated, because
+`tools/verify.ts` re-derives every field from the seed and proves the transform
+lossless.
+
+**Defect 8. Two hub tests counted live games by hand.** Shipping CIPHER broke
+`tests/hub/hub.test.ts` on the literals 5, 4, and 1, which have nothing to do
+with the hub's behaviour. Small, but it is the shape of a defect that gets worse
+with each game: a test that hardcodes what the registry already states makes
+every launch a test edit. **Correction: the counts derive from `LIVE_GAMES` and
+`SUITE_GAMES`.**
+
+### What the phase says about the seam
+
+The contract itself held. Three type parameters, erasure at one point, snapshot
+serialization, semantic share tokens, and the tagged `Outcome` all absorbed a
+game that shares nothing with POKER GRID: no board, no lattice, a real failure
+state, a tier owing nothing to a manifest, and a puzzle of four bytes. Nothing in
+`GameModule` had to grow a variant, and no game needed a special case anywhere in
+the engine.
+
+What did not hold is everything the contract left unsaid. Defects 1, 2 and 7 are
+all the same failure in different places: the engine has opinions about manifests
+that it never wrote down, so game two had to discover them by reading engine
+source or by watching a puzzle fail to load. That is the work Phase 12's
+`NEW_GAME.md` exists to end.
+
 
 ## Defects found and corrected in Phase 10
 

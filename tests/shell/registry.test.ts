@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import cipher from "../../src/games/cipher/module.js";
 import pokerGrid from "../../src/games/poker-grid/module.js";
 import { LIVE_GAMES, SUITE_GAMES, entryFor, promotableIds } from "../../src/shell/registry.js";
 import { crossPromotionTarget } from "../../src/engine/stats.js";
@@ -23,23 +24,34 @@ describe("suite registry", () => {
    * copy is true. Every game added later gets a line here.
    */
   it("agrees with every built module's identity", () => {
-    const entry = entryFor(pokerGrid.identity.id);
-    expect(entry).not.toBeNull();
-    expect(entry!.displayName).toBe(pokerGrid.identity.displayName);
-    expect(entry!.oneLineRule).toBe(pokerGrid.identity.oneLineRule);
-    expect(entry!.epoch).toEqual(pokerGrid.identity.epoch);
-    expect(entry!.accent).toEqual(pokerGrid.identity.accent);
-    expect(entry!.bucketCount).toBe(pokerGrid.distribution.labels.length);
-    expect(entry!.hasWinLoss).toBe(pokerGrid.hasWinLoss);
-    expect(entry!.stateVersion).toBe(pokerGrid.stateVersion);
-    expect(entry!.status).toBe("live");
+    for (const built of [pokerGrid, cipher]) {
+      const entry = entryFor(built.identity.id);
+      expect(entry).not.toBeNull();
+      expect(entry!.displayName).toBe(built.identity.displayName);
+      expect(entry!.oneLineRule).toBe(built.identity.oneLineRule);
+      expect(entry!.epoch).toEqual(built.identity.epoch);
+      expect(entry!.accent).toEqual(built.identity.accent);
+      expect(entry!.bucketCount).toBe(built.distribution.labels.length);
+      expect(entry!.hasWinLoss).toBe(built.hasWinLoss);
+      expect(entry!.stateVersion).toBe(built.stateVersion);
+      expect(entry!.status).toBe("live");
+    }
+  });
+
+  it("starts every game after POKER GRID on the first Monday of the epoch year", () => {
+    for (const entry of SUITE_GAMES) {
+      if (entry.id === "poker-grid") continue;
+      expect(entry.epoch).toEqual({ year: 2026, month: 1, day: 5 });
+    }
   });
 
   it("never offers a planned game as a cross promotion", () => {
     const ids = promotableIds();
     expect(ids).toEqual(LIVE_GAMES.map((entry) => entry.id));
-    /* One live game today, so the only honest answer is no offer at all. */
-    expect(crossPromotionTarget(emptySuiteRecord(), ids, "poker-grid")).toBeNull();
+    /* Two live games, so cross promotion has something to offer for the first
+       time and each game offers the other. */
+    expect(crossPromotionTarget(emptySuiteRecord(), ids, "poker-grid")).toBe("cipher");
+    expect(crossPromotionTarget(emptySuiteRecord(), ids, "cipher")).toBe("poker-grid");
   });
 
   it("offers the least recently played live game once more than one exists", () => {

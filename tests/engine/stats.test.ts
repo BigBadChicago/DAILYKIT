@@ -15,6 +15,7 @@ import {
   crossPromotionTarget,
   nextStreak,
   resultFor,
+  resumableState,
   summarize,
 } from "../../src/engine/stats.js";
 
@@ -251,5 +252,40 @@ describe("crossPromotionTarget", () => {
 
   it("never offers the game just finished, and returns null when it is the only one", () => {
     expect(crossPromotionTarget(emptySuiteRecord(), ["poker-grid"], "poker-grid")).toBeNull();
+  });
+});
+
+describe("win and loss, the first module that has them", () => {
+  /* Phase 11, predicted defect 5. hasWinLoss true had never run outside a unit
+     test before CIPHER. It works, and this is the regression test that keeps it
+     working rather than the last thing that exercised it. */
+  it("counts wins and reports a rate only for a game that has one", () => {
+    let record = emptyGameRecord(7);
+    record = completeLive(record, 1, { score: 3, won: true, bucket: 2, detail: "Solved in 3", tier: 1 });
+    record = completeLive(record, 2, { score: 0, won: false, bucket: 6, detail: "Not solved", tier: 4 });
+    record = completeLive(record, 3, { score: 4, won: true, bucket: 3, detail: "Solved in 4", tier: 2 });
+
+    expect(record.played).toBe(3);
+    expect(record.won).toBe(2);
+    expect(summarize(record, true).winPercent).toBe(67);
+    expect(summarize(record, false).winPercent).toBeNull();
+    expect(summarize(record, true).distribution[2]).toBe(1);
+    expect(summarize(record, true).distribution[6]).toBe(1);
+  });
+
+  it("reports zero rather than nothing for a game with wins and no wins yet", () => {
+    const record = emptyGameRecord(7);
+    expect(summarize(record, true).winPercent).toBe(0);
+    expect(summarize(record, false).winPercent).toBeNull();
+  });
+
+  it("resumes a live board only for the day it was saved on", () => {
+    let record = emptyGameRecord(7);
+    record = { ...record, live: { puzzleNumber: 12, state: { v: 1, data: { d: "...." } }, result: null } };
+    expect(resumableState(record, "live", 12)).toEqual({ v: 1, data: { d: "...." } });
+    expect(resumableState(record, "live", 13)).toBeNull();
+    expect(resumableState(record, "archive", 12)).toBeNull();
+    expect(resumableState(record, "tutorial", 12)).toBeNull();
+    expect(resumableState(emptyGameRecord(7), "live", 12)).toBeNull();
   });
 });

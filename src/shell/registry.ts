@@ -25,6 +25,9 @@ export interface SuiteGameEntry {
   /** Absolute path, root scope per the build model. */
   readonly path: string;
   readonly accent: { readonly hue: string; readonly boardFontStack: string };
+  /** Per game. Every game from CIPHER onward starts on the first Monday of the
+   *  epoch year, so puzzle 1 lands in the gentlest weekday band. POKER GRID
+   *  keeps the 1 January epoch it shipped with. */
   readonly epoch: { readonly year: number; readonly month: number; readonly day: number };
   /** Length of the module's DistributionSpec.labels. The hub opens a game's
    *  record without loading the game, and GameStore needs the bucket count to
@@ -48,6 +51,12 @@ const MONO = "ui-monospace, monospace";
  * longest session to the shortest, so a player with two minutes finds the two
  * minute games without reading every card.
  */
+/**
+ * Bucket counts and hasWinLoss for a planned game are provisional. They become
+ * facts when that game is built, and the registry test asserts agreement only
+ * for games that exist, so a wrong guess here is caught at the phase that
+ * builds the game rather than shipped.
+ */
 export const SUITE_GAMES: readonly SuiteGameEntry[] = [
   {
     id: "poker-grid",
@@ -62,13 +71,13 @@ export const SUITE_GAMES: readonly SuiteGameEntry[] = [
     status: "live",
   },
   {
-    id: "rule-of-four",
-    displayName: "RULE OF FOUR",
-    oneLineRule: "Sort sixteen numbers into the four groups that each follow a hidden rule.",
-    path: "/rule-of-four/",
+    id: "vector",
+    displayName: "VECTOR",
+    oneLineRule: "Point every arrow so each numbered cell is the first one that exactly that many arrows reach.",
+    path: "/vector/",
     accent: { hue: "28", boardFontStack: MONO },
-    epoch: { year: 2026, month: 1, day: 1 },
-    bucketCount: 5,
+    epoch: { year: 2026, month: 1, day: 5 },
+    bucketCount: 4,
     hasWinLoss: true,
     stateVersion: 1,
     status: "planned",
@@ -79,31 +88,31 @@ export const SUITE_GAMES: readonly SuiteGameEntry[] = [
     oneLineRule: "Break a four symbol code in six guesses from exact and misplaced counts.",
     path: "/cipher/",
     accent: { hue: "268", boardFontStack: MONO },
-    epoch: { year: 2026, month: 1, day: 1 },
+    epoch: { year: 2026, month: 1, day: 5 },
     bucketCount: 7,
     hasWinLoss: true,
     stateVersion: 1,
-    status: "planned",
+    status: "live",
   },
   {
-    id: "ladder",
-    displayName: "LADDER",
-    oneLineRule: "Reach three targets by combining six numbers with plus, minus, times, and divide.",
-    path: "/ladder/",
+    id: "tally-drop",
+    displayName: "TALLY DROP",
+    oneLineRule: "Slide the five number strips until every row adds up to the totals in the margins.",
+    path: "/tally-drop/",
     accent: { hue: "202", boardFontStack: MONO },
-    epoch: { year: 2026, month: 1, day: 1 },
+    epoch: { year: 2026, month: 1, day: 5 },
     bucketCount: 4,
     hasWinLoss: false,
     stateVersion: 1,
     status: "planned",
   },
   {
-    id: "echo",
-    displayName: "ECHO",
+    id: "recall",
+    displayName: "RECALL",
     oneLineRule: "Study a pattern of lit cells, then reproduce it from memory three times.",
-    path: "/echo/",
+    path: "/recall/",
     accent: { hue: "342", boardFontStack: MONO },
-    epoch: { year: 2026, month: 1, day: 1 },
+    epoch: { year: 2026, month: 1, day: 5 },
     bucketCount: 4,
     hasWinLoss: false,
     stateVersion: 1,

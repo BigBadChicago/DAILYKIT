@@ -37,6 +37,7 @@ import {
   completeSuiteDay,
   crossPromotionTarget,
   resultFor,
+  resumableState,
 } from "../engine/stats.js";
 import type { GameRecord, StoredResult } from "../engine/storage.js";
 import { browserShareDeps, composeShare, deliverShare } from "../engine/share.js";
@@ -249,10 +250,7 @@ export function bootGame(game: AnyGameModule, root: HTMLElement): void {
     }
     setNotice(null);
 
-    const stored =
-      mode === "live" && record.live !== null && record.live.puzzleNumber === puzzleNumber
-        ? record.live.state
-        : null;
+    const stored = resumableState(record, mode, puzzleNumber);
 
     let state: OpaqueState;
     let resumed = false;
@@ -375,9 +373,12 @@ export function bootGame(game: AnyGameModule, root: HTMLElement): void {
       won: outcome.won,
       bucket: game.bucketOf(outcome, session.state),
       detail: outcome.detail,
-      /* Past the horizon there is no stored optimum, so the tier the module
-         computed is not a grade anyone can trust. Resolution 3. */
-      tier: session.rated ? outcome.tier : null,
+      /* Phase 11 correction, defect 4. The module decides whether it has a
+         grade: POKER GRID returns null when no stored optimum exists, and
+         CIPHER's tier is the guess count, which is as true past the horizon as
+         inside it. The shell overriding that lost a real grade to satisfy a
+         rule that was only ever about game one. */
+      tier: outcome.tier,
     };
 
     if (session.mode === "archive") {
@@ -525,11 +526,9 @@ export function bootGame(game: AnyGameModule, root: HTMLElement): void {
   function showEndScreen(outcome: FinishedOutcome): void {
     if (session === null) return;
     const active = session;
-    const tierLabelText = !active.rated
-      ? UNRATED_LABEL
-      : outcome.tier === null
-        ? UNRATED_LABEL
-        : TIER_NAMES[outcome.tier];
+    /* Same correction. A null tier is the module saying it has nothing to
+       grade against, and that is the only thing that reads as unrated. */
+    const tierLabelText = outcome.tier === null ? UNRATED_LABEL : TIER_NAMES[outcome.tier];
 
     const countdownValue = el("span", { class: "dk-countdown__value", text: "00:00:00" });
     const countdown = new Countdown(browserCountdownDeps, {

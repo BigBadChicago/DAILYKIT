@@ -96,7 +96,6 @@ export default defineGame<PokerState, PokerAction, PokerPuzzle>({
   },
   input: { kind: "grid", cols: 5, rows: 7, pointer: "drag" },
   manifest: {
-    granularity: "month",
     urlForChunk: (number) => {
       const date = dateForPuzzleNumber({ year: 2026, month: 1, day: 1 }, number);
       return `/data/poker-grid/manifest.${date.year}-${String(date.month).padStart(2, "0")}.json`;
