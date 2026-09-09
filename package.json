@@ -19,6 +19,7 @@
     "dev": "vite",
     "build": "vite build",
     "build:harness": "vite build --mode development",
+    "harness": "vite build --mode development && vite preview --outDir dist --port 4173 --open /harness/",
     "clean": "rm -rf dist dist-dev",
     "preview": "vite preview --outDir dist",
     "build:game": "vite build"

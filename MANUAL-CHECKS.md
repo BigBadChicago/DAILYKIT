@@ -19,9 +19,18 @@ Copilot follows while fixing are in `.github/copilot-instructions.md`.
 
 ## How to produce the blocks
 
-1. `npm run build:harness` and open `/harness/`. It renders a sample block for
-   every outcome in `tools/share-harness/cases.ts` plus a width and line count
-   report per block.
+1. `npm run harness`. It builds the harness and serves the site, then opens
+   <http://localhost:4173/harness/>. The page renders a sample block for every
+   outcome in `tools/share-harness/cases.ts` plus a width and line count report
+   per block. Stop the server with Ctrl C when you are done.
+
+   `/harness/` is a URL on the served site, not a file to open. Every page
+   references its assets from the site root, so opening
+   `dist/harness/index.html` from disk loads nothing.
+
+   The harness build is a development build and it writes over `dist/`. It
+   carries no service worker and its assets are unminified, so run
+   `npm run build` again before section 5 or section 5a.
 2. For the daily card, finish a game and use the hub's own share control, which
    is the only place that block is assembled.
 3. Copy each block from the harness, paste it into the target client, and read

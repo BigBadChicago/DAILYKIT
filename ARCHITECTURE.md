@@ -126,7 +126,7 @@ Table columns are fixed as follows and every future entry uses them.
 | src/ui/statsPanel.ts | 2 | Statistics figures and distribution histogram over an injected view model | ui/dom |
 | src/ui/helpPanel.ts | 2 | How to play body over the shared HelpContent shape | ui/dom, core/types |
 | src/ui/gridCursor.ts | 2 | Keyboard cursor over a lattice using the shared grid dimensions and aria-activedescendant | ui/dom, core/types |
-| tools/share-harness/index.html | tools | Harness page shell and its own styling | ui/chrome.css |
+| tools/share-harness/index.html | tools | Harness page shell and its own styling, served at /harness/ by `npm run harness` | ui/chrome.css |
 | tools/share-harness/main.ts | tools | Renders every sample block with a width and line count report | ui/dom, ui/theme, harness/cases, harness/bind |
 | tools/share-harness/cases.ts | tools | Sample share blocks spanning the outcome space | core/types |
 | tools/share-harness/bind.ts | tools | The harness's single import point into engine/share.ts | engine/share |
