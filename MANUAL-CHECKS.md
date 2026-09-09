@@ -68,19 +68,51 @@ reach section 5, run `npm run build` again so you are testing the real thing.
 
 ## Section 1. Do the characters survive the trip
 
-**Why.** The result block is the only thing that travels. If a character turns
-into a hollow box on someone's phone, the block is broken for everyone they
-sent it to.
+**Why.** When a player finishes a puzzle they press Share, and the site puts a
+few lines of plain text on their clipboard. They paste that into a group chat or
+post it. Those few lines are the only thing that ever travels, and every app
+draws the characters with its own emoji font. If one app turns a character into
+a hollow box, the result is broken for everyone in that conversation.
 
-**What to do.** For each app in the table below, one at a time:
+So yes, this section is about how a shared result looks in chat apps and on
+social media. You are not testing the site here. You are testing the text after
+it has left the site.
 
-1. On the harness page, press the copy button on **`max-rows`**. It uses all
+**What you are pasting.** A block looks like this, a title line, some rows of
+characters, and the address on the last line:
+
+```text
+SAMPLE GAME #13 Excellent streak 40
+⭐
+⭐
+🔷
+🔷
+🟩
+🟩
+🟠
+🔻
+dailykit.providentia.games
+```
+
+**What to do.** Work through the table below one row at a time. A row names a
+device and an app. For each one:
+
+1. On the harness page in your browser, find the block named `max-rows` and
+   press its copy button. That puts those lines on your clipboard. It uses all
    five tier characters, which is the widest spread of shapes in one block.
-2. Paste it into that app and send it to yourself.
-3. Look at what arrived, on the platform in the table. Do not judge from the
-   composer box, judge from the sent message.
-4. Copy the sent message back out and paste it into a plain text box. It should
-   come back as the same characters.
+2. Open the app named in the row, on the device named in the row. If the app is
+   on your phone and you copied on your computer, send yourself the text however
+   you normally would, or open the harness on the phone instead using the
+   address from `npm run preview -- --host`.
+3. Send the block to yourself. Any conversation you can delete afterwards works:
+   in WhatsApp, message your own number. In Slack or Discord, use a direct
+   message to yourself or a scratch channel. On X or Bluesky, a post you delete
+   straight after, or a draft preview if you would rather not post.
+4. Look at the **sent message**, not at the box you typed it into. Composers
+   often render differently from sent messages, and the sent message is what a
+   reader sees.
+5. Copy the sent message back out and paste it into somewhere plain, such as
+   Notepad or the browser address bar. The same characters should come back.
 
 **What passes.**
 
@@ -88,12 +120,12 @@ sent it to.
 |---|---|
 | Every character is drawn | No hollow box, no question mark, no blank |
 | Nothing became text | You never see `:star:`, `:blue_square:`, or similar |
-| Shapes stay different | Star, diamond, square, circle, triangle are all still telling apart, even squinting |
+| Shapes stay different | Star, diamond, square, circle, and triangle are still tellable apart, even squinting, and not just by color |
 | Copy round trips | Pasting the sent message back gives the same characters |
 
-**Where to check.**
+**Where to check.** Each row is one pass through the five steps above.
 
-| Platform | Apps |
+| Device | Apps |
 |---|---|
 | iPhone | WhatsApp, iMessage, and one of Discord or Slack |
 | Android | WhatsApp, and one of Discord or Slack |
@@ -105,9 +137,13 @@ once each, is the bar.
 
 ## Section 2. Do the rows line up
 
-**Why.** The block is meant to read as a neat rectangle. Chat apps that use a
-proportional font can make one row wider than another, and a ragged block looks
-broken rather than deliberate.
+**Why.** The block is meant to read as a neat rectangle in someone else's chat.
+Apps that use a proportional font can make one row wider than another, and a
+ragged block looks broken rather than deliberate.
+
+Same activity as section 1, pasting into real apps and reading the sent message.
+Different question: section 1 asked whether the characters appear at all, this
+one asks whether they line up.
 
 **What to do.** Still on the harness page, and still pasting into a real chat
 app rather than judging on the harness itself.
