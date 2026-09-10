@@ -31,7 +31,7 @@ resume work in a fresh conversation with no chat history.
 | 10 | Suite shell | done | Hub, shell, per game entries, one pass release build with a shared engine chunk, suite storage and streak, daily card, cross promotion. One contract change and one renderer defect, both below |
 | 11 | Game two and abstraction test | done | CIPHER ships at 24.0 KB gzipped. Defect report written, eight defects, and the engine corrected for all of them. Both games rebuilt against the corrected contract and the full suite is green: 43 files, 463 tests, 57 seconds |
 | 12 | Template extraction | handed off | Specified in PHASE-12-PLAN.md and handed to Copilot, which runs it with /phase-12. Deliverables: NEW_GAME.md, tools/new-game.ts, its tests, two insertion markers, and the phase report |
-| 13 | Games three, four, five | not started | |
+| 13 | Games three, four, five | specified | PHASE-13-PLAN.md. VECTOR, then TALLY DROP, then RECALL, one chat each, run with /phase 13. Blocked until Phase 12 ships NEW_GAME.md and the scaffold |
 | 14 | Suite launch readiness | not started | |
 
 ## Layer rule
@@ -170,7 +170,8 @@ Table columns are fixed as follows and every future entry uses them.
 | tools/budget.ts | tools | Constraint 2.7's byte budget, asserted against a built dist/ in CI | none |
 | src/shell/changelog.ts | 5 | The entry list, the app version, and what a returning player is shown | none |
 | src/games/poker-grid/tutorial.ts | 4 | The fixed first session board and how it was chosen | games/poker-grid/generator |
-| PHASE-12-PLAN.md | n/a | The Phase 12 specification and acceptance criteria, written to be run with no chat history | none |
+| PHASE-12-PLAN.md | n/a | The Phase 12 specification, acceptance criteria, and the self check before handover | none |
+| PHASE-13-PLAN.md | n/a | The Phase 13 specification: the three remaining games, one per chat, with their fixed facts and per game gates | none |
 | .github/copilot-instructions.md | n/a | The always loaded instruction set for GitHub Copilot, including the reading order and the phase rules | none |
 | .github/instructions/*.instructions.md | n/a | Path scoped rules that load when a matching file is opened, one per layer | none |
 | .github/prompts/*.prompt.md | n/a | The slash commands: onboard, verify, review-change, manual-check, changelog-entry, phase, phase-12 | none |

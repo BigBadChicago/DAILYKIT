@@ -10,8 +10,18 @@ history, so a stale document is a defect like any other.
 
 ## Rules
 
-1. **No dashes as punctuation.** Hyphens inside a compound word are fine. Rewrite
-   the sentence rather than reaching for a dash.
+1. **No dashes as punctuation.** Hyphens inside a compound word are fine.
+   Rewrite the sentence rather than reaching for a dash.
+
+   The rule is about sentences, not about names. Operationally it forbids two
+   things and nothing else: an en dash or an em dash anywhere, and a hyphen with
+   whitespace on both sides. A hyphen inside a word or an identifier is not
+   punctuation. Kebab-case game ids such as `poker-grid`, the file paths built
+   from them, CSS class names, and ordinary compounds such as four way or best
+   known are all legal. Any automated check for this rule must use that
+   definition: a check that forbids every hyphen between letters would forbid
+   the game ids the repository requires, which makes it unsatisfiable rather
+   than strict.
 2. **`ARCHITECTURE.md` file manifest.** Every file gets a row: path, layer, one
    sentence responsibility, imports. Add a row when a file is added, correct it
    when a role changes, remove it when a file goes.

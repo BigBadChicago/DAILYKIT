@@ -34,7 +34,7 @@ Read these before acting. They are in the repository root.
 | `SLATE.md` | The approved five game slate | When a question involves which games exist |
 | `ASSETS.md` | Every shipped asset and its license | When adding or changing any asset |
 | `README.md` | Setup and the command list | For environment questions |
-| `PHASE-<n>-PLAN.md` | The specification and acceptance criteria for one charter phase | When running that phase, see section 15 |
+| `PHASE-<n>-PLAN.md` | The specification and acceptance criteria for one charter phase. 12 and 13 exist today | When running that phase, see section 15 |
 | `NEW_GAME.md` | How to author a new game, once Phase 12 has produced it | Before building any game |
 
 **`ARCHITECTURE.md` is authoritative.** If it and this file disagree, follow
@@ -338,7 +338,10 @@ is how the next session resumes without chat history.
 9. Regenerate the whole manifest horizon to fix one day. Generation takes over an
    hour and rewrites data that is already verified.
 10. Claim a fix is verified without pasting the command output.
-11. Use dashes as punctuation in anything you write.
+11. Use dashes as punctuation in anything you write. Punctuation means an en
+    dash, an em dash, or a hyphen with whitespace on both sides. A hyphen inside
+    a word or an identifier, such as the game id `poker-grid`, is not
+    punctuation and is required by the id contract.
 12. Build something that is not in the charter. It goes in `BACKLOG.md` instead.
 
 ## 12. When to stop and ask

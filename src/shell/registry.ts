@@ -118,6 +118,7 @@ export const SUITE_GAMES: readonly SuiteGameEntry[] = [
     stateVersion: 1,
     status: "planned",
   },
+  /* NEW_GAME_INSERTION: SUITE_GAMES */
 ];
 
 export const LIVE_GAMES: readonly SuiteGameEntry[] = SUITE_GAMES.filter(

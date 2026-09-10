@@ -16,6 +16,7 @@
     "cipher:generate": "tsx tools/cipher-generate.ts",
     "cipher:verify": "tsx tools/cipher-verify.ts",
     "cipher:study": "tsx tools/cipher-study.ts",
+    "new-game": "tsx tools/new-game.ts",
     "dev": "vite",
     "build": "vite build",
     "build:harness": "vite build --mode development",

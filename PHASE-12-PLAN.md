@@ -185,16 +185,25 @@ Test the pure function, not the disk. At minimum:
 1. Every declared path in section 4.2 is present in the returned map, and no
    other path is.
 2. No generated file contains `TODO`, `FIXME`, `placeholder`, or `implementation
-   goes here`, and no generated prose or comment uses a dash as punctuation.
-3. The generated module file names the id exactly once in `identity.id` and
+   goes here`.
+3. No generated prose or comment uses a dash **as punctuation**. The check is
+   literal and narrow, because the rule is about sentences and not about names:
+   assert that no file contains an en dash or an em dash anywhere, and that no
+   file contains a hyphen with whitespace on both sides. Nothing else.
+   **A hyphen inside a word or an identifier is not punctuation and must not be
+   flagged.** Kebab-case game ids, the paths built from them, CSS class names,
+   and ordinary compounds such as four way or best known are all legal. A test
+   that forbids the pattern `[a-z]+-[a-z]+` is unsatisfiable rather than strict,
+   because the id the tool was asked to generate matches it.
+4. The generated module file names the id exactly once in `identity.id` and
    imports nothing from another game, asserted by scanning the import lines.
-4. The generated entry imports the generated module and calls `mountShell`.
-5. The generated registry line and allow list line are exactly the text the tool
+5. The generated entry imports the generated module and calls `mountShell`.
+6. The generated registry line and allow list line are exactly the text the tool
    will insert, including `productionSafe: false` and `status: "planned"`.
-6. An id that is not lowercase kebab case is rejected, and so is one that already
+7. An id that is not lowercase kebab case is rejected, and so is one that already
    appears in `SUITE_GAMES`, because both are `seedFor` inputs and a collision is
    a shared RNG stream.
-7. Determinism: the same options produce a byte identical file map.
+8. Determinism: the same options produce a byte identical file map.
 
 ## 6. Acceptance, run once and pasted into the report
 
@@ -284,3 +293,30 @@ true, and say so:
    with where the defect report goes.
 4. The registry already carries all five games, so shipping game three is a
    status change and not a new entry.
+
+## 11. Self check before you hand back
+
+Answer each with yes plus the evidence, or no plus the reason. A no is a valid
+answer and stops the handover. Do not answer from memory: run the command or
+open the file.
+
+1. `npm run new-game -- --id scaffold-check --name "SCAFFOLD CHECK" --hue 96`
+   produced every path in section 4.2 and nothing else.
+2. The full gate passed with zero edits to generated output. Output pasted.
+3. The generated game was played to a finished state in the dev server and
+   produced a share block. Block pasted.
+4. `git status` is clean after removal. Output pasted.
+5. Running the tool twice with the same options produces a byte identical file
+   map, and the second run against an existing id writes nothing and exits non
+   zero.
+6. No generated file contains `TODO`, `FIXME`, `placeholder`, or `implementation
+   goes here`.
+7. The dash check is the narrow one from section 5 item 3, and `poker-grid` and
+   `cipher` would both pass it.
+8. The registry entry is `status: "planned"` and the allow list entry is
+   `productionSafe: false`.
+9. No file under `src/core`, `src/engine`, `src/ui`, `src/contract`, `src/shell`
+   except the two marker insertions was modified. `git diff --stat` pasted.
+10. `NEW_GAME.md` cites every settled rule by decision number rather than
+    restating it in new words.
+11. Section 10's four preconditions for Phase 13 are all true.
