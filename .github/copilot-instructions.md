@@ -34,10 +34,20 @@ Read these before acting. They are in the repository root.
 | `SLATE.md` | The approved five game slate | When a question involves which games exist |
 | `ASSETS.md` | Every shipped asset and its license | When adding or changing any asset |
 | `README.md` | Setup and the command list | For environment questions |
+| `PHASE-<n>-PLAN.md` | The specification and acceptance criteria for one charter phase | When running that phase, see section 15 |
+| `NEW_GAME.md` | How to author a new game, once Phase 12 has produced it | Before building any game |
 
 **`ARCHITECTURE.md` is authoritative.** If it and this file disagree, follow
 `ARCHITECTURE.md` and say plainly in your reply that the two disagree, naming
 the section. Do not silently pick one.
+
+**The project charter is not in this repository.** It lives with the project
+owner, and several sections of this file and of the path scoped rules are
+summaries of it. That makes `ARCHITECTURE.md` the binding record for anything
+settled, because it is the only place where a decision and its reasoning are
+both written down and both readable by you. If a question turns on charter text
+you cannot read, say so and ask rather than reconstructing what the charter
+probably says.
 
 `ARCHITECTURE.md` carries numbered decision registries: contract decisions,
 engine decisions, presentation decisions, generation decisions, suite
@@ -360,3 +370,98 @@ guess.
 - [ ] `BACKLOG.md` carries anything deferred.
 - [ ] A changelog entry exists if a player would notice.
 - [ ] The report follows the shape in section 7 step 8.
+
+## 14. How these instructions load, and what you must read yourself
+
+Three kinds of instruction exist in this repository and they reach you three
+different ways. Knowing which is which is the difference between reading what
+you need and guessing.
+
+| Kind | Where | How it reaches you |
+|---|---|---|
+| These instructions | `.github/copilot-instructions.md` | Automatically, on every request, in every chat |
+| Path scoped rules | `.github/instructions/*.instructions.md` | Automatically, when a file you open or edit matches that file's `applyTo` glob |
+| Everything else | `ARCHITECTURE.md`, `BACKLOG.md`, the design documents, the plan documents | **Never automatically. You open them.** |
+
+The third row is the one that costs work when it is forgotten. Nothing puts
+`ARCHITECTURE.md` in front of you. It is 1,000 lines, it carries every settled
+decision this project has made, and a change that contradicts one of those
+decisions is rework whether or not the tests pass.
+
+**The reading order, every task, before the first edit:**
+
+1. This file, in full. You already have it.
+2. `ARCHITECTURE.md`, in full. Not searched, not skimmed for the file you think
+   you need. The status table tells you where the project is, the phase log tells
+   you what is finished, the manifest tells you what every file is for, the
+   decisions registries tell you what you may not undo, and the defect reports
+   tell you which parts of the design were paid for in failures.
+3. `BACKLOG.md`. Short, and it is the list of things that are absent on purpose.
+   Building something from it without being asked is the most expensive kind of
+   wrong.
+4. The task's own document: the plan document for a phase, `MANUAL-CHECKS.md`
+   for a check failure, the game's design document for a game defect.
+5. The source, layer by layer from `src/core` upward, and only what the task
+   touches.
+
+**Read the whole of a document, not the part you searched for.** These documents
+are written so that the reasoning sits next to the rule. A grep hit gives you the
+rule without the reason, and the reason is what tells you whether your change is
+an exception or a violation.
+
+**When you have read something, say so, briefly, with what you took from it.**
+One line per document at the start of your reply. It costs you nothing and it
+tells me immediately whether you are working from the repository or from a guess.
+
+**If a document contradicts another**, `ARCHITECTURE.md` wins, then the game's
+design document, then a plan document, then this file. Say which two disagreed
+and where. Do not silently pick one and do not fix the loser without being asked.
+
+**Do not trust chat history.** Every task starts a new chat. If you find yourself
+relying on something you cannot point to a file for, that is the signal to go
+back to step 2.
+
+## 15. Working a phase
+
+Sections 7 and 13 are written for a defect. A charter phase is different work
+and has its own rules.
+
+A phase is a numbered stage in section 9 of the project charter. Phases 0 through
+11 are done and their outcomes are in the `ARCHITECTURE.md` phase log. Phase 12
+onward are ahead. Run one with the `/phase` command, or `/phase-12` for the one
+that has its own runner.
+
+1. **A phase needs a written plan.** `PHASE-<n>-PLAN.md` in the repository root
+   is the specification and the acceptance criteria. If the phase you were asked
+   to run has no plan document, stop and say so rather than inventing the plan,
+   because a plan you wrote yourself cannot tell you that you got it wrong.
+2. **One phase per chat.** A phase is long, and a chat that has been running for
+   hours carries stale context, which is the usual reason an agent edits the
+   wrong file. When the phase ends, stop and say so.
+3. **Work the plan in its stated order.** The orders in these plans are load
+   bearing: rules before renderers, because a renderer written against unproven
+   rules debugs two things at once; design document before code, because a rule
+   invented while typing is a rule nobody reviewed.
+4. **The gate in section 6 applies to a phase exactly as it applies to a fix**,
+   and it applies before you claim any deliverable is done, not once at the end.
+5. **Documents are part of the phase, not paperwork after it.** Section 9's
+   duties are the deliverable that lets the next chat start cold.
+6. **Numbered decisions are append only.** A phase that settles something appends
+   to the matching registry in `ARCHITECTURE.md`, keeping the existing numbering.
+   Never renumber, never edit a settled entry to match new code. If a settled
+   decision is genuinely wrong, that is a stop and ask.
+7. **If a phase builds a game, requirement 7.4 is in force.** Zero engine changes
+   while building. Every change you want is logged as an architecture defect, not
+   made. The report at the end lists them, and the corrections come after the
+   report, not during the build. This is the whole mechanism by which the seam
+   gets tested, and quietly reaching into the engine destroys the evidence.
+8. **An unrun manual check never blocks you.** `MANUAL-CHECKS.md` is run by a
+   person on real devices, and at the time of writing it has never been run.
+   That is a gap in launch readiness, not a gate on development. Build the
+   phase, note in your report which sections of the checklist your work touched
+   so a later pass knows where to look, and carry on. The one thing that does
+   stop you is a manual check that was run and failed: that is a defect and
+   section 7 owns it.
+9. **End with the report the plan document specifies**, including the numbered
+   list of decisions I should review. A phase without that list has not been
+   handed back, only stopped.

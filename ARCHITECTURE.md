@@ -9,7 +9,7 @@ resume work in a fresh conversation with no chat history.
 
 | Field | Value |
 |---|---|
-| Current phase | Phase 11 done. Phase 12, template extraction, is next. Phase 8's manual checklist is still unrun |
+| Current phase | Phase 11 done. Phase 12 is specified in PHASE-12-PLAN.md and handed to Copilot. Phase 8's manual checklist is still unrun |
 | Games playable | POKER GRID and CIPHER, end to end in a browser, inside the suite shell |
 | Engine contract version | 2, corrected by the Phase 11 defect report. Chunks are keyed entries, granularity is gone, tiers belong to the module |
 | Manifest horizon | POKER GRID 365 days from epoch 2026-01-01, verified with a solver replay. CIPHER 365 days from epoch 2026-01-05, the first Monday, verified against the fixed opening |
@@ -30,7 +30,7 @@ resume work in a fresh conversation with no chat history.
 | 9 | Slate approval | done | SLATE.md, second revision. Thirty four pooled candidates, five recommended, approved 2026-09-08. POKER GRID, VECTOR, CIPHER, TALLY DROP, RECALL |
 | 10 | Suite shell | done | Hub, shell, per game entries, one pass release build with a shared engine chunk, suite storage and streak, daily card, cross promotion. One contract change and one renderer defect, both below |
 | 11 | Game two and abstraction test | done | CIPHER ships at 24.0 KB gzipped. Defect report written, eight defects, and the engine corrected for all of them. Both games rebuilt against the corrected contract and the full suite is green: 43 files, 463 tests, 57 seconds |
-| 12 | Template extraction | not started | |
+| 12 | Template extraction | handed off | Specified in PHASE-12-PLAN.md and handed to Copilot, which runs it with /phase-12. Deliverables: NEW_GAME.md, tools/new-game.ts, its tests, two insertion markers, and the phase report |
 | 13 | Games three, four, five | not started | |
 | 14 | Suite launch readiness | not started | |
 
@@ -170,6 +170,11 @@ Table columns are fixed as follows and every future entry uses them.
 | tools/budget.ts | tools | Constraint 2.7's byte budget, asserted against a built dist/ in CI | none |
 | src/shell/changelog.ts | 5 | The entry list, the app version, and what a returning player is shown | none |
 | src/games/poker-grid/tutorial.ts | 4 | The fixed first session board and how it was chosen | games/poker-grid/generator |
+| PHASE-12-PLAN.md | n/a | The Phase 12 specification and acceptance criteria, written to be run with no chat history | none |
+| .github/copilot-instructions.md | n/a | The always loaded instruction set for GitHub Copilot, including the reading order and the phase rules | none |
+| .github/instructions/*.instructions.md | n/a | Path scoped rules that load when a matching file is opened, one per layer | none |
+| .github/prompts/*.prompt.md | n/a | The slash commands: onboard, verify, review-change, manual-check, changelog-entry, phase, phase-12 | none |
+| COPILOT.md | n/a | The short usage page for working this repository with Copilot | none |
 | MANUAL-CHECKS.md | n/a | The Section 10.7 list, with a results table to fill in per run | none |
 | tests/shell/changelog.test.ts | n/a | Version windowing, game scoping, and the two cases that must show nothing | shell/changelog |
 | tests/shell/share-context.test.ts | n/a | A replay and a tutorial carry no streak, a live session carries its own | shell/share-context |
@@ -937,6 +942,31 @@ game two only where they name it.
    recorded conflict resolution 4 already keeps the suite streak honest across
    games that start on different days: the suite record holds its own epoch and
    day number, so a later launching game inherits no fake history.
+
+## The charter is not in this repository
+
+The project charter, the document that defines the mission, the hard
+constraints, the fourteen phases, and the locked POKER GRID decisions, lives
+with the project owner and not in the tree. Several files summarise it:
+`.github/copilot-instructions.md` sections 3, 5 and 15, and
+`.github/instructions/docs.instructions.md`.
+
+That makes this file the binding record. A summary can be wrong and cannot be
+checked from inside the repository, while every decision here carries its
+reasoning and its date. Two consequences, both worth knowing before trusting a
+summary:
+
+1. **Where the charter and this file already disagree, this file is the
+   amendment.** The lifecycle states, `COMPLETE` in place of `WON` and `LOST`,
+   resolution 11. The POKER GRID share block's summary bar, dropped, resolution
+   9. The share block height, ten lines rather than nine, charter decision 1 as
+   amended. The share glyph palette, closed to games rather than declared by
+   them, contract decision 4. Each was approved when it was made.
+2. **An agent that cannot read the charter must not reconstruct it.** If a
+   question turns on charter text, ask the owner. A plausible reconstruction of
+   a rule you cannot read is the most expensive kind of guess, because it looks
+   like knowledge.
+
 
 ## Running the test suite
 

@@ -9,6 +9,12 @@ board.
 
 Budget about ninety minutes for a full pass, most of it in section 1.
 
+**An unrun checklist never blocks development.** This list gates a launch, not a
+phase. If it has not been run, that is a known gap recorded in the phase log,
+and building the next game or the next tool proceeds anyway. A check that was
+run and failed is different: that is a defect, and it is worked the way section
+7 of the Copilot instructions describes.
+
 ## What you need
 
 - This repository on your computer, with `npm ci` already run.

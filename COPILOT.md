@@ -24,6 +24,15 @@ Nothing else to configure. The rules load themselves on every request.
 | See whether the repository is green | `/verify` |
 | Check a diff before committing | `/review-change` |
 | Add a player facing changelog entry | `/changelog-entry` then what changed |
+| Run the next charter phase | `/phase 12`, or `/phase-12` |
+
+**What Copilot reads by itself, and what it does not.**
+`.github/copilot-instructions.md` loads on every request. The files under
+`.github/instructions/` load when a matching file is opened. Nothing else loads
+by itself, including `ARCHITECTURE.md`, which is where every settled decision
+lives. Section 14 of the instructions tells Copilot to open it first, every
+task. If a reply does not begin by naming the documents it read, that is the
+sign to stop and ask it to read them.
 
 Start a **new chat for every defect**. A long chat carries stale context, and
 that is the usual reason an agent edits the wrong file.
