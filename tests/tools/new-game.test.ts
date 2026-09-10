@@ -2,9 +2,20 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildNewGame,
+  insertAtMarker,
   NEW_GAME_CONFIG_MARKERS,
   validateGameId,
 } from "../../tools/new-game.js";
+
+/* The rule forbids a dash used as punctuation, not the hyphen in a kebab case
+   id and not the minus in `count - 1`, so the check reads prose only: an .md
+   file whole, and a .ts file's comments and string literals. */
+const DASH_AS_PUNCTUATION = /[\u2013\u2014]|(?<=\s)-(?=\s)/;
+
+function proseOf(path: string, contents: string): string {
+  if (path.endsWith(".md")) return contents;
+  return (contents.match(/\/\*[\s\S]*?\*\/|\/\/[^\n]*|"(?:[^"\\\n]|\\.)*"/g) ?? []).join("\n");
+}
 
 describe("buildNewGame", () => {
   const options = { id: "sample-game", name: "SAMPLE GAME", hue: 96 };
@@ -30,7 +41,7 @@ describe("buildNewGame", () => {
     for (const [path, contents] of result.files) {
       expect(contents).not.toMatch(/TODO|FIXME|placeholder|implementation goes here/i);
       if (path.endsWith(".ts") || path.endsWith(".md")) {
-        expect(contents).not.toMatch(/[–—]|(?<=\s)-(?=\s)/);
+        expect(proseOf(path, contents)).not.toMatch(DASH_AS_PUNCTUATION);
       }
     }
   });
@@ -57,6 +68,13 @@ describe("buildNewGame", () => {
     expect(result.targetsInsertion).toContain('    gameId: "sample-game"');
   });
 
+  it("dates every scaffolded game to the first Monday of the epoch year", () => {
+    const result = buildNewGame(options);
+    const moduleFile = result.files.get("src/games/sample-game/module.ts") as string;
+    expect(result.registryInsertion).toContain("epoch: { year: 2026, month: 1, day: 5 }");
+    expect(moduleFile).toContain("epoch: { year: 2026, month: 1, day: 5 }");
+  });
+
   it("rejects invalid ids and duplicate ids", () => {
     expect(() => validateGameId("Scaffold")).toThrow();
     expect(() => validateGameId("scaffold_check")).toThrow();
@@ -78,5 +96,28 @@ describe("NEW_GAME_CONFIG_MARKERS", () => {
       registry: "SUITE_GAMES",
       targets: "TARGETS",
     });
+  });
+});
+
+describe("insertAtMarker", () => {
+  const marker = "/* NEW_GAME_INSERTION: TARGETS */";
+
+  it("indents the inserted entry like its siblings and keeps the marker", () => {
+    const source = ["const TARGETS = {", '  hub: { outPath: "" },', `  ${marker}`, "};", ""].join(
+      "\n",
+    );
+    const insertion = ['  "sample-game": {', '    outPath: "sample-game",', "  },"].join("\n");
+    expect(insertAtMarker(source, marker, insertion)).toBe(
+      [
+        "const TARGETS = {",
+        '  hub: { outPath: "" },',
+        '  "sample-game": {',
+        '    outPath: "sample-game",',
+        "  },",
+        `  ${marker}`,
+        "};",
+        "",
+      ].join("\n"),
+    );
   });
 });

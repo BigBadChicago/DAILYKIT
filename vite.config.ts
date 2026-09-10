@@ -83,12 +83,6 @@ const TARGETS: Readonly<Record<string, Target>> = {
   },
   about: { outPath: "about", html: "src/about/index.html", productionSafe: true },
   harness: { outPath: "harness", html: "tools/share-harness/index.html", productionSafe: false },
-    "scaffold-check": {
-    outPath: "scaffold-check",
-    html: "src/shell/entries/scaffold-check.html",
-    gameId: "scaffold-check",
-    productionSafe: false,
-  },
   /* NEW_GAME_INSERTION: TARGETS */
 };
 

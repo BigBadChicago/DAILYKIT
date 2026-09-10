@@ -63,7 +63,7 @@ function renderRegistryInsertion(id: string, name: string, hue: number): string 
     oneLineRule: "Tap the target cell before the board says no.",
     path: "/${id}/",
     accent: { hue: "${String(Math.max(0, Math.min(359, Math.round(hue))))}", boardFontStack: "ui-monospace, monospace" },
-    epoch: { year: 2026, month: 1, day: 1 },
+    epoch: { year: 2026, month: 1, day: 5 },
     bucketCount: 4,
     hasWinLoss: true,
     stateVersion: 1,
@@ -201,7 +201,8 @@ export default defineGame<State, Action, Puzzle>({
   identity: {
     id: "${id}",
     displayName: "${displayName}",
-    epoch: { year: 2026, month: 1, day: 1 },
+    /* First Monday of the epoch year, so puzzle 1 lands in the gentlest band. */
+    epoch: { year: 2026, month: 1, day: 5 },
     shareUrl: "dailykit.providentia.games",
     accent: { hue: "${String(safeHue)}", boardFontStack: "ui-monospace, monospace" },
     oneLineRule: "Tap the target cell before the board says no.",
@@ -257,10 +258,13 @@ export default defineGame<State, Action, Puzzle>({
   bucketOf: (_outcome: FinishedOutcome, state) => bucketOf(state),
 
   shareBlock(state, context: ShareContext): ShareBlock {
-    const label = state.tapped.includes(state.target) ? "won" : "play";
+    /* One row per tap, in play order, so the block shows the shape of the
+       search and never which cell was the target. */
+    const found = state.tapped.includes(state.target);
+    const label = found ? \`found in \${state.tapped.length}\` : "not found";
     return {
       title: \`\${gameTitle} #\${context.puzzleNumber} \${label}\`,
-      rows: [["best", "best", "best"]],
+      rows: state.tapped.map((cell) => [cell === state.target ? "best" : "miss"]),
     };
   },
 
@@ -456,11 +460,18 @@ describe("${displayName} module", () => {
     expect(isOk(restored)).toBe(true);
   });
 
-  it("shares a title and a compact row", () => {
+  it("shares one row per tap and names the outcome", () => {
     const state = game.initialState({ number: 7, target: 0 } as never);
-    const share = game.shareBlock(state, { puzzleNumber: 7, currentStreak: 0, rated: true });
+    const missed = game.apply(state, { kind: "tap", cell: 1 } as never);
+    expect(isOk(missed)).toBe(true);
+    const afterMiss = (missed as unknown as { value: never }).value;
+    const hit = game.apply(afterMiss, { kind: "tap", cell: 0 } as never);
+    expect(isOk(hit)).toBe(true);
+    const finished = (hit as unknown as { value: never }).value;
+    const share = game.shareBlock(finished, { puzzleNumber: 7, currentStreak: 0, rated: true });
     expect(share.title).toContain("#7");
-    expect(share.rows[0]).toHaveLength(3);
+    expect(share.title).toContain("found in 2");
+    expect(share.rows).toEqual([["miss"], ["best"]]);
   });
 });
 `;
@@ -515,17 +526,23 @@ function assertConfigReady(id: string): void {
   }
 }
 
+/* The marker line already carries the two space indent of a sibling entry, so
+   the insertion's own leading indent would double it on the opening line. */
+export function insertAtMarker(source: string, marker: string, insertion: string): string {
+  return source.replace(marker, `${insertion.replace(/^ +/, "")}\n  ${marker}`);
+}
+
 function patchConfigFiles(id: string, registryInsertion: string, targetsInsertion: string): void {
   const root = dirname(fileURLToPath(import.meta.url));
   const registryPath = resolve(root, "../src/shell/registry.ts");
   const targetsPath = resolve(root, "../vite.config.ts");
 
   const registrySource = readFileSync(registryPath, "utf8");
-  const registryUpdated = registrySource.replace(REGISTRY_MARKER, `${registryInsertion}\n  ${REGISTRY_MARKER}`);
+  const registryUpdated = insertAtMarker(registrySource, REGISTRY_MARKER, registryInsertion);
   writeFileSync(registryPath, registryUpdated, "utf8");
 
   const targetsSource = readFileSync(targetsPath, "utf8");
-  const targetsUpdated = targetsSource.replace(TARGETS_MARKER, `${targetsInsertion}\n  ${TARGETS_MARKER}`);
+  const targetsUpdated = insertAtMarker(targetsSource, TARGETS_MARKER, targetsInsertion);
   writeFileSync(targetsPath, targetsUpdated, "utf8");
 
   if (id.trim().length === 0) {

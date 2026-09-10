@@ -9,7 +9,7 @@ resume work in a fresh conversation with no chat history.
 
 | Field | Value |
 |---|---|
-| Current phase | Phase 11 done. Phase 12 is specified in PHASE-12-PLAN.md and handed to Copilot. Phase 8's manual checklist is still unrun |
+| Current phase | Phase 12 done, including the fixes in PHASE-12-FIXES.md. Phase 13 is specified in PHASE-13-PLAN.md and starts with VECTOR in its own chat. Phase 8's manual checklist is still unrun |
 | Games playable | POKER GRID and CIPHER, end to end in a browser, inside the suite shell |
 | Engine contract version | 2, corrected by the Phase 11 defect report. Chunks are keyed entries, granularity is gone, tiers belong to the module |
 | Manifest horizon | POKER GRID 365 days from epoch 2026-01-01, verified with a solver replay. CIPHER 365 days from epoch 2026-01-05, the first Monday, verified against the fixed opening |
@@ -171,6 +171,7 @@ Table columns are fixed as follows and every future entry uses them.
 | src/shell/changelog.ts | 5 | The entry list, the app version, and what a returning player is shown | none |
 | src/games/poker-grid/tutorial.ts | 4 | The fixed first session board and how it was chosen | games/poker-grid/generator |
 | PHASE-12-PLAN.md | n/a | The Phase 12 specification, acceptance criteria, and the self check before handover | none |
+| PHASE-12-FIXES.md | n/a | The Phase 12 review findings and their closure, including what the self check surfaced | none |
 | PHASE-13-PLAN.md | n/a | The Phase 13 specification: the three remaining games, one per chat, with their fixed facts and per game gates | none |
 | NEW_GAME.md | n/a | The procedure for authoring and checking a new game against the contract | none |
 | tools/new-game.ts | tools | Pure scaffold planning and filesystem writer for a complete planned game | node:fs, node:path, node:url, shell/registry |
@@ -687,6 +688,21 @@ for later games without changing the engine seam.
    are `planned` and `productionSafe: false`. Automatic release exposure was
    rejected because a directory existing is not evidence that its rules,
    manifest, accessibility, and verification are ready.
+4. **First Monday epoch for every scaffolded game.** The tool emits
+   `2026-01-05` in both the registry entry and the module identity, matching
+   CIPHER. The 1 January epoch POKER GRID shipped with was rejected for new
+   games because puzzle 1 would then land outside the gentlest weekday band,
+   and the registry test already asserts the Monday.
+5. **The scaffold's share block is derived from play.** The generated
+   `shareBlock` emits one row per tap in play order, `best` for the tap that
+   found the target and `miss` for the rest, and names the outcome in the
+   title. A fixed row was rejected because the scaffold is what game three
+   copies, and a block that is the same after a win and a loss teaches the
+   wrong shape of the suite's only distribution mechanism.
+6. **The dash check reads prose only.** The scaffold test checks generated
+   `.md` files whole and, in `.ts` files, comment and string literal text only.
+   Checking whole source was rejected because it flags `count - 1`, which is
+   arithmetic and not punctuation, and would fail POKER GRID and CIPHER today.
 
 ## Settled charter decisions
 
