@@ -138,6 +138,16 @@ the result, which is a human pass across real devices.
 
 ## Logged in Phase 11
 
+## Logged in Phase 12
+
+- **A shared non grid keyboard cursor.** The scaffold keeps custom keyboard
+  behavior inside each renderer because the contract deliberately leaves that
+  model to the game until a second real non grid game proves the abstraction.
+- **Generated game manifest data.** The scaffold emits no horizon because
+  puzzle generation and separate verification belong to the author after the
+  rules are replaced. The generated module remains unrated past a valid
+  horizon.
+
 - **CIPHER band supply past about five years.** Saturday's band holds 265
   eligible codes and spends 52 a year, so a horizon beyond roughly five years
   either repeats a code or needs a second opening. Not solved now because the

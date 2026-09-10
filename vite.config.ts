@@ -82,7 +82,15 @@ const TARGETS: Readonly<Record<string, Target>> = {
     productionSafe: false,
   },
   about: { outPath: "about", html: "src/about/index.html", productionSafe: true },
-  harness: { outPath: "harness", html: "tools/share-harness/index.html", productionSafe: false },  /* NEW_GAME_INSERTION: TARGETS */};
+  harness: { outPath: "harness", html: "tools/share-harness/index.html", productionSafe: false },
+    "scaffold-check": {
+    outPath: "scaffold-check",
+    html: "src/shell/entries/scaffold-check.html",
+    gameId: "scaffold-check",
+    productionSafe: false,
+  },
+  /* NEW_GAME_INSERTION: TARGETS */
+};
 
 /**
  * The layers that make up the shared chunk. A game directory is never here, so

@@ -118,6 +118,18 @@ export const SUITE_GAMES: readonly SuiteGameEntry[] = [
     stateVersion: 1,
     status: "planned",
   },
+    {
+    id: "scaffold-check",
+    displayName: "SCAFFOLD CHECK",
+    oneLineRule: "Tap the target cell before the board says no.",
+    path: "/scaffold-check/",
+    accent: { hue: "96", boardFontStack: "ui-monospace, monospace" },
+    epoch: { year: 2026, month: 1, day: 1 },
+    bucketCount: 4,
+    hasWinLoss: true,
+    stateVersion: 1,
+    status: "planned",
+  },
   /* NEW_GAME_INSERTION: SUITE_GAMES */
 ];
 

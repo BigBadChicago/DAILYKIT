@@ -8,13 +8,13 @@ A game is a module that satisfies `GameModule`. The shell loads it through a sin
 
 ## 2. The order of work
 
-1. Write the design document and the rule set. Exit condition: the rules are testable in Node without a browser and they explain every rejection, every terminal condition, and every score or tier outcome.
-2. Build the pure rules file and the tests before any renderer is touched. Exit condition: a rule test covers every rejection path and the terminal state is proven for a real board.
-3. Build the generator and the two tools that create and verify the manifest. Exit condition: the game can produce a puzzle from a seed and its data path is verified by script before a browser sees it.
-4. Write the module and its state shape. Exit condition: `defineGame` is satisfied, the round trip from parse to serialize to deserialize succeeds, and the share block stays inside the engine row cap.
-5. Build the renderer. Exit condition: the board is playable with keyboard and pointer input, the live region announces each action, and the focus states are visible.
-6. Add the entry file and the two configuration lines. Exit condition: the entry imports the generated module and calls `mountShell`, the registry entry is marked planned, and the allow list entry is not production safe until the game is ready.
-7. Write the defect report. Exit condition: any engine change you wanted is logged as a defect, not patched into the engine, and the report says which change would have been required to do it.
+1. Write the design document and the rule set. Include identity, rules, state, actions, rejection table, terminal condition, scoring, tiers, distribution, serialization, share examples, accessibility, and verification. Exit condition: the rules are testable in Node without a browser and require no invented behavior.
+2. Build pure rules and complete tests before any renderer is touched. Exit condition: every rejection path, terminal condition, determinism property, and one legal state property pass in Node.
+3. Build the generator, its two separate tools, and the verified manifest. Exit condition: 365 days are generated and a separate process verifies every day before a browser sees it.
+4. Write the module and its state shape. Exit condition: parsing, fallback generation, snapshot round trip, outcome grading, distribution buckets, and share rows pass module tests.
+5. Build the renderer and style. Exit condition: keyboard and declared pointer input work, announcements and visible focus work, and the layout passes at 360 pixels with reduced motion.
+6. Add the entry file and the two configuration lines. Exit condition: the entry imports the module and calls `mountShell`, the registry entry is `planned`, and the allow list entry is `productionSafe: false` until the game is ready.
+7. Write the defect report. Exit condition: every wanted engine change is logged as a defect, the report is appended before corrections, and no engine source was changed during the build.
 
 This order is not a preference. A game must be playable through a Node script before a browser sees it, because a renderer written against unproven rules debugs two things at once.
 
@@ -22,25 +22,26 @@ This order is not a preference. A game must be playable through a Node script be
 
 Every member of `GameModule` must be filled in and every one of them has a duty.
 
-1. `identity`: Stable id, display name, epoch, share URL, accent, and one line rule. The id must be lowercase and hyphenated. It is also the seed namespace, so a changed id is a migration.
+1. `identity`: Stable id, display name, epoch, share URL, accent, and one line rule. The id must be lowercase kebab case. It is also the seed namespace, so a changed id is a migration.
 2. `input`: A grid or a custom keyboard model. The shell never tries to guess which one a game uses. Grid games read through `ui/gridCursor.ts`, custom games own their keyboard handling.
-3. `manifest`: The index URL and the lookahead window. The shell fetches the index and the module only parses one entry when a day is opened.
+3. `manifest`: The index URL and the lookahead window. The shell fetches the index and the module only parses one entry when a day is opened. Chunks use `entries` keyed by puzzle number. This records Phase 11 defects 1 and 7.
 4. `archiveEnabled`: Whether a game keeps a replay archive.
 5. `hasWinLoss`: Whether the module has a real win and loss shape. The suite win rate row renders only when this is true.
 6. `stateVersion`: The module owned payload version. The storage envelope version is engine owned and stays separate.
 7. `distribution`: The histogram labels and the distinguished bucket index. The engine renders it and the module decides what a finished outcome means.
-8. `parsePuzzle`: The manifest entry parser. It must reject malformed content and is the place to validate the schema from the manifest.
+8. `parsePuzzle`: The manifest entry parser. It must reject malformed content and is the place to validate the schema from one manifest entry. It must not fetch or generate.
 9. `generatePuzzle`: The fallback for a day outside the manifest horizon. That path must be deterministic and unrated if the game has no stored optimum.
-10. `firstSessionPuzzle`: Optional. It enables a tutorial board that is not today's puzzle. If it is absent, the game falls back to its help panel over today's board.
+10. `firstSessionPuzzle`: Optional. It enables a tutorial board that is not today's puzzle and is never counted. If absent, the game uses the help panel over today's board.
 11. `initialState`: The in progress state. It must be pure and it must match the puzzle being opened.
-12. `serialize` and `deserialize`: The saved payload. The game stores only what is needed and never the secret answer in storage.
-13. `migrateState`: The version migration path for saved payloads. It must be explicit and must not silently reinterpret data from a past version.
-14. `apply`: The action reducer. It must be pure and it must reject routine invalid actions as values rather than throws.
-15. `inspect`: The terminal decision. It decides whether the board is ongoing or finished and what score and tier it holds.
-16. `bucketOf`: The histogram bucket for a finished state.
-17. `shareBlock`: The share rows and title. The engine appends the URL and enforces the row cap, so the game never breaks the suite family look.
-18. `mount`: The game specific DOM mount. It returns a per session `GameView` handle and never mutates module state.
-19. `help`: The structured help content shown to a new player.
+12. `serialize`: The game payload snapshot. It must not become an action log or include data the engine owns.
+13. `deserialize`: Validation and reconstruction against the supplied puzzle. Return a value failure for malformed state. `puzzle-mismatch` is optional because the engine owns puzzle identity under contract decision 14.
+14. `migrateState`: The explicit path from older payload versions to `stateVersion`. Do not migrate the engine envelope, history, or archive payloads.
+15. `apply`: The pure action reducer. Routine invalid actions are rejection values, never exceptions.
+16. `inspect`: The pure terminal decision and finished result. The module owns its tier under engine decision 16.
+17. `bucketOf`: The pure histogram bucket for a finished state. It must index `distribution.labels`.
+18. `shareBlock`: The title and semantic token rows. The engine appends the URL, pads rows, and enforces the row cap. This avoids Phase 11's duplicated share assumptions.
+19. `mount`: The game specific DOM mount. It receives `MountContext`, owns only its host, and returns a per session `GameView` handle.
+20. `help`: Structured help with a worked example and a text equivalent for any drawn example.
 
 A defect this phase must not allow: a game author can read the contract and not discover its rules by trial and error. The known defect that triggered this phase was that the engine had manifest opinions it did not write down, so a second game had to discover them by reading engine source or by watching a puzzle fail to load. The correction is the contract and this guide.
 
@@ -50,7 +51,9 @@ A new game appends to the numbered decisions in `ARCHITECTURE.md`, and it never 
 
 ## 5. Verification gate
 
-This gate is the exact gate from the project instructions and it is not reworded:
+This is the exact gate sentence from section 6 of `.github/copilot-instructions.md`:
+
+> Before you report any fix as done, all of these must pass, in this order: `typecheck`, `typecheck:tools`, `typecheck:sw`, `depcheck`, `test`, the verify script for any game whose rules, scoring, generator, or codec you touched, then `build`, then `budget`. Paste the real output. Never report a fix as done on reasoning alone.
 
 ```text
 npm ci                      once, or after a dependency change
@@ -82,7 +85,7 @@ A new game does not choose everything. The following are settled and must be fol
 2. Tier names are suite wide. They are in `src/engine/tiers.ts` and the structural mirror in `src/core/types.ts`. This is settled charter decision 16 and a later game cannot pick new names.
 3. The storage envelope belongs to the engine. This is contract decision 8 and engine decision 8.
 4. Puzzle identity is owned by the engine. This is contract decision 14.
-5. Chunks are keyed entries by puzzle number. This is contract decision 13 and the Phase 11 defect correction.
+5. Chunks are keyed entries by puzzle number. This is contract decision 13 and the Phase 11 defect correction. The index owns how many chunks exist under contract decision 17.
 
 ## 8. The accessibility floor
 
@@ -100,9 +103,17 @@ A renderer must pass this list before it is considered complete:
 
 Use real implementations when writing a new game.
 
-- POKER GRID: `src/games/poker-grid/module.ts`, `src/games/poker-grid/rules.ts`, `src/games/poker-grid/render.ts`
-- CIPHER: `src/games/cipher/module.ts`, `src/games/cipher/rules.ts`, `src/games/cipher/render.ts`
-- The smallest complete implementation: `src/games/toy-tap/module.ts`
+| Checklist item | POKER GRID | CIPHER | Smallest complete fixture |
+|---|---|---|---|
+| Contract, parse, state, outcome, share | `src/games/poker-grid/module.ts` | `src/games/cipher/module.ts` | `src/games/toy-tap/module.ts` |
+| Rules and rejections | `src/games/poker-grid/rules.ts` | `src/games/cipher/rules.ts` | `src/games/toy-tap/module.ts` |
+| Generator and weekday behavior | `src/games/poker-grid/generator.ts` | `src/games/cipher/generator.ts` | `src/games/toy-tap/module.ts` |
+| Generation and verification tools | `tools/generate.ts`, `tools/verify.ts` | `tools/cipher-generate.ts`, `tools/cipher-verify.ts` | `src/games/toy-tap/module.ts` |
+| Renderer and accessibility | `src/games/poker-grid/render.ts` | `src/games/cipher/render.ts` | `src/games/toy-tap/module.ts` |
+| Help and text equivalent | `src/games/poker-grid/help.ts` | `src/games/cipher/help.ts` | `src/games/toy-tap/module.ts` |
+| Styles | `src/games/poker-grid/style.css` | `src/games/cipher/style.css` | `src/games/toy-tap/module.ts` |
+| Rules tests | `tests/games/poker-grid/rules.test.ts` | `tests/games/cipher/rules.test.ts` | `tests/games/poker-grid/module.test.ts` |
+| Module and share tests | `tests/games/poker-grid/module.test.ts` | `tests/games/cipher/module.test.ts` | `tests/games/poker-grid/module.test.ts` |
 
 ## 10. The traps
 
@@ -111,6 +122,8 @@ Use real implementations when writing a new game.
 - A game never imports another game.
 - A solver must never be importable from the browser bundle if it carries a large table.
 - The test suite is slow only on a bridge filesystem, so run from local disk for the full suite.
+
+The dash rule is operationally narrow. A generated file must contain no en dash or em dash, and no hyphen surrounded by whitespace. Hyphens inside identifiers, paths, class names, and compounds are allowed. The test must use `/[–—]|(?<=\s)-(?=\s)/`, not a kebab case matcher.
 
 ## 11. The generator contract
 

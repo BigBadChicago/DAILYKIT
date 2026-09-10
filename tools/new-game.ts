@@ -119,7 +119,14 @@ export function initialState(puzzle: Puzzle): State {
   return { puzzleNumber: puzzle.number, target: puzzle.target, tapped: [], misses: 0 };
 }
 
+export function isTerminal(state: State): boolean {
+  return state.tapped.includes(state.target) || state.misses >= 3;
+}
+
 export function applyAction(state: State, action: Action): Result<State, Rejection> {
+  if (isTerminal(state)) {
+    return err({ code: "gameOver", announce: "This puzzle is finished." });
+  }
   if (action.cell < 0 || action.cell >= GRID_SIZE) {
     return err({ code: "outOfRange", announce: "That cell does not exist." });
   }
@@ -133,15 +140,16 @@ export function applyAction(state: State, action: Action): Result<State, Rejecti
 }
 
 export function inspect(state: State): Outcome {
-  if (!state.tapped.includes(state.target)) {
+  if (!isTerminal(state)) {
     return { kind: "ongoing" };
   }
+  const won = state.tapped.includes(state.target);
   return {
     kind: "finished",
-    score: Math.max(0, 100 - state.misses * 10),
-    won: true,
+    score: won ? Math.max(0, 100 + state.misses * -10) : 0,
+    won,
     detail: \`\${state.misses} misses\`,
-    tier: 0,
+    tier: won ? 0 : 4,
   };
 }
 
@@ -180,6 +188,7 @@ import type { FinishedOutcome, Outcome, PuzzleNumber, Rejection, Seed, Serialize
 import { defineGame } from "../../contract/game-module.js";
 import type { GameView, HelpContent, MountContext, PuzzleFailure, StateFailure } from "../../contract/types.js";
 import { renderGridBoard } from "./render.js";
+import { generatePuzzle } from "./generator.js";
 import { applyAction, bucketOf, initialState, inspect, type Action, type Puzzle, type State } from "./rules.js";
 
 const gameTitle = "${displayName}";
@@ -198,7 +207,7 @@ export default defineGame<State, Action, Puzzle>({
     oneLineRule: "Tap the target cell before the board says no.",
   },
   input: { kind: "grid", cols: 3, rows: 3, pointer: "tap" },
-  manifest: { indexUrl: "/data/unrated/manifest.index.json", lookaheadDays: 7 },
+  manifest: { indexUrl: "/data/${id}/manifest.index.json", lookaheadDays: 7 },
   archiveEnabled: true,
   hasWinLoss: true,
   stateVersion: 1,
@@ -221,8 +230,7 @@ export default defineGame<State, Action, Puzzle>({
   },
 
   generatePuzzle(puzzleNumber: PuzzleNumber, seed: Seed): Result<Puzzle, PuzzleFailure> {
-    const puzzle = { number: puzzleNumber, target: (seed % 9) as number };
-    return ok(puzzle);
+    return ok(generatePuzzle(puzzleNumber, seed));
   },
 
   initialState: (puzzle) => initialState(puzzle),
@@ -276,7 +284,7 @@ export default defineGame<State, Action, Puzzle>({
   const renderFile = `import { el, setText } from "../../ui/dom.js";
 import type { GameView, MountContext } from "../../contract/types.js";
 
-import { GRID_SIZE, type Action, type State, type Puzzle } from "./rules.js";
+import { GRID_SIZE, isTerminal, type Action, type State, type Puzzle } from "./rules.js";
 
 export function renderGridBoard(host: HTMLElement, context: MountContext<State, Action, Puzzle>): GameView<State> {
   const grid = el("div", { class: "dk-grid dk-grid-3" });
@@ -300,11 +308,13 @@ export function renderGridBoard(host: HTMLElement, context: MountContext<State, 
 
   function paint(next: State): void {
     for (let index = 0; index < buttons.length; index += 1) {
+      const button = buttons[index];
+      if (button === undefined) continue;
       const pressed = next.tapped.includes(index);
       const isTarget = index === next.target && !pressed;
-      buttons[index].dataset["state"] = pressed ? "pressed" : isTarget ? "target" : "empty";
-      setText(buttons[index], pressed ? "X" : isTarget ? "?" : "·");
-      buttons[index].disabled = next.tapped.includes(next.target) || next.misses >= 3;
+      button.dataset["state"] = pressed ? "pressed" : isTarget ? "target" : "empty";
+      setText(button, pressed ? "X" : isTarget ? "?" : "·");
+      button.disabled = isTerminal(next);
     }
   }
 
@@ -387,7 +397,7 @@ mountShell(gameModule);
 
   const rulesTest = `import { describe, expect, it } from "vitest";
 
-import { applyAction, inspect, initialState, type State } from "../../../src/games/${id}/rules.js";
+import { applyAction, inspect, initialState, isTerminal, type State } from "../../../src/games/${id}/rules.js";
 
 const puzzle = { number: 1, target: 4 };
 const start = initialState(puzzle);
@@ -401,9 +411,32 @@ describe("${displayName} rules", () => {
     expect(again.ok).toBe(false);
   });
 
+  it("returns values for out of range input and a finished puzzle", () => {
+    expect(applyAction(start, { kind: "tap", cell: -1 })).toMatchObject({
+      ok: false,
+      error: { code: "outOfRange" },
+    });
+    let state = start;
+    for (const cell of [0, 1, 2]) {
+      const result = applyAction(state, { kind: "tap", cell });
+      if (!result.ok) throw new Error(result.error.code);
+      state = result.value;
+    }
+    expect(isTerminal(state)).toBe(true);
+    expect(applyAction(state, { kind: "tap", cell: 3 })).toMatchObject({
+      ok: false,
+      error: { code: "gameOver" },
+    });
+  });
+
   it("marks a finished board and records misses", () => {
     const state: State = { puzzleNumber: 1, target: 4, tapped: [4], misses: 2 };
     expect(inspect(state)).toMatchObject({ kind: "finished", won: true, detail: "2 misses" });
+    expect(inspect({ puzzleNumber: 1, target: 4, tapped: [0, 1, 2], misses: 3 })).toMatchObject({
+      kind: "finished",
+      won: false,
+      tier: 4,
+    });
   });
 });
 `;
@@ -416,14 +449,15 @@ describe("${displayName} module", () => {
   it("parses a puzzle and serializes it back", () => {
     const parsed = game.parsePuzzle(12, { target: 5, number: 12 });
     expect(isOk(parsed)).toBe(true);
-    const state = game.initialState((parsed as { value: { number: number; target: number } }).value);
+    const puzzle = (parsed as unknown as { value: { number: number; target: number } }).value;
+    const state = game.initialState(puzzle as never);
     const raw = game.serialize(state);
-    const restored = game.deserialize((parsed as { value: { number: number; target: number } }).value, raw);
+    const restored = game.deserialize(puzzle as never, raw);
     expect(isOk(restored)).toBe(true);
   });
 
   it("shares a title and a compact row", () => {
-    const state = game.initialState({ number: 7, target: 0 });
+    const state = game.initialState({ number: 7, target: 0 } as never);
     const share = game.shareBlock(state, { puzzleNumber: 7, currentStreak: 0, rated: true });
     expect(share.title).toContain("#7");
     expect(share.rows[0]).toHaveLength(3);
@@ -463,22 +497,34 @@ function writeFileWithParents(filePath: string, contents: string): void {
   writeFileSync(filePath, contents, "utf8");
 }
 
+function assertConfigReady(id: string): void {
+  const root = dirname(fileURLToPath(import.meta.url));
+  const registrySource = readFileSync(resolve(root, "../src/shell/registry.ts"), "utf8");
+  const targetsSource = readFileSync(resolve(root, "../vite.config.ts"), "utf8");
+  if (!registrySource.includes(REGISTRY_MARKER)) {
+    throw new Error("registry marker missing from src/shell/registry.ts");
+  }
+  if (!targetsSource.includes(TARGETS_MARKER)) {
+    throw new Error("targets marker missing from vite.config.ts");
+  }
+  if (registrySource.includes(`id: "${id}"`)) {
+    throw new Error(`game id already exists in src/shell/registry.ts: ${id}`);
+  }
+  if (targetsSource.includes(`"${id}": {`)) {
+    throw new Error(`game id already exists in vite.config.ts: ${id}`);
+  }
+}
+
 function patchConfigFiles(id: string, registryInsertion: string, targetsInsertion: string): void {
   const root = dirname(fileURLToPath(import.meta.url));
   const registryPath = resolve(root, "../src/shell/registry.ts");
   const targetsPath = resolve(root, "../vite.config.ts");
 
   const registrySource = readFileSync(registryPath, "utf8");
-  if (!registrySource.includes(REGISTRY_MARKER)) {
-    throw new Error("registry marker missing from src/shell/registry.ts");
-  }
   const registryUpdated = registrySource.replace(REGISTRY_MARKER, `${registryInsertion}\n  ${REGISTRY_MARKER}`);
   writeFileSync(registryPath, registryUpdated, "utf8");
 
   const targetsSource = readFileSync(targetsPath, "utf8");
-  if (!targetsSource.includes(TARGETS_MARKER)) {
-    throw new Error("targets marker missing from vite.config.ts");
-  }
   const targetsUpdated = targetsSource.replace(TARGETS_MARKER, `${targetsInsertion}\n  ${TARGETS_MARKER}`);
   writeFileSync(targetsPath, targetsUpdated, "utf8");
 
@@ -495,6 +541,7 @@ export function main(argv: readonly string[]): void {
   for (let index = 0; index < argv.length; index += 1) {
     const flag = argv[index];
     const value = argv[index + 1];
+    if (flag === undefined) continue;
     if (flag === "--id" && value !== undefined) id = value;
     if (flag === "--name" && value !== undefined) name = value;
     if (flag === "--hue" && value !== undefined) hue = value;
@@ -514,6 +561,7 @@ export function main(argv: readonly string[]): void {
   const output = buildNewGame(options);
   const allPaths = [...output.files.keys()].map((filePath) => resolve(process.cwd(), filePath));
   ensureNoExistingFiles(allPaths);
+  assertConfigReady(options.id);
 
   for (const [relativePath, contents] of output.files) {
     writeFileWithParents(resolve(process.cwd(), relativePath), contents);
