@@ -1,0 +1,129 @@
+{
+  "game": "vector",
+  "purpose": "Evidence behind DEPTH_FLOOR, OPENING_MAX_PERCENT and BAND_EDGES in src/games/vector/generator.ts. Changing an edge invalidates every stored band in the horizon.",
+  "rejectionSampling": {
+    "note": "Why boards are carved and not sampled. Fill every blank with a random legal arrow, publish the arrival counts, propagate, reject on a stall. Share of boards that resolve, 6000 seeds at each clue count.",
+    "resolvedPercentByClueCount": {
+      "8": 0.0,
+      "10": 0.0,
+      "12": 0.08,
+      "14": 0.23,
+      "16": 0.68,
+      "18": 3.57,
+      "20": 6.81,
+      "22": 14.52
+    },
+    "conclusion": "The 8 to 12 clue range is unreachable by rejection sampling. Boards are carved."
+  },
+  "carve": {
+    "attempts": 20000,
+    "accepted": 996,
+    "acceptancePercent": 5.0,
+    "msPerAttempt": 0.55,
+    "clueCountHistogram": {
+      "8": 227,
+      "9": 278,
+      "10": 302,
+      "11": 134,
+      "12": 55
+    }
+  },
+  "depth": {
+    "note": "The measure PHASE-13-PLAN section 2 named. Four values across 996 boards, which cannot carry seven weekday bands.",
+    "histogram": {
+      "3": 2,
+      "4": 271,
+      "5": 400,
+      "6": 312,
+      "7": 11
+    },
+    "conclusion": "Retained as a screen at DEPTH_FLOOR 4. Not the band input."
+  },
+  "opening": {
+    "note": "Cells assigned in round one, as a percentage of blanks, bucketed by ten.",
+    "histogram": {
+      "0": 72,
+      "10": 361,
+      "20": 368,
+      "30": 143,
+      "40": 39,
+      "50": 13
+    },
+    "capPercent": 40,
+    "rejectedPercent": 5.2
+  },
+  "intensity": {
+    "definition": "floor(100 * sum of per cell assignment rounds / blank cells). The mean round in which a cell was forced, in hundredths.",
+    "beforeScreens": {
+      "n": 996,
+      "min": 159,
+      "max": 387,
+      "septiles": [
+        214,
+        229,
+        242,
+        255,
+        269,
+        292
+      ]
+    },
+    "afterScreens": {
+      "n": 955,
+      "min": 175,
+      "max": 387,
+      "septiles": [
+        217,
+        232,
+        244,
+        257,
+        271,
+        292
+      ]
+    }
+  },
+  "bands": {
+    "edges": [
+      217,
+      232,
+      244,
+      257,
+      271,
+      292
+    ],
+    "weekdayBand": {
+      "monday": 0,
+      "tuesday": 1,
+      "wednesday": 2,
+      "thursday": 3,
+      "friday": 5,
+      "saturday": 6,
+      "sunday": 4
+    },
+    "occupancyInStudy": [
+      121,
+      135,
+      141,
+      140,
+      135,
+      150,
+      133
+    ],
+    "daysPerYearPerBand": 52,
+    "note": "Every band holds more than a year's worth at roughly one accepted board in seven, about 140 carve attempts and 80 milliseconds per day."
+  },
+  "firstSessionBoard": {
+    "clues": 11,
+    "blanks": 25,
+    "depth": 4,
+    "openingPercent": 40,
+    "intensity": 196,
+    "note": "Below the Monday edge of 217, so the tutorial cannot drift harder than the Monday it precedes."
+  },
+  "uniquenessSearch": {
+    "board": "the ten clue test fixture",
+    "branches": 33,
+    "nodes": 106444,
+    "ms": 49,
+    "secondSolutions": 0
+  }
+}

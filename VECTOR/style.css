@@ -1,0 +1,148 @@
+/*
+ * VECTOR play area. Requirement 7.3.8 gives a game its accent and its board
+ * typography and nothing else; every other colour comes from the suite theme.
+ *
+ * Board arithmetic at the 360 pixel floor: 360 minus 16 of page padding leaves
+ * 344, minus five 4 pixel gaps leaves 324, divided by six columns is 54 pixels a
+ * cell, clear of the 44 pixel touch floor of requirement 8.2.
+ */
+
+.vec-game {
+  --vec-gap: 4px;
+  --vec-accent: hsl(var(--accent-hue) 70% 45%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.vec-board {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vec-gap);
+  width: 100%;
+  max-width: 24rem;
+  touch-action: manipulation;
+}
+
+.vec-row {
+  display: grid;
+  grid-template-columns: repeat(var(--vec-cols), 1fr);
+  gap: var(--vec-gap);
+}
+
+.vec-cell {
+  aspect-ratio: 1;
+  min-width: 44px;
+  min-height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  border: 2px solid var(--surface-line);
+  background: var(--surface-raised);
+  font-family: var(--board-font-stack);
+  font-size: 1.375rem;
+  font-variant-numeric: tabular-nums;
+  padding: 0;
+}
+
+/* A clue is a number on a filled tile. Shape and weight carry the difference
+   from a blank cell, not hue, per requirement 8.1. */
+.vec-cell--clue {
+  background: var(--surface-sunken);
+  border-color: var(--surface-sunken);
+  color: var(--text-strong);
+  font-weight: 700;
+}
+
+.vec-cell--blank {
+  color: var(--vec-accent);
+  cursor: pointer;
+}
+
+.vec-game--finished .vec-cell--blank {
+  cursor: default;
+}
+
+/* The cursor is aria-activedescendant on the board, so focus lands on the board
+   and the ring has to be drawn on the cell the cursor is standing on. */
+.vec-board:focus-visible {
+  outline: none;
+}
+
+.vec-board:focus-visible .vec-cell[id]:is([aria-current], .vec-cell--cursor) {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.vec-cell--filled {
+  border-color: var(--vec-accent);
+}
+
+.vec-arrow {
+  width: 60%;
+  height: 60%;
+  fill: currentColor;
+}
+
+/* The ray highlight. Dotted overlay plus an outline, so the path reads without
+   relying on the accent hue. */
+.vec-cell--lit {
+  background-image: radial-gradient(currentColor 1px, transparent 1px);
+  background-size: 6px 6px;
+  background-position: center;
+}
+
+.vec-cell--target {
+  outline: 3px dashed var(--vec-accent);
+  outline-offset: -3px;
+}
+
+.vec-status {
+  margin: 0;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.vec-submit {
+  min-height: 44px;
+  padding: 0 1.5rem;
+  border-radius: 999px;
+  border: 2px solid var(--vec-accent);
+  background: var(--vec-accent);
+  color: var(--surface-base);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.vec-submit:disabled {
+  background: transparent;
+  color: var(--text-muted);
+  border-color: var(--surface-line);
+}
+
+.vec-reveal {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+/* Requirement 8.1. The board has no timing element, so there is nothing to
+   preserve beyond removing the transition. The class is set from the mount
+   context as well, because a stored preference is not a media query. */
+.vec-game--reduced-motion .vec-cell,
+.vec-game--reduced-motion .vec-arrow {
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vec-cell,
+  .vec-arrow {
+    transition: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .vec-cell {
+    border-width: 3px;
+  }
+}
