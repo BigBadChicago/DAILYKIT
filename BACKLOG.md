@@ -206,10 +206,25 @@ the result, which is a human pass across real devices.
 
 - **SLATE.md's five are superseded for new builds.** The v3 adoption switched the
   build slate to the design review's recommended pool: DIFFERENCE RELAY, TURN
-  TABLE, RING BALANCE, ORDER OF OPERATIONS, VECTOR LOCK. POKER GRID, CIPHER and
+  TABLE, RING BALANCE, ORDER OF OPERATIONS, ROTATE LOCK. POKER GRID, CIPHER and
   VECTOR stay live as legacy modules and are migrated to the v3 contract rather
   than dropped. TALLY DROP and RECALL from the old slate are not built; they can
   return to the pool if a later review wants them.
-- **VECTOR overlaps VECTOR LOCK.** VECTOR (shipped) and VECTOR LOCK (v3 pool) are
-  both arrow and ray games. Whether VECTOR LOCK ships alongside VECTOR, replaces
-  it, or is cut is a slate decision to settle before VECTOR LOCK is built.
+- ~~**VECTOR overlaps VECTOR LOCK.**~~ Closed 2026-09-13. The game was renamed
+  ROTATE LOCK and ships alongside VECTOR under composition A. The ids `vector`
+  and `rotate-lock` never collided; the name did.
+- **Requirement 7.1.1 is not satisfied by the eight game suite.** Accepted as a
+  deviation on 2026-09-13 when composition A was approved, and recorded here so
+  it is a decision rather than an oversight. DIFFERENCE RELAY, RING BALANCE and
+  ORDER OF OPERATIONS are all order a permutation under constraints, verified by
+  permutation enumeration. TURN TABLE and ROTATE LOCK are both rotate route
+  pieces under checkpoints. So the five new games exercise two cognitive modes,
+  and across all eight the suite has no categorization game and no pattern or
+  memory game, the latter because RECALL covered it and was cancelled. The pool
+  concepts that would close the gap if a later review wants them: THREE-WAY SPLIT
+  for categorization by partition, SHADOW LEDGER for visibility deduction, WORD
+  WEAVE for a word graph, PRIME PAIRING for matching. Substituting one is an edit
+  to `src/shell/registry.ts` and nothing else while the game is unbuilt.
+- **Registry order among the five planned games is arbitrary.** The list is meant
+  to run longest session to shortest and no design document states a session
+  length for any of them yet. Re sort as each one is written.

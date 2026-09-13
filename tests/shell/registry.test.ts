@@ -2,16 +2,20 @@ import { describe, expect, it } from "vitest";
 
 import cipher from "../../src/games/cipher/module.js";
 import pokerGrid from "../../src/games/poker-grid/module.js";
+import vector from "../../src/games/vector/module.js";
 import { LIVE_GAMES, SUITE_GAMES, entryFor, promotableIds } from "../../src/shell/registry.js";
 import { crossPromotionTarget } from "../../src/engine/stats.js";
 import { emptySuiteRecord } from "../../src/engine/storage.js";
 
 describe("suite registry", () => {
-  it("lists exactly the five approved games with unique ids and paths", () => {
-    expect(SUITE_GAMES).toHaveLength(5);
-    expect(new Set(SUITE_GAMES.map((entry) => entry.id)).size).toBe(5);
-    expect(new Set(SUITE_GAMES.map((entry) => entry.path)).size).toBe(5);
-    expect(new Set(SUITE_GAMES.map((entry) => entry.accent.hue)).size).toBe(5);
+  it("lists exactly the eight approved games with unique ids and paths", () => {
+    /* Three live plus the five approved 2026-09-13. The count is spelled out
+       because changing the slate should have to change this line. The
+       uniqueness checks derive from it so they cannot drift apart. */
+    expect(SUITE_GAMES).toHaveLength(8);
+    expect(new Set(SUITE_GAMES.map((entry) => entry.id)).size).toBe(SUITE_GAMES.length);
+    expect(new Set(SUITE_GAMES.map((entry) => entry.path)).size).toBe(SUITE_GAMES.length);
+    expect(new Set(SUITE_GAMES.map((entry) => entry.accent.hue)).size).toBe(SUITE_GAMES.length);
   });
 
   it("uses lowercase hyphenated ids, because they are seed and key namespaces", () => {
@@ -22,9 +26,13 @@ describe("suite registry", () => {
    * The registry is a copy of facts a module also states, and the hub reads the
    * copy so it can render without loading the game. This is the check that the
    * copy is true. Every game added later gets a line here.
+   *
+   * VECTOR shipped without one and the copy drifted on two fields, stateVersion
+   * and the board font stack, which is the exact failure this test exists to
+   * catch. Adding the game to the list is not optional bookkeeping.
    */
   it("agrees with every built module's identity", () => {
-    for (const built of [pokerGrid, cipher]) {
+    for (const built of [pokerGrid, vector, cipher]) {
       const entry = entryFor(built.identity.id);
       expect(entry).not.toBeNull();
       expect(entry!.displayName).toBe(built.identity.displayName);

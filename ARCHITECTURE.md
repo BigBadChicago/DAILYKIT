@@ -788,6 +788,15 @@ phase and are not to be reopened without a stated reason.
    VECTOR, TALLY DROP, RECALL. Changing the slate before a game is built is an
    edit to that one file.
 
+   **Superseded 2026-09-13.** ARCHITECTURE2.md's lineup replaces SLATE.md for
+   new work: DIFFERENCE RELAY, TURN TABLE, RING BALANCE, ORDER OF OPERATIONS and
+   ROTATE LOCK, carried in `src/shell/registry.ts` as `planned` beside the three
+   live games. TALLY DROP and RECALL are cancelled and PHASE-13-PLAN.md's game
+   four and game five no longer describe anything being built. The suite is
+   therefore eight games, which is composition A and a stated deviation from
+   Section 0 and requirement 7.3.1, approved the same day. The mechanism is
+   unchanged: changing the slate is still an edit to that one file.
+
 ## Resolutions of internal conflicts in the source document
 
 Recorded so a fresh conversation does not rediscover them.

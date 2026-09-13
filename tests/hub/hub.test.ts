@@ -84,12 +84,14 @@ describe("the hub", () => {
     expect(section.classList.contains("dk-hidden")).toBe(false);
     const block = section.querySelector(".hub-dailycard__block")!.textContent ?? "";
     expect(block.split("\n")).toHaveLength(3);
-    expect(block).toContain("DAILYKIT 2026-01-03 1/5");
+    /* Derived, not literal. Phase 11 defect 8 again: a count the registry
+       already states must never be spelled out in a hub test. */
+    expect(block).toContain(`DAILYKIT 2026-01-03 1/${SUITE_GAMES.length}`);
     expect(block.endsWith("dailykit.providentia.games")).toBe(true);
     /* The block is decorative; the text equivalent is what a screen reader
        reads. Requirement 8.1. */
     expect(section.querySelector(".hub-dailycard__block")!.getAttribute("aria-hidden")).toBe("true");
-    expect(root.textContent).toContain("1 of 5 finished");
+    expect(root.textContent).toContain(`1 of ${SUITE_GAMES.length} finished`);
   });
 
   it("marks a finished game with its tier name and not with color alone", () => {

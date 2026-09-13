@@ -3,7 +3,7 @@
  *
  * The suite's one growth asset that no single game product can produce. A
  * player who finished three games gets one block covering all three, and a
- * reader who sees it learns that DAILYKIT is five games rather than one.
+ * reader who sees it learns that DAILYKIT is eight games rather than one.
  *
  * It lives in Layer 1 rather than in the hub because it is share assembly, and
  * every other piece of share assembly is here. The hub supplies facts and gets

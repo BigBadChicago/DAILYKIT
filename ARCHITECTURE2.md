@@ -26,8 +26,8 @@ pipeline, theme/chrome, offline behavior, and certification gate.
 |---|---|
 | Current architecture generation | Rewrite for the 15-concept puzzle pool and the social-telemetry specification |
 | Existing production games | POKER GRID, CIPHER |
-| New concept pool | DIFFERENCE RELAY, TURN TABLE, RING BALANCE, INTERVAL PACK, CARD CASCADE, THREE-WAY SPLIT, VECTOR LOCK, DIVISIBLE FENCE, WORD WEAVE, PRIME PAIRING, SHADOW LEDGER, COVER CHARGE, PARITY PARADE, CROSS CURRENT, ORDER OF OPERATIONS |
-| Recommended concepts from the design review | DIFFERENCE RELAY, TURN TABLE, RING BALANCE, ORDER OF OPERATIONS, VECTOR LOCK |
+| New concept pool | DIFFERENCE RELAY, TURN TABLE, RING BALANCE, INTERVAL PACK, CARD CASCADE, THREE-WAY SPLIT, ROTATE LOCK, DIVISIBLE FENCE, WORD WEAVE, PRIME PAIRING, SHADOW LEDGER, COVER CHARGE, PARITY PARADE, CROSS CURRENT, ORDER OF OPERATIONS |
+| Recommended concepts from the design review | DIFFERENCE RELAY, TURN TABLE, RING BALANCE, ORDER OF OPERATIONS, ROTATE LOCK |
 | Engine contract | v3 target contract: deterministic puzzle, pure action transition, terminal result, telemetry artifact, share export, certification metadata |
 | Daily content model | One deterministic puzzle definition per game/day, derived from that game's seed alone |
 | Verification policy | Generation and verification are independent processes; exact verification required where the game's state space permits it |
@@ -37,7 +37,7 @@ pipeline, theme/chrome, offline behavior, and certification gate.
 | Storage policy | Small JSON snapshot for in-progress state; telemetry retained only when required for the local result artifact |
 | Deployment | Cloudflare Pages at `dailykit.providentia.games` |
 | Migration status | v3 adoption in progress. Phase 1, the v3 contract and engine seams, is in design. POKER GRID, CIPHER and VECTOR are live on the v2 contract and treated as legacy modules to migrate, not rewrite (section 47) |
-| Chosen lineup | Approved 2026-09-13: the five recommended concepts become the new build slate, DIFFERENCE RELAY, TURN TABLE, RING BALANCE, ORDER OF OPERATIONS, VECTOR LOCK. This supersedes SLATE.md's five for new work; the three legacy games stay live |
+| Chosen lineup | Approved 2026-09-13: the five recommended concepts become the new build slate, DIFFERENCE RELAY, TURN TABLE, RING BALANCE, ORDER OF OPERATIONS, ROTATE LOCK. This supersedes SLATE.md's five for new work; the three legacy games stay live. Composition A approved the same day: the suite is eight games, not five, and TALLY DROP and RECALL are cancelled. ROTATE LOCK was named VECTOR LOCK until the rename that removed the collision with the shipped VECTOR. Carried into `src/shell/registry.ts`, section 56 |
 | This document | The active architecture target. ARCHITECTURE.md is the v2 record the legacy games still satisfy and is retained until migration completes |
 
 The original architecture established the project as a layered static application with
@@ -600,7 +600,7 @@ Preferred for:
 - RING BALANCE
 - TURN TABLE
 - INTERVAL PACK
-- VECTOR LOCK
+- ROTATE LOCK
 - DIVISIBLE FENCE
 - SHADOW LEDGER
 
@@ -1333,7 +1333,7 @@ profiles**, not engine special cases.
 | INTERVAL PACK | Order numbers under overlapping interval sums | permutation enumeration | resolution depth | friction + deterministic meter |
 | CARD CASCADE | Sequence signed cards through cumulative checkpoints | permutation enumeration + subset DP | reachable-state mass | replay + archetype |
 | THREE-WAY SPLIT | Partition numbers into constrained triples | partition enumeration | candidate elimination | replay + fingerprint |
-| VECTOR LOCK | Order/rotate route pieces under turn checkpoints | state enumeration + pruning | checkpoint decision depth | vector trace + deterministic output |
+| ROTATE LOCK | Order/rotate route pieces under turn checkpoints | state enumeration + pruning | checkpoint decision depth | vector trace + deterministic output |
 | DIVISIBLE FENCE | Order numbers under local relations and neighbor counts | permutation enumeration | neighbor reduction | action telemetry + archetype |
 | WORD WEAVE | Select dictionary words satisfying exact overlaps | layered graph search | candidate-domain work | replay + fingerprint |
 | PRIME PAIRING | Form unique prime-sum matching | perfect matching enumeration | forced-pair depth | action trace + archetype |
@@ -1613,7 +1613,7 @@ Use orientation-state or graph-state enumeration.
 Targets:
 
 - TURN TABLE
-- VECTOR LOCK
+- ROTATE LOCK
 - CROSS CURRENT
 
 Key risk: visual density and accidental decomposition.
@@ -2106,7 +2106,7 @@ attempt fingerprint
 
 Primary engine stress test: enough state-space depth for seven useful bands.
 
-## VECTOR LOCK
+## ROTATE LOCK
 
 Preferred contract shape:
 
@@ -2632,6 +2632,70 @@ Declared: grammar A, patterns `emergent-fingerprint` and `comparative-friction`,
 
 Deferred, in BACKLOG.md: the section 19 archetype, because the thresholds want a
 second game's data; and the graphic card, which is still unbuilt for every game.
+
+## Slate reconciliation. Done 2026-09-13.
+
+The lineup approved in the status table was carried into `src/shell/registry.ts`,
+which until now still advertised the cancelled TALLY DROP and RECALL on the hub.
+Three decisions were needed to do it, and three defects surfaced on the way.
+
+**Composition A: the suite is eight games.** Three live plus five planned. This
+is a stated deviation from the charter's Section 0, which ships the suite as five
+games on one site, and from requirement 7.3.1, which has the hub listing five.
+Approved 2026-09-13.
+
+**The daily card covers only the games a player finished that day**, which is
+what `dailyCardBlock` already did, so no code changed and no cap moved.
+`SHARE_MAX_ROWS` is 8, so a player who finishes all eight produces exactly eight
+rows and a ten line block, which is charter decision 1 as amended sitting exactly
+at its limit. A ninth game breaks it. That is the constraint to remember before
+the suite grows again.
+
+**VECTOR LOCK is renamed ROTATE LOCK.** This closes the BACKLOG item about the
+name colliding with the shipped VECTOR. The ids `vector` and `rotate-lock` were
+never in conflict mechanically; the collision was a human one and it is gone.
+
+Hues are now spaced forty degrees apart across all eight games, which is the
+widest even spacing eight accents admit, and the three live hues are unchanged.
+The five new one line rules, bucket counts, failure models and registry order are
+provisional. Order in particular, because the list runs longest session to
+shortest and none of the five has a stated session length yet. Each is replaced
+by that game's design document, and the registry test holds a game to its module
+only once the module exists.
+
+**Requirement 7.1.1 is not satisfied by this lineup, and it is recorded rather
+than resolved.** Three of the five are order a permutation under constraints and
+the other two are rotate route pieces under checkpoints, so five games exercise
+two cognitive modes. Across all eight, the suite has no categorization game and
+no pattern or memory game, the latter because RECALL was the one that covered it.
+Logged in BACKLOG.md with the pool concepts that would close the gap.
+
+### Three defects in the VECTOR integration, found and fixed here
+
+VECTOR shipped without being added to the registry test's module agreement loop,
+which is the check suite decision 1 relies on to keep the registry copy true.
+Two fields had drifted behind it.
+
+1. **`stateVersion` said 1 and the module says 2**, since the Phase 2 effort
+   record. `suite.ts` builds the hub's `GameStore` from the registry value, so
+   the hub opened a v2 payload expecting v1 and the refusing migration dropped
+   it. A player part way through a VECTOR board could see the hub card read not
+   started. Corrected to 2.
+2. **`boardFontStack` said the shared `MONO`** and the module states an SF Mono
+   stack. Requirement 7.3.8 gives every game its own board typography, so the
+   registry copies the module rather than flattening it, and `MONO_SF` was added.
+3. **The agreement loop covered POKER GRID and CIPHER only**, which is why 1 and
+   2 were invisible. VECTOR is in it now and the comment says plainly that adding
+   a game to the list is not optional bookkeeping.
+
+Two hub test literals, `1/5` and `1 of 5 finished`, also hardcoded a count the
+registry already states. That is Phase 11 defect 8 a second time, in a file that
+had already been corrected for it once. Both derive from `SUITE_GAMES.length`
+now.
+
+Green after the change: 54 files, 637 tests, three typechecks, the dependency
+check, the production build, and the byte budget with the hub at 17.0 KB gzipped
+against a 150 KB ceiling.
 
 ## Phase 3, migrate CIPHER to v3. Next.
 
