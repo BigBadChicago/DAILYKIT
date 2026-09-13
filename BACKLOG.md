@@ -225,15 +225,18 @@ the result, which is a human pass across real devices.
   for categorization by partition, SHADOW LEDGER for visibility deduction, WORD
   WEAVE for a word graph, PRIME PAIRING for matching. Substituting one is an edit
   to `src/shell/registry.ts` and nothing else while the game is unbuilt.
-- **The daily card exceeds the v3 share height at seven and eight finished
-  games.** ARCHITECTURE2.md section 49 makes nine total lines a hard contract,
-  which is seven rows, while the v2 `SHARE_MAX_ROWS` is eight and charter
-  decision 1 as amended allows ten lines. Composition A is what put the two in
-  conflict: at five games they never disagreed. The card is v2 code today and is
-  not validated by the v3 grammar, so nothing fails yet. It fails when the suite
-  share path migrates. Options, none chosen: cap at the seven most recent
-  finishes, encode two games per row, or truncate with the engine decision 21
-  telemetry fault. Decide before the suite share path moves to v3, not after.
+- ~~**The daily card exceeds the v3 share height at seven and eight finished
+  games.**~~ Closed 2026-09-13. Resolved by making the card one glyph per game
+  rather than a five cell meter per game, which puts a fully finished eight game
+  suite at three lines against a nine line cap. Suite decision 3 in
+  ARCHITECTURE.md carries the amendment. Capping at seven finishes and
+  truncating with the engine decision 21 fault were both rejected, because each
+  discards a result the player earned.
+- **The `unused` and `ungraded` glyphs are unaudited.** `unused` is a black
+  square that is close to invisible on a dark chat background, and `ungraded` is
+  new. Both now appear in a shared artifact rather than only in padding. Add
+  them to the Section 10.7 per platform pass and swap either one that renders as
+  text or disappears.
 - **Registry order among the five planned games is arbitrary.** The list is meant
   to run longest session to shortest and no design document states a session
   length for any of them yet. Re sort as each one is written.

@@ -161,7 +161,7 @@ Table columns are fixed as follows and every future entry uses them.
 | .github/workflows/generate.yml | n/a | The job that regenerates and verifies the horizon | none |
 | .gitignore | n/a | Keeps dependencies, build output, and runner scratch out of the repo | none |
 | vite.config.ts | n/a | The GAME allow list, the entry set, the pinned engine chunk, static root file emission, and manifest data deployment | none |
-| src/engine/dailycard.ts | 1 | The suite's combined one row per finished game share block | core/types, engine/tiers, shared/share-vocabulary |
+| src/engine/dailycard.ts | 1 | The suite's combined share block, one glyph per game in registry order | core/types, engine/tiers, shared/share-vocabulary |
 | src/shell/registry.ts | 5 | The five suite games as data, readable without loading a game | none |
 | src/shell/share-context.ts | 5 | What a share block is told about the session, so a replay carries no streak | none |
 | src/shell/suite.ts | 5 | Suite storage, per game today status, theme port, and daily card assembly | core/date, core/result, core/types, engine/dailycard, engine/scheduler, engine/stats, engine/storage, ui/theme, shell/registry |
@@ -869,12 +869,30 @@ presentation, and generation decisions above.
    than imported from `engine/tiers.ts`, because the layer rule puts tiers
    above core, and a compile time check in `tiers.ts` fails if the two ever
    drift. Same mechanism as contract decision 3.
-3. **The daily card is a five cell meter per game.** One row per finished
-   game, the game's tier token repeated once per band at or below the one
-   earned, padded with the neutral token. Five games plus a title and a URL is
-   seven lines, inside the cap. An ungraded game is one neutral cell and never
-   a tier glyph, because past the horizon there is no grade and rendering one
-   as Rough would be a lie the player cannot check.
+3. **The daily card is one glyph per game, in registry order.** Amended
+   2026-09-13. The original was a five cell meter on its own row per finished
+   game, and its arithmetic assumed five games: eight produced eight rows and a
+   ten line block, over the hard nine line cap of ARCHITECTURE2.md section 49.
+   Composition A broke the premise rather than the logic. The meter also spent
+   five cells carrying one value between zero and four.
+
+   Every game is present, including the ones not played, so positions are the
+   registry's and two cards on the same day compare cell by cell. Rows are
+   chunked at eight cells, which is section 49's per row token cap, so a ninth
+   game wraps rather than breaking the contract. An eight game suite fully
+   finished is three lines.
+
+   Three cell states, not two. A graded game is its tier token. A game finished
+   with nothing to grade against is `ungraded`, never a tier glyph, because past
+   the horizon rendering Rough would be a lie the player cannot check. A game
+   not played is `unused`. Finishing a game and skipping it are different facts
+   and the card says which.
+
+   Requirement 8.1 costs one token. At five cells a meter told `partial` from
+   `barFull` by length, and the vocabulary exempted bar tokens from shape
+   uniqueness for exactly that reason. One cell per game removes the length, so
+   `ungraded` is its own token with a shape no tier uses, asserted in
+   `dailycard.test.ts`.
 4. **The hub never writes.** Opening it resolves one puzzle number per game and
    reads one record per game, eight of each since the 2026-09-13 slate
    reconciliation, and touches none of them. A hub that advanced a watermark
@@ -1112,8 +1130,13 @@ because Node's module resolution makes thousands of small reads and the mount
 costs about 17 milliseconds each. Every `jsdom` test file pays it again, so a
 suite that takes under a minute anywhere else takes twenty and looks broken.
 
-The fix is the filesystem, not the configuration. Copy the tree to local disk
-and run there. Do not reach for `isolate: false` or a single fork to make the
+The fix is the filesystem, not the configuration. Copy the tree, without
+`node_modules`, to the session's own scratch disk, which means anywhere in the
+session VM outside the mounted folder, for example `$HOME/dk-run`, then
+`npm install` and run there. Nothing is written into this repository, nothing
+appears in the working tree, and the copy is deleted with the session. On
+Windows, in a normal terminal, `npm test` in the repository works as usual and
+none of this applies. Do not reach for `isolate: false` or a single fork to make the
 numbers look better: environment setup is 6.6 seconds across the whole suite on
 a real disk, so there is nothing to win, and isolation between test files is
 worth more than six seconds.

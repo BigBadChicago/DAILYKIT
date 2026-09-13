@@ -192,15 +192,20 @@ export function dailyCardInput(
   suite: SuiteRecord,
   now: Date,
 ): DailyCardInput {
-  const finished: DailyCardEntry[] = [];
-  for (const status of statuses) {
-    if (status.play !== "finished" || status.result === null) continue;
-    finished.push({ gameId: status.entry.displayName, tier: status.result.tier });
-  }
+  /* Every game, not only the finished ones. The card's positions are the
+     registry's, so a gap has to be present to be rendered as a gap. */
+  const games: DailyCardEntry[] = statuses.map((status) => {
+    const gameId = status.entry.displayName;
+    if (status.play !== "finished" || status.result === null) {
+      return { gameId, status: "unplayed", tier: null };
+    }
+    return status.result.tier === null
+      ? { gameId, status: "ungraded", tier: null }
+      : { gameId, status: "graded", tier: status.result.tier };
+  });
   return {
     date: localDateLabel(now),
-    finished,
-    totalGames: statuses.length,
+    games,
     suiteStreak: suite.currentStreak,
   };
 }

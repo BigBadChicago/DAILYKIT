@@ -19,8 +19,10 @@ export type TierToken = "best" | "strong" | "partial" | "weak" | "miss";
 export type BarToken = "barFull" | "barEmpty";
 /** Direction glyphs for route and vector games. ARCHITECTURE2 section 14. */
 export type DirectionToken = "up" | "down" | "left" | "right";
-/** Structural filler that is neither a rank nor a fill state. */
-export type StructureToken = "unused";
+/** Structural filler that is neither a rank nor a fill state. `ungraded` marks
+ *  a game that was finished on a day with nothing to grade it against, which is
+ *  not a rank and is not the same fact as not having played it. */
+export type StructureToken = "unused" | "ungraded";
 export type ShareToken = TierToken | BarToken | DirectionToken | StructureToken;
 
 /** Ordered best to worst. Index is the tier index used by every game. */
@@ -41,6 +43,7 @@ export const TIER_TOKENS: readonly TierToken[] = [
  *   miss     U+1F53B           triangle
  *   barFull  U+1F7E6           square, fill state not a tier
  *   barEmpty U+2B1C            square, fill state not a tier
+ *   ungraded U+2796            heavy minus, finished with no grade
  */
 export const SHARE_GLYPHS: Readonly<Record<ShareToken, string>> = {
   best: "\u2B50",
@@ -55,6 +58,7 @@ export const SHARE_GLYPHS: Readonly<Record<ShareToken, string>> = {
   left: "\u23EA",
   right: "\u23E9",
   unused: "\u2B1B",
+  ungraded: "\u2796",
 };
 
 /** Asserted distinct across TIER_TOKENS by test. Bar tokens are exempt because
@@ -72,6 +76,7 @@ export const SHARE_TOKEN_SHAPE: Readonly<Record<ShareToken, string>> = {
   left: "rewind",
   right: "fast-forward",
   unused: "block",
+  ungraded: "dash",
 };
 
 /** Padding token. The engine right pads short rows with this so requirement

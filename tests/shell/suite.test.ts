@@ -97,7 +97,7 @@ describe("statusFor", () => {
 });
 
 describe("the daily card input", () => {
-  it("includes only finished games, in registry order, with the suite streak", () => {
+  it("includes every game in registry order, marking the unplayed ones", () => {
     const backend = seeded((record) => ({
       ...record,
       watermark: 3,
@@ -105,8 +105,10 @@ describe("the daily card input", () => {
     }));
     const suite = completeSuiteDay(openSuite(backend).record, 20456, "poker-grid");
     const input = dailyCardInput(allStatuses(backend, DAY), suite, DAY);
-    expect(input.finished).toEqual([{ gameId: "POKER GRID", tier: 1 }]);
-    expect(input.totalGames).toBe(SUITE_GAMES.length);
+    expect(input.games).toHaveLength(SUITE_GAMES.length);
+    expect(input.games[0]).toEqual({ gameId: "POKER GRID", status: "graded", tier: 1 });
+    expect(input.games.filter((entry) => entry.status !== "unplayed")).toHaveLength(1);
+    expect(input.games.every((entry) => entry.gameId.length > 0)).toBe(true);
     expect(input.suiteStreak).toBe(1);
     expect(input.date).toBe("2026-01-03");
   });
