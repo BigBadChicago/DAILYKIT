@@ -306,6 +306,23 @@ export function propagate(geometry: Geometry): Propagation {
 }
 
 /** The unique solution, or null on any board that does not resolve. */
+/**
+ * The intensity measure, VECTOR.md 9.2 as amended by measurement: the mean
+ * round in which a blank was assigned, scaled by a hundred so it is an integer.
+ * Depth alone takes too few distinct values to cut into seven weekly bands,
+ * while intensity separates a board that resolves in one late cascade from one
+ * that resolves steadily. It lives here rather than in the generator because
+ * the generator, the verifier and the module all have to produce the same
+ * number for the same board, ARCHITECTURE2 section 53.
+ */
+export function intensityOf(geometry: Geometry, rounds: readonly number[]): number {
+  const blanks = geometry.blankCells.length;
+  if (blanks === 0) return 0;
+  let total = 0;
+  for (const cell of geometry.blankCells) total += rounds[cell] as number;
+  return Math.floor((total * 100) / blanks);
+}
+
 export function solutionOf(geometry: Geometry): ArrowBoard | null {
   const result = propagate(geometry);
   return result.kind === "resolved" ? result.arrows : null;

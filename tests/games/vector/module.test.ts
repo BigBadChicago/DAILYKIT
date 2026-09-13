@@ -1,6 +1,11 @@
+import { readFileSync } from "node:fs";
+
 import { describe, expect, it } from "vitest";
 
+import { renderArtifact, validateArtifact } from "../../../src/engine/artifact.js";
 import { encodeSymbols } from "../../../src/engine/manifest-codec.js";
+import { runShareLeakChecks } from "../../../src/engine/share-leak.js";
+import { validateRunLog } from "../../../src/engine/telemetry.js";
 import { TIER_NAMES } from "../../../src/engine/tiers.js";
 import { SHARE_MAX_ROWS, type ShareContext } from "../../../src/core/types.js";
 import { renderShareRow } from "../../../src/shared/share-vocabulary.js";
@@ -8,27 +13,60 @@ import { entryFor } from "../../../src/shell/registry.js";
 import { internals } from "../../../src/games/vector/module.js";
 import {
   MAX_SUBMISSIONS,
+  NO_EFFORT,
   apply,
   initialState,
   inspect,
   makePuzzle,
+  type Effort,
   type VectorPuzzle,
   type VectorState,
 } from "../../../src/games/vector/rules.js";
+import { vectorLeakProbes } from "../../../src/games/vector/telemetry.js";
 import { CELLS, type Direction } from "../../../src/games/vector/propagate.js";
-import { FIXTURE_LAYOUT, FIXTURE_SOLUTION, fixturePuzzle } from "./fixtures.js";
+import {
+  FIXTURE_INTENSITY,
+  FIXTURE_LAYOUT,
+  FIXTURE_SOLUTION,
+  fixturePuzzle,
+} from "./fixtures.js";
 
 const {
   identity,
   input,
   distribution,
+  shareCapabilities,
   parsePuzzle,
   serialize,
   deserialize,
+  migrateState,
   shareBlock,
+  difficulty,
+  bucketOf,
+  tierOf,
+  telemetry,
+  shareArtifact,
   LAYOUT_RADIX,
   SHARE_ROW_WIDTH,
+  STATE_VERSION,
 } = internals;
+
+const URL = "dailykit.providentia.games";
+
+/** A stored payload at the current version. */
+function stored(
+  a: string,
+  n: number,
+  s: boolean,
+  e: readonly (readonly number[])[] = [],
+  p: readonly number[] = [0, 0],
+): { v: number; data: unknown } {
+  return { v: STATE_VERSION, data: { a, n, s, e, p } };
+}
+
+function arrowsOf(state: VectorState): string {
+  return (serialize(state).data as { a: string }).a;
+}
 
 const puzzle = fixturePuzzle();
 
@@ -47,6 +85,8 @@ function entryFor_(puzzleNumber: number, clues = FIXTURE_LAYOUT): Record<string,
   };
 }
 
+/** A finished state with the submissions already spent. The effort record is
+ *  the right length and empty, because these cases are about the outcome. */
 function solvedAfter(submissions: number, win: boolean): VectorState {
   let state = initialState(puzzle);
   if (win) {
@@ -55,9 +95,30 @@ function solvedAfter(submissions: number, win: boolean): VectorState {
       if (!next.ok) throw new Error(next.error.code);
       state = next.value;
     }
-    return { ...state, submissions, solved: true };
   }
-  return { ...state, submissions, solved: false };
+  return {
+    ...state,
+    submissions,
+    solved: win,
+    effort: new Array<Effort>(submissions).fill(NO_EFFORT),
+    pending: NO_EFFORT,
+  };
+}
+
+/** A state reached by playing, so its effort record is real. */
+function played(dirs: (cell: number) => Direction, submissions: number): VectorState {
+  let state = initialState(puzzle);
+  for (let at = 0; at < submissions; at += 1) {
+    for (const cell of puzzle.geometry.blankCells) {
+      const next = apply(state, { kind: "set", cell, dir: dirs(cell) });
+      if (!next.ok) throw new Error(next.error.code);
+      state = next.value;
+    }
+    const submitted = apply(state, { kind: "submit" });
+    if (!submitted.ok) throw new Error(submitted.error.code);
+    state = submitted.value;
+  }
+  return state;
 }
 
 function context(overrides: Partial<ShareContext> = {}): ShareContext {
@@ -171,6 +232,53 @@ describe("serialize and deserialize", () => {
     expect(back.arrows).toEqual(state.arrows);
   });
 
+  it("round trips the effort record and the pending counters", () => {
+    let state = played((cell) => FIXTURE_SOLUTION[cell] as Direction, 0);
+    for (const cell of puzzle.geometry.blankCells) {
+      const next = apply(state, { kind: "set", cell, dir: FIXTURE_SOLUTION[cell] as Direction });
+      if (!next.ok) throw new Error(next.error.code);
+      state = next.value;
+    }
+    const submitted = apply(state, { kind: "submit" });
+    if (!submitted.ok) throw new Error(submitted.error.code);
+    const after = apply(submitted.value, { kind: "cycle", cell: 0 });
+    const live = after.ok ? after.value : submitted.value;
+
+    const back = roundTrip(live);
+    expect(back.effort).toEqual(live.effort);
+    expect(back.pending).toEqual(live.pending);
+  });
+
+  it("refuses an effort record that does not match the submission count", () => {
+    const empty = arrowsOf(initialState(puzzle));
+    for (const e of [[], [[0, 0], [0, 0]]]) {
+      const result = deserialize(puzzle, stored(empty, 1, false, e as readonly number[][]));
+      expect(result.ok).toBe(false);
+      if (!result.ok) expect(result.error.code).toBe("malformed");
+    }
+  });
+
+  it("refuses an effort pair that is not two counts, or more changes than actions", () => {
+    const empty = arrowsOf(initialState(puzzle));
+    const bad: readonly unknown[][] = [[[1]], [["a", 1]], [[-1, 0]], [[1.5, 0]], [[1, 2]]];
+    for (const e of bad) {
+      const result = deserialize(puzzle, stored(empty, 1, false, e as readonly number[][]));
+      expect(result.ok).toBe(false);
+    }
+    expect(deserialize(puzzle, stored(empty, 0, false, [], [1])).ok).toBe(false);
+  });
+
+  it("refuses a version one payload rather than guessing its effort record", () => {
+    const empty = arrowsOf(initialState(puzzle));
+    const result = deserialize(puzzle, { v: 1, data: { a: empty, n: 0, s: false } });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error.code).toBe("unsupported-version");
+
+    const migrated = migrateState(1, { v: 1, data: { a: empty, n: 0, s: false } });
+    expect(migrated.ok).toBe(false);
+    if (!migrated.ok) expect(migrated.error.code).toBe("unsupported-version");
+  });
+
   it("refuses an unsupported payload version", () => {
     const result = deserialize(puzzle, { v: 99, data: {} });
     expect(result.ok).toBe(false);
@@ -178,23 +286,22 @@ describe("serialize and deserialize", () => {
   });
 
   it("refuses a wrong length arrow string", () => {
-    const result = deserialize(puzzle, { v: 1, data: { a: "..", n: 0, s: false } });
+    const result = deserialize(puzzle, stored("..", 0, false));
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error.code).toBe("malformed");
   });
 
   it("refuses a submission count out of range", () => {
-    const good = serialize(initialState(puzzle)) as { v: number; data: { a: string } };
+    const empty = arrowsOf(initialState(puzzle));
     for (const n of [-1, MAX_SUBMISSIONS + 1, 1.5]) {
-      const result = deserialize(puzzle, { v: 1, data: { a: good.data.a, n, s: false } });
-      expect(result.ok).toBe(false);
+      expect(deserialize(puzzle, stored(empty, n, false)).ok).toBe(false);
     }
   });
 
   it("refuses an arrow sitting on a clue cell", () => {
     const chars = new Array<string>(CELLS).fill(".");
     chars[puzzle.geometry.clueCells[0] as number] = "0";
-    const result = deserialize(puzzle, { v: 1, data: { a: chars.join(""), n: 0, s: false } });
+    const result = deserialize(puzzle, stored(chars.join(""), 0, false));
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error.code).toBe("puzzle-mismatch");
   });
@@ -203,14 +310,14 @@ describe("serialize and deserialize", () => {
     const chars = new Array<string>(CELLS).fill(".");
     // Cell 0 can only go right or down on this board.
     chars[0] = "0";
-    const result = deserialize(puzzle, { v: 1, data: { a: chars.join(""), n: 0, s: false } });
+    const result = deserialize(puzzle, stored(chars.join(""), 0, false));
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error.code).toBe("puzzle-mismatch");
   });
 
   it("refuses a solved flag that disagrees with the board", () => {
-    const empty = serialize(initialState(puzzle)) as { v: number; data: { a: string } };
-    const result = deserialize(puzzle, { v: 1, data: { a: empty.data.a, n: 1, s: true } });
+    const empty = arrowsOf(initialState(puzzle));
+    const result = deserialize(puzzle, stored(empty, 1, true, [[0, 0]]));
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error.detail).toContain("disagrees");
   });
@@ -317,5 +424,123 @@ describe("the board the module hands a first time player", () => {
     const first: VectorPuzzle = makePuzzle(0, FIXTURE_LAYOUT, null, ["none"]);
     expect(first.clues).toHaveLength(CELLS);
     expect(initialState(first).arrows).toHaveLength(CELLS);
+  });
+});
+
+describe("v3 contract surface", () => {
+  it("declares a grammar, at least two telemetry patterns, and a row cap that fits", () => {
+    expect(shareCapabilities.grammar).toBe("A");
+    expect(shareCapabilities.patterns.length).toBeGreaterThanOrEqual(2);
+    expect(new Set(shareCapabilities.patterns).size).toBe(shareCapabilities.patterns.length);
+    expect(shareCapabilities.maxRows).toBe(MAX_SUBMISSIONS);
+    // Title and URL are the other two lines of the nine.
+    expect(shareCapabilities.maxRows).toBeLessThanOrEqual(7);
+  });
+
+  it("carries the bucket and the difficulty on the finished outcome", () => {
+    const outcome = inspect(solvedAfter(2, true));
+    expect(outcome.kind).toBe("finished");
+    if (outcome.kind !== "finished") return;
+    expect(outcome.bucket).toBe(1);
+    expect(outcome.difficulty).toBe(FIXTURE_INTENSITY);
+  });
+
+  it("agrees with itself across inspect, tierOf and bucketOf", () => {
+    for (const state of [
+      solvedAfter(1, true),
+      solvedAfter(2, true),
+      solvedAfter(3, true),
+      solvedAfter(3, false),
+    ]) {
+      const outcome = inspect(state);
+      expect(outcome.kind).toBe("finished");
+      if (outcome.kind !== "finished") continue;
+      expect(tierOf(outcome, state)).toBe(outcome.tier);
+      expect(bucketOf(outcome, state)).toBe(outcome.bucket);
+    }
+  });
+});
+
+describe("difficulty against the shipped horizon", () => {
+  it("recomputes every stored difficulty exactly", () => {
+    const index = JSON.parse(readFileSync("data/vector/manifest.index.json", "utf8")) as {
+      chunks: readonly { url: string }[];
+    };
+    const url = (index.chunks[0] as { url: string }).url;
+    const chunk = JSON.parse(readFileSync(`data/vector/${url}`, "utf8")) as {
+      entries: Record<string, { best: { difficulty: number } }>;
+    };
+
+    const numbers = Object.keys(chunk.entries);
+    expect(numbers.length).toBe(365);
+    for (const key of numbers) {
+      const entry = chunk.entries[key] as { best: { difficulty: number } };
+      const parsed = parsePuzzle(Number(key), entry);
+      expect(parsed.ok).toBe(true);
+      if (!parsed.ok) continue;
+      // The measurement the manifest claims is the measurement the module makes.
+      expect(difficulty(parsed.value)).toBe(entry.best.difficulty);
+    }
+  });
+});
+
+describe("the run log and the artifact", () => {
+  const straight = played((cell) => FIXTURE_SOLUTION[cell] as Direction, 1);
+
+  it("logs one entry per submission and nothing else", () => {
+    const run = telemetry(straight);
+    const validated = validateRunLog(run);
+    expect(validated.ok).toBe(true);
+    expect(run.entries).toHaveLength(1);
+    const entry = run.entries[0] as Record<string, unknown>;
+    expect(Object.keys(entry).sort()).toEqual(["blanks", "changes", "cycles", "index", "solved"]);
+  });
+
+  it("produces the same title and rows as the v2 block", () => {
+    for (const state of [
+      straight,
+      solvedAfter(1, true),
+      solvedAfter(2, true),
+      solvedAfter(3, false),
+    ]) {
+      const ctx = context({ currentStreak: 4 });
+      const artifact = shareArtifact(puzzle, state, telemetry(state), ctx);
+      const block = shareBlock(state, ctx);
+      expect(artifact.title).toBe(block.title);
+      expect(artifact.rows).toEqual(block.rows);
+    }
+  });
+
+  it("validates and renders inside the share grammar", () => {
+    const artifact = shareArtifact(puzzle, straight, telemetry(straight), context());
+    const valid = validateArtifact(artifact, URL);
+    expect(valid.ok).toBe(true);
+    const text = renderArtifact(artifact, URL);
+    expect(text.split("\n")).toEqual(["VECTOR #249 Excellent", "⭐⭐⭐⭐⭐", URL]);
+    expect(text.split("\n").length).toBeLessThanOrEqual(9);
+  });
+
+  it("carries a fingerprint on every finished outcome", () => {
+    for (const state of [straight, solvedAfter(3, false)]) {
+      const artifact = shareArtifact(puzzle, state, telemetry(state), context());
+      expect(artifact.fingerprint.points.length).toBe(state.submissions);
+    }
+  });
+
+  it("passes the share leak checks across the outcome space", () => {
+    const samples = [
+      straight,
+      solvedAfter(1, true),
+      solvedAfter(2, true),
+      solvedAfter(3, true),
+      solvedAfter(3, false),
+    ].map((state) => ({
+      artifact: shareArtifact(puzzle, state, telemetry(state), context({ currentStreak: 9 })),
+      /* The answer, rendered plainly, so the harness can look for it. */
+      answerKey: FIXTURE_SOLUTION.map((dir) => (dir === null ? "." : String(dir))).join(""),
+    }));
+    const report = runShareLeakChecks(samples, vectorLeakProbes);
+    expect(report.failures).toEqual([]);
+    expect(report.ok).toBe(true);
   });
 });

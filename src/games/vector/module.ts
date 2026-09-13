@@ -1,23 +1,31 @@
 /**
- * Layer 4. The VECTOR GameModule. VECTOR.md sections 1, 6, 11 and 12.
+ * Layer 4. The VECTOR GameModule, implementing v2 and v3 at once.
+ * VECTOR.md sections 1, 6, 11, 12 and 17.
+ *
+ * One implementation object satisfies both contracts, because FinishedOutcomeV3
+ * is FinishedOutcome plus two fields and is therefore assignable to it. The
+ * default export stays the v2 module so the shell, the entry and the build are
+ * untouched; `vectorV3` is the same object seen through the v3 seam, and it is
+ * what a later phase points the shell at. ARCHITECTURE2 section 47.
  */
 
 import { err, ok, type Result } from "../../core/result.js";
 import type {
   DistributionSpec,
   FinishedOutcome,
-  Outcome,
   PuzzleNumber,
   Rejection,
   Seed,
   SerializedState,
   ShareBlock,
   ShareContext,
-  ShareRow,
+  TierOrdinal,
 } from "../../core/types.js";
 import { rngFromSeed } from "../../core/seed.js";
 import { intBelow } from "../../core/rng.js";
 import { defineGame, type GameModule } from "../../contract/game-module.js";
+import { defineGameV3, type GameModuleV3 } from "../../contract/v3/game-module.js";
+import type { ShareCapabilities } from "../../contract/v3/types.js";
 import type {
   GameIdentity,
   GameView,
@@ -29,22 +37,31 @@ import type {
   StateFailure,
 } from "../../contract/types.js";
 import { decodeSymbols } from "../../engine/manifest-codec.js";
-import { tierLabel } from "../../engine/tiers.js";
-import type { ShareToken } from "../../shared/share-vocabulary.js";
+import type { ArtifactModel, RunLog } from "../../engine/telemetry.js";
 import {
   MAX_SUBMISSIONS,
   apply,
   bucketFor,
+  difficultyFor,
   initialState,
   inspect,
   isSatisfied,
   makePuzzle,
   tierFor,
+  type Effort,
   type VectorAction,
   type VectorBest,
   type VectorPuzzle,
   type VectorState,
 } from "./rules.js";
+import {
+  SHARE_ROW_WIDTH,
+  artifactRows,
+  artifactTitle,
+  readEntries,
+  vectorArtifact,
+  vectorRunLog,
+} from "./telemetry.js";
 import {
   CELLS,
   candidateList,
@@ -58,9 +75,8 @@ import { mountVector } from "./render.js";
 /** Index 0 is a blank cell, index v + 1 is a clue of value v. Must match
  *  LAYOUT_RADIX in tools/vector-generate.ts. */
 const LAYOUT_RADIX = 32;
-const STATE_VERSION = 1;
-/** Cells per share row. The suite meter width. VECTOR.md 12. */
-const SHARE_ROW_WIDTH = 5;
+/** Version 2 adds the per submission effort record of VECTOR.md 17.1. */
+const STATE_VERSION = 2;
 
 const identity: GameIdentity = {
   id: "vector",
@@ -79,6 +95,14 @@ const manifest: ManifestDescriptor = {
   lookaheadDays: 7,
 };
 
+/** Section 13. Two patterns, both computed from the player's own actions: the
+ *  fingerprint is the shape of the run and the friction is what it cost. */
+const shareCapabilities: ShareCapabilities = {
+  grammar: "A",
+  patterns: ["emergent-fingerprint", "comparative-friction"],
+  maxRows: MAX_SUBMISSIONS,
+};
+
 const distribution: DistributionSpec = {
   labels: ["1 submission", "2 submissions", "3 submissions", "Not solved"],
   distinguishedIndex: 0,
@@ -94,6 +118,8 @@ interface RawState {
   readonly a?: unknown;
   readonly n?: unknown;
   readonly s?: unknown;
+  readonly e?: unknown;
+  readonly p?: unknown;
 }
 
 function parsePuzzle(
@@ -169,7 +195,38 @@ function serialize(state: VectorState): SerializedState {
     const dir = state.arrows[cell] ?? null;
     arrows += dir === null ? "." : (ARROW_CHARS[dir] as string);
   }
-  return { v: STATE_VERSION, data: { a: arrows, n: state.submissions, s: state.solved } };
+  return {
+    v: STATE_VERSION,
+    data: {
+      a: arrows,
+      n: state.submissions,
+      s: state.solved,
+      e: state.effort.map((effort) => [effort.cycles, effort.changes]),
+      p: [state.pending.cycles, state.pending.changes],
+    },
+  };
+}
+
+function readPair(raw: unknown): Effort | null {
+  if (!Array.isArray(raw) || raw.length !== 2) return null;
+  const cycles: unknown = raw[0];
+  const changes: unknown = raw[1];
+  if (typeof cycles !== "number" || !Number.isInteger(cycles) || cycles < 0) return null;
+  if (typeof changes !== "number" || !Number.isInteger(changes) || changes < 0) return null;
+  // A correction is one of the actions counted, never an extra one.
+  if (changes > cycles) return null;
+  return { cycles, changes };
+}
+
+function readEffort(raw: unknown, submissions: number): readonly Effort[] | null {
+  if (!Array.isArray(raw) || raw.length !== submissions) return null;
+  const out: Effort[] = [];
+  for (const item of raw) {
+    const pair = readPair(item);
+    if (pair === null) return null;
+    out.push(pair);
+  }
+  return out;
 }
 
 function deserialize(
@@ -214,7 +271,23 @@ function deserialize(
     arrows[cell] = dir as Direction;
   }
 
-  const state: VectorState = { puzzle, arrows, submissions: data.n, solved: data.s };
+  const effort = readEffort(data.e, data.n);
+  if (effort === null) {
+    return err({ code: "malformed", detail: "effort record does not match the submission count" });
+  }
+  const pending = readPair(data.p);
+  if (pending === null) {
+    return err({ code: "malformed", detail: "pending effort is the wrong shape" });
+  }
+
+  const state: VectorState = {
+    puzzle,
+    arrows,
+    submissions: data.n,
+    solved: data.s,
+    effort,
+    pending,
+  };
   // A stored flag that disagrees with the board is impossible rather than
   // undetectable. VECTOR.md 4.1.
   if (state.solved && (state.submissions < 1 || !isSatisfied(state))) {
@@ -223,7 +296,13 @@ function deserialize(
   return ok(state);
 }
 
-/** Nothing has shipped below version 1, so there is nothing to migrate from. */
+/**
+ * Version 1 is refused rather than upgraded. A v1 payload carries no effort
+ * record, and filling zeros would put a false statement about the player's run
+ * into a shareable artifact. Engine decision 10 makes the refusal cost exactly
+ * one unfinished board and never a streak, and VECTOR has not launched, so the
+ * real cost is a development save.
+ */
 function migrateState(
   fromVersion: number,
   _raw: SerializedState,
@@ -238,26 +317,42 @@ function bucketOf(_outcome: FinishedOutcome, state: VectorState): number {
   return bucketFor(state);
 }
 
+/** v3. Split from bucketOf. Both read the state, because both are facts about
+ *  how the player finished and neither needs the outcome to restate them. */
+function tierOf(_outcome: FinishedOutcome, state: VectorState): TierOrdinal | null {
+  return tierFor(state);
+}
+
+/** v3. Recomputed, never read from the manifest. See rules.difficultyFor. */
+function difficulty(puzzle: VectorPuzzle): number {
+  return difficultyFor(puzzle);
+}
+
+/** v3. The compact local run log, section 13. */
+function telemetry(state: VectorState): RunLog {
+  return vectorRunLog(state);
+}
+
+/** v3. The pure mapper. It reads the run log and the outcome, never the board,
+ *  which is what the answer property probe in telemetry.ts asserts. */
+function shareArtifact(
+  _puzzle: VectorPuzzle,
+  state: VectorState,
+  run: RunLog,
+  context: ShareContext,
+): ArtifactModel {
+  return vectorArtifact(state, run, context);
+}
+
 /**
- * One row per submission, five cells each, best across for the submission that
- * solved it and miss across for one that did not. The engine pads, caps rows and
- * appends the URL. VECTOR.md 12.
+ * The v2 block. It is the v3 artifact's title and rows with the fingerprint and
+ * the outcome dropped, built from the same two functions, so the two cannot
+ * drift apart. VECTOR.md 12.
  */
 function shareBlock(state: VectorState, context: ShareContext): ShareBlock {
-  const rows: ShareRow[] = [];
-  for (let at = 0; at < state.submissions; at += 1) {
-    const solvedHere = state.solved && at === state.submissions - 1;
-    const token: ShareToken = solvedHere ? "best" : "miss";
-    rows.push(new Array<ShareToken>(SHARE_ROW_WIDTH).fill(token));
-  }
-
-  /* Never unrated: the tier is the submission count, not a stored optimum, so
-     tierLabel is never handed a null here. Contract decision 16. */
-  const label = tierLabel(tierFor(state));
-  const streak = context.currentStreak >= 2 ? `, streak ${String(context.currentStreak)}` : "";
   return {
-    title: `VECTOR #${String(context.puzzleNumber)} ${label}${streak}`,
-    rows,
+    title: artifactTitle(state, context),
+    rows: artifactRows(readEntries(vectorRunLog(state))),
   };
 }
 
@@ -272,7 +367,9 @@ function help(): HelpContent {
   return helpContent();
 }
 
-const vector: GameModule<VectorState, VectorAction, VectorPuzzle> = {
+/* Not annotated, so the two typed views below can each take the members they
+   need without an excess property error on a fresh object literal. */
+const vector = {
   identity,
   input,
   manifest,
@@ -280,6 +377,7 @@ const vector: GameModule<VectorState, VectorAction, VectorPuzzle> = {
   hasWinLoss: true,
   stateVersion: STATE_VERSION,
   distribution,
+  shareCapabilities,
   parsePuzzle,
   generatePuzzle,
   firstSessionPuzzle,
@@ -288,26 +386,45 @@ const vector: GameModule<VectorState, VectorAction, VectorPuzzle> = {
   deserialize,
   migrateState,
   apply,
-  inspect: (state: VectorState): Outcome => inspect(state),
+  inspect,
+  difficulty,
   bucketOf,
+  tierOf,
+  telemetry,
+  shareArtifact,
   shareBlock,
   mount,
   help,
 };
 
-export default defineGame(vector);
+const asV2: GameModule<VectorState, VectorAction, VectorPuzzle> = vector;
+const asV3: GameModuleV3<VectorState, VectorAction, VectorPuzzle> = vector;
+
+export default defineGame(asV2);
+
+/** The same module through the v3 seam. Nothing imports it yet; the shell is
+ *  still v2 and a game cannot lead it. ARCHITECTURE2 section 56, phase 2. */
+export const vectorV3 = defineGameV3(asV3);
 
 /** Exported for the module tests only. Nothing in the shell reads these. */
 export const internals = {
   identity,
   input,
   distribution,
+  shareCapabilities,
   parsePuzzle,
   serialize,
   deserialize,
+  migrateState,
   shareBlock,
+  difficulty,
+  bucketOf,
+  tierOf,
+  telemetry,
+  shareArtifact,
   LAYOUT_RADIX,
   SHARE_ROW_WIDTH,
+  STATE_VERSION,
 };
 
 export type { Rejection, VectorAction, VectorPuzzle, VectorState };

@@ -235,10 +235,11 @@ Table columns are fixed as follows and every future entry uses them.
 | src/shell/entries/cipher.html | 5 | The CIPHER page | none |
 | tests/games/cipher/module.test.ts | n/a | Identity, manifest resolution, parse rejection, snapshot round trip, outcome grading, and share rows | games/cipher/module, games/cipher/rules |
 | tests/games/cipher/render.test.ts | n/a | Palette and slot accessibility, tap and keyboard play, announcement, reveal on loss, and teardown | games/cipher/render, games/cipher/rules |
-| src/games/vector/propagate.ts | 4 | VECTOR geometry, candidates and suppliers, the three deduction rules in rounds, the depth and per cell round measures, and the resolved solution | none |
-| src/games/vector/rules.ts | 4 | VECTOR cycle, set and submit, satisfaction check, terminal detection, tier and bucket mapping | core/result, core/types, games/vector/propagate |
+| src/games/vector/propagate.ts | 4 | VECTOR geometry, candidates and suppliers, the three deduction rules in rounds, the depth, the intensity measure, and the resolved solution | none |
+| src/games/vector/rules.ts | 4 | VECTOR cycle, set and submit, satisfaction check, terminal detection, tier and bucket mapping, the per submission effort record, and the recomputed difficulty | core/result, core/types, games/vector/propagate |
 | src/games/vector/generator.ts | 4 | Seeded carve, the intensity measure, weekday bands, the screens, the unrated fallback, and the first session board | games/vector/propagate |
-| src/games/vector/module.ts | 4 | VECTOR GameModule, layout parsing, snapshot state, outcome, and share data | core/result, core/rng, core/seed, core/types, engine/manifest-codec, engine/tiers, contract/*, games/vector/generator, games/vector/help, games/vector/propagate, games/vector/render, games/vector/rules |
+| src/games/vector/module.ts | 4 | VECTOR GameModule on v2 and v3 at once, layout parsing, snapshot state, outcome, and share data | core/result, core/rng, core/seed, core/types, engine/manifest-codec, engine/telemetry, contract/*, contract/v3/*, games/vector/generator, games/vector/help, games/vector/propagate, games/vector/render, games/vector/rules, games/vector/telemetry |
+| src/games/vector/telemetry.ts | 4 | VECTOR run log, effort bands, fingerprint, artifact mapping, share rows and title, and the four leak probes | core/types, engine/share-leak, engine/telemetry, engine/tiers, shared/share-vocabulary, games/vector/rules |
 | src/games/vector/render.ts | 4 | VECTOR play area: the grid, self drawn arrows, the ray highlight, the submission counter, and the reveal on loss | ui/dom, ui/gridCursor, contract/types, games/vector/propagate, games/vector/rules |
 | src/games/vector/style.css | 4 | VECTOR board, cell, arrow and highlight styling with 54 pixel cells above the 44 pixel floor | none |
 | src/games/vector/help.ts | 4 | VECTOR structured help content and the five cell worked example | contract/types, games/vector/propagate, games/vector/render |
@@ -255,6 +256,7 @@ Table columns are fixed as follows and every future entry uses them.
 | tests/games/vector/rules.test.ts | n/a | Cycle, set and submit, every rejection path, terminal grading, and a random legal sequence property | games/vector/rules |
 | tests/games/vector/generator.test.ts | n/a | Carve invariants, intensity consistency, the screens, band ordering, the unrated fallback, and the first session board | games/vector/generator, games/vector/propagate |
 | tests/games/vector/module.test.ts | n/a | Identity, parse rejection, snapshot round trip, outcome grading, and share rows | games/vector/module, games/vector/rules |
+| tests/games/vector/telemetry.test.ts | n/a | Effort bands, run log shape, fingerprint separation, mapper purity, and a positive control per leak probe | games/vector/telemetry, games/vector/rules, engine/artifact, engine/share-leak |
 | tests/games/vector/fixtures.ts | n/a | A measured fixture board and its solution, shared by the VECTOR tests | games/vector/rules, games/vector/propagate |
 
 ## Planned repository layout

@@ -6,8 +6,8 @@
 
 import { err, ok, type Result } from "../../core/result.js";
 import type {
-  FinishedOutcome,
-  Outcome,
+  FinishedOutcomeV3,
+  OutcomeV3,
   PuzzleNumber,
   Rejection,
   TierOrdinal,
@@ -18,7 +18,9 @@ import {
   candidateList,
   isCandidate,
   isOnBoard,
+  intensityOf,
   nextCandidate,
+  propagate,
   satisfies,
   type ArrowBoard,
   type ClueLayout,
@@ -28,8 +30,22 @@ import {
 
 export const MAX_SUBMISSIONS = 3;
 
+/**
+ * Player side effort for one submission. Counts actions the player took, never
+ * anything about the board or the answer, which is what lets it ride in a
+ * shareable artifact under VECTOR.md 6.1. ARCHITECTURE2 section 13.2.
+ */
+export interface Effort {
+  /** Accepted cycle and set actions since the previous submission. */
+  readonly cycles: number;
+  /** Of those, the ones that landed on a cell already holding an arrow. */
+  readonly changes: number;
+}
+
+export const NO_EFFORT: Effort = { cycles: 0, changes: 0 };
+
 export interface VectorBest {
-  /** Propagation depth. The difficulty measure. */
+  /** The intensity measure. What the manifest stores and the bands are cut on. */
   readonly difficulty: number;
   /** Cells assigned in round one. */
   readonly opening: number;
@@ -56,6 +72,10 @@ export interface VectorState {
   readonly arrows: ArrowBoard;
   readonly submissions: number;
   readonly solved: boolean;
+  /** One record per spent submission, in order. Length equals submissions. */
+  readonly effort: readonly Effort[];
+  /** Accumulating for the submission not yet made. */
+  readonly pending: Effort;
 }
 
 export type VectorAction =
@@ -93,6 +113,8 @@ export function initialState(puzzle: VectorPuzzle): VectorState {
     arrows: new Array<Direction | null>(CELLS).fill(null),
     submissions: 0,
     solved: false,
+    effort: [],
+    pending: NO_EFFORT,
   };
 }
 
@@ -128,8 +150,18 @@ function withArrow(
   dir: Direction | null,
 ): VectorState {
   const arrows = state.arrows.slice();
+  // Read before the write: a cell that already held an arrow makes this a
+  // correction rather than a first choice.
+  const occupied = (arrows[cell] ?? null) !== null;
   arrows[cell] = dir;
-  return { ...state, arrows };
+  return {
+    ...state,
+    arrows,
+    pending: {
+      cycles: state.pending.cycles + 1,
+      changes: state.pending.changes + (occupied ? 1 : 0),
+    },
+  };
 }
 
 export function apply(
@@ -141,7 +173,13 @@ export function apply(
   if (action.kind === "submit") {
     if (!isComplete(state)) return err(REJECTIONS.incomplete);
     const solved = isSatisfied(state);
-    return ok({ ...state, submissions: state.submissions + 1, solved });
+    return ok({
+      ...state,
+      submissions: state.submissions + 1,
+      solved,
+      effort: [...state.effort, state.pending],
+      pending: NO_EFFORT,
+    });
   }
 
   const { cell } = action;
@@ -169,22 +207,42 @@ export function bucketFor(state: VectorState): number {
   return state.solved ? state.submissions - 1 : MAX_SUBMISSIONS;
 }
 
-export function inspect(state: VectorState): Outcome {
-  if (!isFinished(state)) return { kind: "ongoing" };
-  const finished: FinishedOutcome = state.solved
+/**
+ * Section 9.2 as amended by measurement. The intensity, recomputed from the
+ * board every time rather than read from the manifest's stored
+ * `best.difficulty`. A difficulty a generator asserts is a lever wearing a
+ * measurement's name, ARCHITECTURE2 section 52 risk 2, and the two agreeing is
+ * asserted by test against the shipped horizon. Zero on a board that does not
+ * resolve, which no generated or manifest board is, because both screen for a
+ * resolved propagation.
+ */
+export function difficultyFor(puzzle: VectorPuzzle): number {
+  const result = propagate(puzzle.geometry);
+  return result.kind === "resolved" ? intensityOf(puzzle.geometry, result.rounds) : 0;
+}
+
+/**
+ * The v3 terminal result. Built for any state, finished or not, so the artifact
+ * mapper has one shape to read; `inspect` is what gates it on being finished.
+ */
+export function finishedOutcomeFor(state: VectorState): FinishedOutcomeV3 {
+  const common = {
+    kind: "finished",
+    tier: tierFor(state),
+    bucket: bucketFor(state),
+    difficulty: difficultyFor(state.puzzle),
+  } as const;
+  return state.solved
     ? {
-        kind: "finished",
+        ...common,
         score: state.submissions,
         won: true,
-        tier: tierFor(state),
         detail: `Solved on submission ${String(state.submissions)}`,
       }
-    : {
-        kind: "finished",
-        score: 0,
-        won: false,
-        tier: tierFor(state),
-        detail: "Not solved",
-      };
-  return finished;
+    : { ...common, score: 0, won: false, detail: "Not solved" };
+}
+
+export function inspect(state: VectorState): OutcomeV3 {
+  if (!isFinished(state)) return { kind: "ongoing" };
+  return finishedOutcomeFor(state);
 }

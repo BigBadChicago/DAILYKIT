@@ -13,10 +13,12 @@ import {
 } from "../../../src/games/vector/propagate.js";
 import {
   MAX_SUBMISSIONS,
+  NO_EFFORT,
   REJECTIONS,
   apply,
   bucketFor,
   candidatesFor,
+  difficultyFor,
   initialState,
   inspect,
   isComplete,
@@ -25,7 +27,7 @@ import {
   type VectorAction,
   type VectorState,
 } from "../../../src/games/vector/rules.js";
-import { FIXTURE_SOLUTION, fixturePuzzle } from "./fixtures.js";
+import { FIXTURE_INTENSITY, FIXTURE_SOLUTION, fixturePuzzle } from "./fixtures.js";
 
 const puzzle = fixturePuzzle();
 
@@ -72,6 +74,8 @@ describe("initialState", () => {
     expect(state.submissions).toBe(0);
     expect(state.solved).toBe(false);
     expect(isComplete(state)).toBe(false);
+    expect(state.effort).toEqual([]);
+    expect(state.pending).toEqual(NO_EFFORT);
   });
 });
 
@@ -224,6 +228,8 @@ describe("terminal detection", () => {
       score: 1,
       won: true,
       tier: 0,
+      bucket: 0,
+      difficulty: FIXTURE_INTENSITY,
       detail: "Solved on submission 1",
     });
   });
@@ -236,6 +242,8 @@ describe("terminal detection", () => {
       score: 0,
       won: false,
       tier: 4,
+      bucket: 3,
+      difficulty: FIXTURE_INTENSITY,
       detail: "Not solved",
     });
   });
@@ -247,13 +255,97 @@ describe("terminal detection", () => {
       [3, 2],
     ];
     for (const [submissions, tier] of expected) {
-      const state: VectorState = { puzzle, arrows: FIXTURE_SOLUTION, submissions, solved: true };
+      const state: VectorState = {
+        puzzle,
+        arrows: FIXTURE_SOLUTION,
+        submissions,
+        solved: true,
+        effort: new Array<typeof NO_EFFORT>(submissions).fill(NO_EFFORT),
+        pending: NO_EFFORT,
+      };
       expect(tierFor(state)).toBe(tier);
       expect(bucketFor(state)).toBe(submissions - 1);
     }
-    const lost: VectorState = { puzzle, arrows: FIXTURE_SOLUTION, submissions: 3, solved: false };
+    const lost: VectorState = {
+      puzzle,
+      arrows: FIXTURE_SOLUTION,
+      submissions: 3,
+      solved: false,
+      effort: new Array<typeof NO_EFFORT>(3).fill(NO_EFFORT),
+      pending: NO_EFFORT,
+    };
     expect(tierFor(lost)).toBe(4);
     expect(bucketFor(lost)).toBe(3);
+  });
+});
+
+describe("the effort record", () => {
+  it("counts one action per accepted edit and no change on a first choice", () => {
+    const state = run(initialState(puzzle), [
+      { kind: "cycle", cell: 0 },
+      { kind: "cycle", cell: 1 },
+    ]);
+    expect(state.pending).toEqual({ cycles: 2, changes: 0 });
+  });
+
+  it("counts a change when the cell already held an arrow", () => {
+    const twice = run(initialState(puzzle), [
+      { kind: "cycle", cell: 0 },
+      { kind: "cycle", cell: 0 },
+    ]);
+    expect(twice.pending).toEqual({ cycles: 2, changes: 1 });
+
+    const overwritten = run(initialState(puzzle), [
+      { kind: "set", cell: 0, dir: RIGHT },
+      { kind: "set", cell: 0, dir: DOWN },
+    ]);
+    expect(overwritten.pending).toEqual({ cycles: 2, changes: 1 });
+  });
+
+  it("counts clearing a filled cell as a change", () => {
+    const state = run(initialState(puzzle), [
+      { kind: "set", cell: 0, dir: RIGHT },
+      { kind: "set", cell: 0, dir: null },
+    ]);
+    expect(state.pending).toEqual({ cycles: 2, changes: 1 });
+  });
+
+  it("counts nothing for a refused action", () => {
+    const state = initialState(puzzle);
+    expect(apply(state, { kind: "set", cell: 0, dir: UP }).ok).toBe(false);
+    expect(apply(state, { kind: "cycle", cell: CELLS }).ok).toBe(false);
+    expect(state.pending).toEqual(NO_EFFORT);
+  });
+
+  it("rolls the pending record into the list on submit and starts the next at zero", () => {
+    const first = value(apply(firstCandidateBoard(), { kind: "submit" }));
+    expect(first.effort).toHaveLength(1);
+    expect((first.effort[0] as { cycles: number }).cycles).toBe(
+      puzzle.geometry.blankCells.length,
+    );
+    expect(first.pending).toEqual(NO_EFFORT);
+
+    const second = value(apply(value(apply(first, { kind: "cycle", cell: 0 })), { kind: "submit" }));
+    expect(second.effort).toHaveLength(2);
+    expect(second.effort[1]).toEqual({ cycles: 1, changes: 1 });
+  });
+
+  it("holds nothing about the board, only counts of the player's own actions", () => {
+    const state = value(apply(firstCandidateBoard(), { kind: "submit" }));
+    const keys = Object.keys(state.effort[0] as object).sort();
+    expect(keys).toEqual(["changes", "cycles"]);
+  });
+});
+
+describe("difficultyFor", () => {
+  it("is the measured intensity of the board", () => {
+    expect(difficultyFor(puzzle)).toBe(FIXTURE_INTENSITY);
+  });
+
+  it("is a property of the board and not of the play on it", () => {
+    const before = difficultyFor(puzzle);
+    const played = run(initialState(puzzle), [{ kind: "cycle", cell: 0 }]);
+    expect(difficultyFor(played.puzzle)).toBe(before);
   });
 });
 
@@ -292,6 +384,12 @@ describe("property, no action sequence reaches an invalid state", () => {
         }
         expect(state.submissions).toBeGreaterThanOrEqual(0);
         expect(state.submissions).toBeLessThanOrEqual(MAX_SUBMISSIONS);
+        // The effort record is one entry per spent submission, always.
+        expect(state.effort).toHaveLength(state.submissions);
+        for (const effort of state.effort) {
+          expect(effort.changes).toBeLessThanOrEqual(effort.cycles);
+        }
+        expect(state.pending.changes).toBeLessThanOrEqual(state.pending.cycles);
         if (state.solved) {
           expect(state.submissions).toBeGreaterThanOrEqual(1);
           expect(isSatisfied(state)).toBe(true);

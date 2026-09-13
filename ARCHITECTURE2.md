@@ -2563,9 +2563,80 @@ in `telemetry.ts` for now; split into `analytics.ts` if it gets confusing. The
 v3 GraphicCardRenderer (section 17.1) is not built; only the text renderer is.
 The certification gate types exist but are not wired into CI yet, section 50.
 
-## Phase 2, migrate VECTOR to v3. Next.
+## Phase 2, VECTOR on v3. Done 2026-09-13.
 
-VECTOR is the cleanest legacy game to migrate first: closed system, tap grid, a
-tier from play. Add `difficulty`, `telemetry`, `shareArtifact`, `tierOf` and
-`shareCapabilities`, switch its `inspect` to the v3 outcome, and prove its
-artifact is leak clean, without touching the engine.
+VECTOR implements v2 and v3 at once, with no engine change and no shell change,
+and the suite is green: 54 files, 637 tests, three typechecks, the dependency
+check, the production build, the byte budget, and a full re-verification of the
+365 day horizon.
+
+**One object, two seams.** `FinishedOutcomeV3` is `FinishedOutcome` plus
+`bucket` and `difficulty`, so `OutcomeV3` is assignable to `Outcome` and one
+implementation satisfies both contracts. `src/games/vector/module.ts` exports
+the v2 module as the default, which is what the entry, the registry and the
+build still use, and `vectorV3` beside it. `main.ts` reads named outcome fields
+and never spreads the outcome, so the two extra fields reach no storage record.
+This is the migration shape section 47 asks for and it is what lets the other
+two legacy games follow one at a time rather than in a flag day.
+
+**Difficulty is recomputed, never read.** `rules.difficultyFor` runs the
+propagation and returns the intensity. A test parses all 365 manifest entries
+and asserts the recomputed number equals every stored `best.difficulty`, which
+is section 52 risk 2 made mechanical: a generator that drifted from the measure
+would fail that test rather than ship a band claim nobody checks.
+
+**A correction to the record while doing it.** VECTOR.md 9.2 names the
+difficulty as the propagation depth. The shipped game bands on the **intensity**,
+the mean assignment round scaled by a hundred, and depth is stored beside it for
+audit. The formula existed twice inside `generator.ts` and is now
+`propagate.intensityOf`, used by the generator, the module and the verifier, so
+the three cannot disagree. The horizon re-verifies unchanged, which is the proof
+the extraction was lossless.
+
+**The run had to be given somewhere to live.** VectorState held arrows, a
+submission count and a solved flag, and nothing else. Everything a run log could
+say from that is the submission count, which the tier already says, so two
+players who both solved on the second submission would have produced identical
+fingerprints and section 18 would be false. Measuring how close a wrong board
+came is closed by VECTOR.md 6.1, because that is board information travelling to
+someone who has not played, and the fingerprint ships in the same artifact.
+
+So the run is measured on the player's side: `VectorState` gains `effort`, one
+`{ cycles, changes }` record per spent submission, and `pending` for the
+submission not yet made. `cycles` counts accepted edits and `changes` counts the
+ones that landed on a cell already holding an arrow. Neither reads a clue or the
+solution, so neither can encode the answer, and they distinguish a player who
+walked the board once from one who reworked it three times at the same tier.
+
+`stateVersion` is therefore 2 and `migrateState` from 1 still refuses. Filling
+zeros for submissions whose effort was never recorded would put a false
+statement about the player's run into a shareable artifact, and engine decision
+10 already prices the refusal at one unfinished board and never a streak.
+
+**The share output did not change.** `shareArtifact` and the v2 `shareBlock` are
+built from the same two functions in `src/games/vector/telemetry.ts`, so the
+block is byte identical to what shipped and VECTOR.md 12 is not reopened. The
+artifact carries the rows, the v3 outcome and the fingerprint: one point per
+submission, chronology across, effort band up, and a shape separating the
+submission that landed from one that was reworked and one that was not.
+
+**Leak checks run as tests, with positive controls.** Four probes in
+`telemetry.ts` cover position, answer property, ordering and shape, and the
+harness covers the title and the fingerprint. The answer property probe states
+the real claim: the rows are a function of the outcome alone. Each probe has a
+test that feeds it a deliberately leaking artifact and requires it to fire,
+because a probe that has never fired is not evidence.
+
+Declared: grammar A, patterns `emergent-fingerprint` and `comparative-friction`,
+`maxRows` 3.
+
+Deferred, in BACKLOG.md: the section 19 archetype, because the thresholds want a
+second game's data; and the graphic card, which is still unbuilt for every game.
+
+## Phase 3, migrate CIPHER to v3. Next.
+
+Proposed rather than settled. CIPHER is the next cleanest: a tier from play, no
+board, a small payload, and a guess history already in its state, so unlike
+VECTOR it should need no state change to produce a run log. POKER GRID is the
+one to do last, because its tier is graded against a stored optimum and its
+share block is the only one whose rows are not one per attempt.

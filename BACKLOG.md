@@ -138,6 +138,21 @@ the result, which is a human pass across real devices.
 
 ## Logged in Phase 11
 
+## Logged in the v3 migration, phase 2
+
+- **The section 19 archetype for VECTOR.** The effort record now carries the
+  correction and exploration axes an archetype table would read, but thresholds
+  drawn from one game are thresholds fitted to one game. Revisit once CIPHER is
+  on v3 and there are two run shapes to compare.
+- **The graphic card renderer.** ARCHITECTURE2 section 17.1 specifies a 1200 by
+  900 card from the same ArtifactModel. Phase 1 built the text renderer only and
+  no game has a card, so this is suite work rather than VECTOR work.
+- **A shared effort record across games.** VECTOR counts accepted actions and
+  corrections in its own state. If CIPHER and POKER GRID end up counting the
+  same two things, the record belongs in the engine, and if they do not, this
+  stays a game concern. One example is not a pattern, which is the same rule
+  that left the list cursor unbuilt in Phase 11.
+
 ## Logged in Phase 12
 
 - **A shared non grid keyboard cursor.** The scaffold keeps custom keyboard

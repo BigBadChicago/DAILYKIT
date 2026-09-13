@@ -18,8 +18,10 @@ export const FIXTURE_LAYOUT: ClueLayout = [
   null, null, null, null, 3, null,
 ];
 
-/** Measured: depth six, six cells assigned in round one. */
+/** Measured: depth six, six cells assigned in round one, intensity 269. The
+ *  intensity is the difficulty the manifest stores and the bands are cut on. */
 export const FIXTURE_DEPTH = 6;
+export const FIXTURE_INTENSITY = 269;
 export const FIXTURE_OPENING = 6;
 export const FIXTURE_BLANKS = 26;
 export const FIXTURE_CLUES = 10;

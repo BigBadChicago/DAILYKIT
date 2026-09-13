@@ -13,6 +13,7 @@
  */
 
 import {
+  intensityOf,
   CELLS,
   COLS,
   ROWS,
@@ -153,8 +154,6 @@ function derive(
   }
 
   const blanks = geometry.blankCells.length;
-  let total = 0;
-  for (const cell of geometry.blankCells) total += result.rounds[cell] as number;
 
   return {
     clues,
@@ -166,7 +165,7 @@ function derive(
       depth: result.depth,
       opening: result.opening,
       blanks,
-      intensity: Math.floor((total * 100) / blanks),
+      intensity: intensityOf(geometry, result.rounds),
       levers: leversFor(clues, geometry.clueCells),
     },
   };
@@ -307,15 +306,13 @@ export function firstSessionBoard(): GeneratedBoard {
     throw new Error("the first session layout does not resolve");
   }
   const blanks = geometry.blankCells.length;
-  let total = 0;
-  for (const cell of geometry.blankCells) total += result.rounds[cell] as number;
   return {
     clues: FIRST_SESSION_LAYOUT,
     solution: result.arrows,
     depth: result.depth,
     opening: result.opening,
     blanks,
-    intensity: Math.floor((total * 100) / blanks),
+    intensity: intensityOf(geometry, result.rounds),
     levers: leversFor(FIRST_SESSION_LAYOUT, geometry.clueCells),
   };
 }

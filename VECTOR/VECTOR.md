@@ -380,6 +380,17 @@ Rejected under a salt and regenerated:
 
 ### 9.2 Difficulty and bands
 
+**Amended by measurement during the build, and again in the v3 migration.**
+Difficulty is the **intensity**, the mean round in which a blank was assigned
+scaled by a hundred, produced by the verifying pass. Depth alone takes too few
+distinct values to cut into seven windows, which is the case this section
+pre-authorised below. Depth is still measured and still stored beside the
+intensity for audit. The formula lives once, in `propagate.intensityOf`, and the
+generator, the module and the verifier all call it.
+
+The paragraph as originally written follows, kept because the reasoning it
+records is why the measure is allowed to move at all.
+
 Difficulty is the propagation depth, an integer produced by the verifying pass.
 Bands run Monday gentle to Saturday hard with Sunday between Thursday and
 Friday, matching the curve POKER GRID and CIPHER already set. Edges are
@@ -482,17 +493,28 @@ and it is the first game to be authored after it.
 
 ### 11.2 Serialization
 
+**Version 2**, since the v3 migration of section 17.
+
 ```
-{ v: 1, data: { a: "..0.13....", n: 2, s: false } }
+{ v: 2, data: { a: "..0.13....", n: 2, s: false, e: [[31, 5], [3, 3]], p: [0, 0] } }
 ```
 
 `a` is 36 characters, a digit 0 to 3 for a direction and `.` for a clue cell or
-an unfilled blank. `n` is the submissions spent. `s` is solved.
+an unfilled blank. `n` is the submissions spent. `s` is solved. `e` is the
+effort record, one `[cycles, changes]` pair per spent submission, and `p` is the
+pair accumulating for the submission not yet made.
 
 `deserialize` validates against the supplied puzzle: length, every clue cell
 holding `.`, every filled blank holding a direction inside that cell's candidate
-set, `n` in 0 through 3, and `s` implying both `n >= 1` and a board that
-satisfies every clue. Anything else is `malformed`.
+set, `n` in 0 through 3, `s` implying both `n >= 1` and a board that satisfies
+every clue, `e` holding exactly `n` pairs of non negative integers with
+`changes` never above `cycles`, and `p` one such pair. Anything else is
+`malformed`.
+
+A version 1 payload is refused rather than upgraded. It carries no effort
+record, and filling zeros would put a false statement about the player's run
+into a shareable artifact. Engine decision 10 prices that refusal at one
+unfinished board and never a streak.
 
 The candidate check is defence in depth against a stale save rather than a
 contract obligation, contract decision 14. It is not a reliable mismatch
@@ -684,3 +706,50 @@ accident.
 Plus `status: "live"` in `src/shell/registry.ts` with `bucketCount: 4`, and one
 line in the `vite.config.ts` allow list, which are configuration and do not
 count against the zero changes rule.
+
+## 17. The v3 contract
+
+Added in the ARCHITECTURE2 section 56 phase 2 migration. VECTOR implements the
+v2 and v3 contracts at once from one object: the default export is the v2
+module, which is what the entry and the build use, and `vectorV3` is the same
+object through the v3 seam. Nothing imports it yet, because the shell is still
+v2.
+
+### 17.1 The effort record
+
+`VectorState` carries `effort`, one `{ cycles, changes }` record per spent
+submission, and `pending` for the submission not yet made. `cycles` counts
+accepted cycle and set actions; `changes` counts the ones that landed on a cell
+that already held an arrow.
+
+Both are counts of the player's own actions. Neither reads a clue value, a
+direction or the solution, which is what lets them ride in an artifact that
+section 6.1 forbids from carrying any measurement of the board a player got
+wrong. They exist because without them the run log could only report the
+submission count, the tier already says that, and two players who both solved on
+the second submission would share a fingerprint, which ARCHITECTURE2 section 18
+forbids.
+
+### 17.2 The artifact
+
+`shareArtifact` returns the title and rows of section 12 unchanged, built from
+the same two functions the v2 `shareBlock` calls, plus the v3 outcome and a
+fingerprint of one point per submission: index across, effort band up, and a
+shape that is `accepted` for the submission that solved it, `correction` for one
+that carried reworked cells, and `refused` otherwise.
+
+The effort band is 0 to 4, from actions spent relative to the number of blanks,
+by integer comparison only. The blank count is a public property of the day's
+board, the same for every player, and it never reaches the artifact directly.
+
+Declared capabilities: grammar A, patterns `emergent-fingerprint` and
+`comparative-friction`, `maxRows` 3.
+
+### 17.3 The leak probes
+
+Four, in `telemetry.ts`, on top of the harness's own title and fingerprint
+checks. Position: a row that is not one token repeated. Answer property: rows
+that are not exactly what the outcome alone produces. Ordering: more rows than
+submissions, or a solving row that is not the last. Shape: a row that is not
+five cells. Each has a test that feeds it a deliberately leaking artifact and
+requires it to fire.
