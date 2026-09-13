@@ -2706,10 +2706,87 @@ Green after the change: 54 files, 637 tests, three typechecks, the dependency
 check, the production build, and the byte budget with the hub at 17.0 KB gzipped
 against a 150 KB ceiling.
 
-## Phase 3, migrate CIPHER to v3. Next.
+## Phase 3, CIPHER on v3. Done 2026-09-13.
 
-Proposed rather than settled. CIPHER is the next cleanest: a tier from play, no
-board, a small payload, and a guess history already in its state, so unlike
-VECTOR it should need no state change to produce a run log. POKER GRID is the
-one to do last, because its tier is graded against a stored optimum and its
-share block is the only one whose rows are not one per attempt.
+CIPHER implements v2 and v3 at once, in the shape phase 2 established, with no
+engine change and no shell change, and the suite is green: 56 files, 678 tests,
+three typechecks, the dependency check, all three game verifiers, the production
+build and the byte budget.
+
+**The prediction held: no state change.** `CipherState.guesses` already carried
+every code the player submitted, and `deserialize` rebuilds all of it from the
+stored digits, so the run log survives a reload without a stored field.
+`stateVersion` is still 1, no save is refused, and the migration cost a player
+nothing. This is the difference phase 2 flagged and it is worth naming: VECTOR
+had to add `effort` because its state held a board and a counter, and CIPHER did
+not because its state holds a history.
+
+**The run log is integers derived from the guesses, and the guesses stay
+behind.** A guessed code beside its feedback is the day's answer in all but
+name, so `cipherEntries` reads the codes and writes none of them. Each entry
+carries the index, the feedback pair the share row already shows, `churn`, the
+count of slots changed since the previous guess, and `discipline`, a three step
+grade of whether the guess was licensed by the feedback the player already held:
+consistent with everything, consistent with the most recent only, or consistent
+with nothing. The first guess is disciplined by definition, because an empty set
+of constraints contradicts nothing.
+
+**The fingerprint is two independent axes, neither of them the code.** Section
+18, taken literally: x is the guess index, y is churn, and the shape is
+discipline mapped onto accepted, correction and refused. A player can move one
+slot and contradict themselves or jump all four and stay consistent, so two
+players who both solve in three are separated by how they got there. A y built
+from the feedback would have been the rows restyled, which is the failure mode
+section 18 exists to prevent. Two three guess solves are asserted to produce
+different fingerprints.
+
+**Difficulty is recomputed, never read.** CIPHER's measure was already emergent
+and already an integer, the count of codes still consistent after the fixed
+opening, but it lived only in `solver.ts`, which the module cannot import
+because the solver's feedback table is 1.7 megabytes. `src/games/cipher/
+difficulty.ts` now holds the opening, the code space enumeration and a table
+free form of the measure, at under a millisecond per call, and the solver
+imports the opening and the enumeration from it rather than declaring a second
+copy. The solver keeps its table backed measure, because verification runs it
+beside a full minimax line, and a test proves the two agree on all 1,296 codes.
+A second test recomputes the difficulty of all 365 stored entries and asserts it
+equals every `best.remaining`, with a nonsense value in the puzzle handed in so
+a module that read instead of measured would fail. That is section 52 risk 2
+made mechanical, and it also confirms the fourteen classes CIPHER.md 8.1 names.
+
+**The share output did not change.** `shareArtifact` and the v2 `shareBlock` are
+built from the same `artifactTitle` and `artifactRows`, so the block is byte
+identical to what shipped and CIPHER.md 10 is not reopened. The existing module
+tests, which assert exact rows and exact titles, passed unedited across the
+restructure, which is the evidence rather than the claim. Six rows plus a title
+and a URL is eight lines, so section 49's nine line cap costs CIPHER nothing.
+
+**Leak checks run as tests, with positive controls.** Four probes in
+`telemetry.ts` cover position, answer property, ordering and shape, and the
+harness covers the title and the fingerprint. The position probe states the real
+claim: a row is sorted by rank, so no cell position corresponds to a slot, which
+is what CIPHER.md 10 sorts to prevent. The answer property probe holds every row
+to being a legal feedback pair and the title to a fixed pattern, which closes
+the channel a difficulty class could otherwise travel down. Each probe has a
+test that feeds it a deliberately leaking artifact and requires it to fire.
+
+Declared: grammar A, patterns `emergent-fingerprint` and `comparative-friction`,
+`maxRows` 6.
+
+One correction to the record, not to the design: CIPHER.md 10.1's worked
+examples printed `CIPHER 251 Great` and the shipped title has always been
+`CIPHER #251 Great`. The tree is the authority and the examples now match it.
+
+Deferred, in BACKLOG.md: the section 19 archetype, which now has two run shapes
+to draw thresholds from and is therefore buildable for the first time, and the
+graphic card, still unbuilt for every game.
+
+## Phase 4, migrate POKER GRID to v3. Next.
+
+The last and the hardest of the three, for the two reasons phase 2 named. Its
+tier is graded against a stored optimum rather than derived from play, so
+`difficulty` recomputed rather than read is a real question there and not a
+formality, and its share block is the only one whose rows are not one per
+attempt, so the artifact mapping has a summary bar to carry. Its state holds a
+board and a hand list, so whether a run log is derivable without a state change
+is open, and it is the question to answer first.

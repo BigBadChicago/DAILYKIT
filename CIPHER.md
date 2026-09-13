@@ -380,7 +380,7 @@ row here is four cells, so no padding occurs.
 A three guess solve, tier Great:
 
 ```
-CIPHER 251 Great
+CIPHER #251 Great
 🔻🔻🔻🔻
 ⭐🟩🔻🔻
 ⭐⭐⭐⭐
@@ -390,7 +390,7 @@ dailykit.providentia.games
 A six guess solve with a streak, tier Rough:
 
 ```
-CIPHER 251 Rough, streak 12
+CIPHER #251 Rough, streak 12
 🔻🔻🔻🔻
 🟩🟩🔻🔻
 ⭐🟩🔻🔻
@@ -403,7 +403,7 @@ dailykit.providentia.games
 A failure, tier Rough:
 
 ```
-CIPHER 251 Rough
+CIPHER #251 Rough
 🟩🔻🔻🔻
 ⭐🔻🔻🔻
 ⭐🟩🔻🔻
@@ -464,6 +464,8 @@ what game two ran into, never for how the code behaves now.
 CIPHER.md                        this document
 src/games/cipher/rules.ts        feedback, apply, terminal, rejections
 src/games/cipher/solver.ts       Knuth style minimax from a fixed opening
+src/games/cipher/difficulty.ts   the opening, the code space, the table free measure
+src/games/cipher/telemetry.ts    run log, artifact mapping, fingerprint, leak probes
 src/games/cipher/generator.ts    seeded code construction and the lever schedule
 src/games/cipher/manifest-codec.ts
 src/games/cipher/module.ts       the GameModule implementation
@@ -482,3 +484,45 @@ tests/games/cipher/*.test.ts
 Plus `status: "live"` in `src/shell/registry.ts` and one line in the
 `vite.config.ts` allow list, which are configuration and do not count against the
 zero changes rule.
+
+## 14. The v3 contract
+
+Added in the v3 migration, phase 3, recorded in `ARCHITECTURE2.md` section 56.
+The module implements v2 and v3 at once and the default export is still the v2
+one, so nothing in the shell moved.
+
+**Nothing in sections 1 through 12 changed.** The rules, the tier, the
+distribution, the generation, the verification, the manifest, the serialization
+and the share block are all as written. In particular the share block is byte
+identical, built from the same two functions the artifact uses, so section 10 is
+not reopened. Six rows plus a title and a URL is eight lines, inside the nine
+line cap the v3 grammar enforces.
+
+**Difficulty is measured, not read.** Assertion 3's integer, the count of codes
+still consistent after the fixed opening, moved out of `solver.ts` into
+`difficulty.ts`, which is table free and browser safe. The solver imports the
+opening and the code space enumeration from there rather than declaring its own,
+and keeps its table backed measure for verification, which runs it beside a full
+minimax line. A test proves the two agree on all 1,296 codes, and another
+recomputes all 365 stored `best.remaining` values.
+
+**The run log needed no new state.** `state.guesses` already holds every code
+the player submitted and `deserialize` rebuilds all of it, so `stateVersion` is
+still 1. One entry per guess, carrying the index, the feedback pair the row
+already shows, `churn`, the slots changed since the previous guess, and
+`discipline`, a three step grade of whether the guess was consistent with every
+earlier feedback, with the most recent only, or with none. **The guessed codes
+are read to derive those two numbers and are never written into the log**, since
+a code beside its feedback is the answer in all but name.
+
+**The fingerprint** is one point per guess: index across, churn up, and a shape
+from the discipline grade. The two axes are independent, so two players who
+solve in the same number of guesses are separated by how they worked.
+
+**Leak probes** live in `telemetry.ts`, four of them, each with a test that
+feeds it a deliberately leaking artifact and requires it to fire. The strongest
+is the position probe, which holds every row to being sorted by rank, because an
+unsorted row is exactly the leak this design sorts to prevent.
+
+Declared: grammar A, patterns `emergent-fingerprint` and `comparative-friction`,
+`maxRows` 6.

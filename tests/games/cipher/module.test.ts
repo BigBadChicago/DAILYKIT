@@ -3,7 +3,9 @@ import { isErr, isOk } from "../../../src/core/result.js";
 import { seedFor } from "../../../src/core/seed.js";
 import { SHARE_MAX_ROWS, type SerializedState, type ShareContext } from "../../../src/core/types.js";
 import { SHARE_GLYPHS } from "../../../src/shared/share-vocabulary.js";
-import cipher from "../../../src/games/cipher/module.js";
+import { validateArtifact } from "../../../src/engine/artifact.js";
+import { validateRunLog } from "../../../src/engine/telemetry.js";
+import cipher, { cipherV3, internals } from "../../../src/games/cipher/module.js";
 import { encodeCode } from "../../../src/games/cipher/manifest-codec.js";
 import {
   CODE_LENGTH,
@@ -247,5 +249,76 @@ describe("shareBlock", () => {
         expect(SHARE_GLYPHS[token]).toBeTruthy();
       }
     }
+  });
+});
+
+describe("v3 contract surface", () => {
+  const puzzle = puzzleOf(12);
+
+  it("exposes one object through both seams", () => {
+    expect(cipherV3).toBe(cipher);
+    expect(cipherV3.identity.id).toBe("cipher");
+  });
+
+  it("declares a grammar, at least two telemetry patterns, and a row cap that fits", () => {
+    const declared = internals.shareCapabilities;
+    expect(declared.grammar).toBe("A");
+    expect(declared.patterns.length).toBeGreaterThanOrEqual(2);
+    expect(new Set(declared.patterns).size).toBe(declared.patterns.length);
+    expect(declared.maxRows).toBe(MAX_GUESSES);
+    // Title and URL are the other two lines of the nine.
+    expect(declared.maxRows).toBeLessThanOrEqual(7);
+  });
+
+  /* The headline of this migration: the guess history was already a run log, so
+     unlike VECTOR nothing was added to the payload and no save is refused. */
+  it("keeps state version 1, because v3 needed no new state", () => {
+    expect(cipher.stateVersion).toBe(1);
+    const played = play(state(puzzle), [[1, 4, 5, 1]]);
+    expect(cipher.serialize(played as never).v).toBe(1);
+  });
+
+  it("carries the bucket and the difficulty on the finished outcome", () => {
+    const solved = play(state(puzzle), [[1, 4, 5, 1], CODE]);
+    /* Read through the v3 seam, which is where the two extra fields are
+       visible. The v2 seam sees the same object as a FinishedOutcome. */
+    const outcome = cipherV3.inspect(solved as never);
+    expect(outcome.kind).toBe("finished");
+    if (outcome.kind !== "finished") return;
+    expect(outcome.bucket).toBe(1);
+    expect(outcome.difficulty).toBe(internals.difficulty(puzzle));
+    /* Measured, not read. The puzzle's stored value is a different number on
+       purpose in this fixture. */
+    expect(outcome.difficulty).not.toBe(puzzle.best?.remaining);
+  });
+
+  it("agrees with itself across inspect, tierOf and bucketOf", () => {
+    const states = [
+      play(state(puzzle), [CODE]),
+      play(state(puzzle), [[1, 4, 5, 1], CODE]),
+      play(state(puzzle), [[0, 0, 1, 2], [0, 0, 1, 3], CODE]),
+      play(state(puzzle), [
+        [0, 0, 0, 0], [0, 0, 0, 1], [0, 0, 0, 2], [0, 0, 0, 3], [0, 0, 0, 4], [0, 0, 1, 0],
+      ]),
+    ];
+    for (const played of states) {
+      const outcome = cipherV3.inspect(played as never);
+      expect(outcome.kind).toBe("finished");
+      if (outcome.kind !== "finished") continue;
+      expect(internals.tierOf(outcome, played)).toBe(outcome.tier);
+      expect(internals.bucketOf(outcome, played)).toBe(outcome.bucket);
+    }
+  });
+
+  it("hands the mapper a run log the engine accepts", () => {
+    const solved = play(state(puzzle), [[1, 4, 5, 1], CODE]);
+    const run = internals.telemetry(solved);
+    expect(validateRunLog(run).ok).toBe(true);
+    expect(run.entries).toHaveLength(2);
+    const artifact = internals.shareArtifact(puzzle, solved, run, context());
+    const block = cipher.shareBlock(solved as never, context());
+    expect(artifact.title).toBe(block.title);
+    expect(artifact.rows).toEqual(block.rows);
+    expect(validateArtifact(artifact, cipher.identity.shareUrl).ok).toBe(true);
   });
 });

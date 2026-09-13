@@ -143,7 +143,10 @@ the result, which is a human pass across real devices.
 - **The section 19 archetype for VECTOR.** The effort record now carries the
   correction and exploration axes an archetype table would read, but thresholds
   drawn from one game are thresholds fitted to one game. Revisit once CIPHER is
-  on v3 and there are two run shapes to compare.
+  on v3 and there are two run shapes to compare. **Unblocked 2026-09-13** by
+  phase 3, which gave CIPHER a discipline grade and a churn count. Two shapes
+  now exist, so the table is buildable for the first time; it is still not
+  built, because it is a feature rather than a migration step.
 - **The graphic card renderer.** ARCHITECTURE2 section 17.1 specifies a 1200 by
   900 card from the same ArtifactModel. Phase 1 built the text renderer only and
   no game has a card, so this is suite work rather than VECTOR work.
@@ -151,7 +154,24 @@ the result, which is a human pass across real devices.
   corrections in its own state. If CIPHER and POKER GRID end up counting the
   same two things, the record belongs in the engine, and if they do not, this
   stays a game concern. One example is not a pattern, which is the same rule
-  that left the list cursor unbuilt in Phase 11.
+  that left the list cursor unbuilt in Phase 11. **Answered for CIPHER
+  2026-09-13:** it counts nothing in its state. Its run is derived from a guess
+  history it already had, so the two games do not share a shape and the record
+  stays a game concern. POKER GRID in phase 4 is the last chance for this to
+  become a pattern.
+
+## Logged in the v3 migration, phase 3
+
+- **The manifest's `best.remaining` is now redundant for the browser.** The
+  module recomputes the difficulty in under a millisecond, so the stored value
+  is read by nobody at runtime. It stays because verification compares against
+  it and because dropping a field from a shipped manifest is a regeneration, not
+  an edit. Revisit when the manifest is next regenerated for another reason.
+- **`solver.ts` still owns a 1.7 megabyte table that only Node needs.** The
+  browser side of the difficulty measure is extracted, but the file remains a
+  Node only module that the module must remember not to import. A lint rule
+  naming Node only game files would enforce what a comment currently asks for.
+  Logged rather than built, because one file in three games is not a pattern.
 
 ## Logged in Phase 12
 
