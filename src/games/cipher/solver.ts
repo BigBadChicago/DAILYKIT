@@ -12,44 +12,24 @@ import {
   CODE_LENGTH,
   CODE_SPACE,
   MAX_GUESSES,
-  SYMBOL_COUNT,
   scoreGuess,
   solvedBy,
   type Code,
   type Feedback,
 } from "./rules.js";
+import { OPENING_GUESS, codeAt, codeIndex } from "./difficulty.js";
 
-/**
- * Fixed before the horizon was generated. Changing it invalidates every stored
- * difficulty in data/cipher, because difficulty is defined as the size of the
- * consistent set it leaves. CIPHER.md section 8.
- */
-export const OPENING_GUESS: Code = [0, 0, 1, 2];
+/* The opening and the code space enumeration moved to difficulty.ts so the
+   module can measure difficulty without importing this file and its table.
+   Re-exported rather than redeclared: one definition, so the browser side and
+   the verifier cannot open on different guesses. */
+export { OPENING_GUESS, codeAt, codeIndex };
 
 /** exact and misplaced both fit in 0..4, so five buckets each. */
 const FEEDBACK_KEYS = (CODE_LENGTH + 1) * (CODE_LENGTH + 1);
 
 export function feedbackKey(feedback: Feedback): number {
   return feedback.exact * (CODE_LENGTH + 1) + feedback.misplaced;
-}
-
-export function codeIndex(code: Code): number {
-  let index = 0;
-  for (let i = 0; i < CODE_LENGTH; i += 1) index = index * SYMBOL_COUNT + (code[i] as number);
-  return index;
-}
-
-export function codeAt(index: number): Code {
-  if (!Number.isInteger(index) || index < 0 || index >= CODE_SPACE) {
-    throw new RangeError(`code index out of range: ${index}`);
-  }
-  const code: number[] = [];
-  let rest = index;
-  for (let i = CODE_LENGTH - 1; i >= 0; i -= 1) {
-    code[i] = rest % SYMBOL_COUNT;
-    rest = Math.floor(rest / SYMBOL_COUNT);
-  }
-  return code;
 }
 
 export const ALL_CODES: readonly Code[] = Array.from({ length: CODE_SPACE }, (_, i) => codeAt(i));
@@ -144,7 +124,12 @@ export function solveLine(answer: number, opening: Code = OPENING_GUESS): readon
   return line;
 }
 
-/** Assertion 3's difficulty integer: codes still consistent after the opening. */
+/**
+ * Assertion 3's difficulty integer: codes still consistent after the opening.
+ * The table backed form, kept because verification runs it beside a full
+ * minimax line. difficulty.ts holds the table free form the browser uses, and a
+ * test proves the two agree on every code.
+ */
 export function remainingAfterOpening(answer: number, opening: Code = OPENING_GUESS): number {
   const openingIndex = codeIndex(opening);
   const key = keyFor(answer, openingIndex);
