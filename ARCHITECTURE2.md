@@ -2645,11 +2645,20 @@ games on one site, and from requirement 7.3.1, which has the hub listing five.
 Approved 2026-09-13.
 
 **The daily card covers only the games a player finished that day**, which is
-what `dailyCardBlock` already did, so no code changed and no cap moved.
-`SHARE_MAX_ROWS` is 8, so a player who finishes all eight produces exactly eight
-rows and a ten line block, which is charter decision 1 as amended sitting exactly
-at its limit. A ninth game breaks it. That is the constraint to remember before
-the suite grows again.
+what `dailyCardBlock` already did, so no code changed here.
+
+**The cap is a live conflict and it is recorded rather than resolved.** The v2
+engine allows eight rows, `SHARE_MAX_ROWS`, which with a title and a URL is the
+ten line block charter decision 1 as amended permits. Section 49 of this document
+replaces that with a hard nine lines including title and URL, which is seven rows,
+and `validateArtifactText` enforces it. So under v3 a player who finishes seven
+games produces a card sitting exactly at the cap and a player who finishes eight
+produces one over it. Nothing fails today, because the daily card is still v2 code
+and is not run through the v3 grammar, and it fails on the day the suite's share
+path migrates. Composition A is what created this: at five games the two caps
+never disagreed. Three ways out exist and none is chosen here: cap the card at the
+seven most recent finishes, encode two games per row, or let it truncate with the
+telemetry fault of engine decision 21. Logged in BACKLOG.md.
 
 **VECTOR LOCK is renamed ROTATE LOCK.** This closes the BACKLOG item about the
 name colliding with the shipped VECTOR. The ids `vector` and `rotate-lock` were

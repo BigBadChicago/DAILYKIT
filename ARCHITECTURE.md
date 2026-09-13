@@ -875,8 +875,9 @@ presentation, and generation decisions above.
    seven lines, inside the cap. An ungraded game is one neutral cell and never
    a tier glyph, because past the horizon there is no grade and rendering one
    as Rough would be a lie the player cannot check.
-4. **The hub never writes.** Opening it resolves five puzzle numbers and reads
-   five records, and touches none of them. A hub that advanced a watermark
+4. **The hub never writes.** Opening it resolves one puzzle number per game and
+   reads one record per game, eight of each since the 2026-09-13 slate
+   reconciliation, and touches none of them. A hub that advanced a watermark
    would discard an in progress board just because the player looked at the
    list. The hub therefore opens every game store with a migration that
    refuses, which drops a stale in progress payload it was never going to

@@ -10,11 +10,19 @@ word are fine. Rewrite the sentence instead.
 
 ## 1. What DAILYKIT is
 
-DAILYKIT is a suite of five daily puzzle games on one static site, in the genre
+DAILYKIT is a suite of eight daily puzzle games on one static site, in the genre
 of Wordle and Connections. One puzzle a day, identical for every player
-worldwide, a spoiler free share block, and a streak. Two games are built today,
-POKER GRID and CIPHER. The engine and the games are separated by a contract so
-that a new game is one directory plus one entry file and zero engine changes.
+worldwide, a spoiler free share block, and a streak. Three games are built today,
+POKER GRID, VECTOR and CIPHER. The other five are the lineup approved 2026-09-13
+and carried in `src/shell/registry.ts` as planned: DIFFERENCE RELAY, TURN TABLE,
+RING BALANCE, ORDER OF OPERATIONS and ROTATE LOCK. The engine and the games are
+separated by a contract so that a new game is one directory plus one entry file
+and zero engine changes.
+
+The suite was five games until 2026-09-13. Eight is composition A, a stated
+deviation from the charter's Section 0 and requirement 7.3.1, recorded in
+ARCHITECTURE2.md section 56 under Slate reconciliation. Anything in this
+repository that still says five games predates that and is the stale copy.
 
 The product is the suite, not any one game. The share block is the entire
 distribution mechanism. Daily content cost is zero: every puzzle is generated

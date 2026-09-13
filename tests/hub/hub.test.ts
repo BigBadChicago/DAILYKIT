@@ -121,8 +121,11 @@ describe("the hub", () => {
     );
     expect(labels[0]).toContain("POKER GRID");
     expect(labels[0]).toContain("Not started");
-    /* VECTOR is live now, so the first still planned card is tally-drop. */
     expect(labels[1]).toContain("VECTOR");
-    expect(labels[3]).toContain("Coming soon");
+    /* The first planned card sits immediately after the live ones, so the index
+       is derived rather than written down. It was 3 and it was tally-drop until
+       the 2026-09-13 reconciliation, and it moves again every time a game
+       ships. */
+    expect(labels[LIVE_GAMES.length]).toContain("Coming soon");
   });
 });

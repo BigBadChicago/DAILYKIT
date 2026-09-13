@@ -225,6 +225,15 @@ the result, which is a human pass across real devices.
   for categorization by partition, SHADOW LEDGER for visibility deduction, WORD
   WEAVE for a word graph, PRIME PAIRING for matching. Substituting one is an edit
   to `src/shell/registry.ts` and nothing else while the game is unbuilt.
+- **The daily card exceeds the v3 share height at seven and eight finished
+  games.** ARCHITECTURE2.md section 49 makes nine total lines a hard contract,
+  which is seven rows, while the v2 `SHARE_MAX_ROWS` is eight and charter
+  decision 1 as amended allows ten lines. Composition A is what put the two in
+  conflict: at five games they never disagreed. The card is v2 code today and is
+  not validated by the v3 grammar, so nothing fails yet. It fails when the suite
+  share path migrates. Options, none chosen: cap at the seven most recent
+  finishes, encode two games per row, or truncate with the engine decision 21
+  telemetry fault. Decide before the suite share path moves to v3, not after.
 - **Registry order among the five planned games is arbitrary.** The list is meant
   to run longest session to shortest and no design document states a session
   length for any of them yet. Re sort as each one is written.
