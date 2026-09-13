@@ -119,6 +119,8 @@ describe("the hub", () => {
     );
     expect(labels[0]).toContain("POKER GRID");
     expect(labels[0]).toContain("Not started");
-    expect(labels[1]).toContain("Coming soon");
+    /* VECTOR is live now, so the first still planned card is tally-drop. */
+    expect(labels[1]).toContain("VECTOR");
+    expect(labels[3]).toContain("Coming soon");
   });
 });

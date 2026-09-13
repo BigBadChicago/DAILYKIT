@@ -17,7 +17,11 @@
 
 export type TierToken = "best" | "strong" | "partial" | "weak" | "miss";
 export type BarToken = "barFull" | "barEmpty";
-export type ShareToken = TierToken | BarToken;
+/** Direction glyphs for route and vector games. ARCHITECTURE2 section 14. */
+export type DirectionToken = "up" | "down" | "left" | "right";
+/** Structural filler that is neither a rank nor a fill state. */
+export type StructureToken = "unused";
+export type ShareToken = TierToken | BarToken | DirectionToken | StructureToken;
 
 /** Ordered best to worst. Index is the tier index used by every game. */
 export const TIER_TOKENS: readonly TierToken[] = [
@@ -46,6 +50,11 @@ export const SHARE_GLYPHS: Readonly<Record<ShareToken, string>> = {
   miss: "\uD83D\uDD3B",
   barFull: "\uD83D\uDFE6",
   barEmpty: "\u2B1C",
+  up: "\uD83D\uDD3C",
+  down: "\uD83D\uDD3D",
+  left: "\u23EA",
+  right: "\u23E9",
+  unused: "\u2B1B",
 };
 
 /** Asserted distinct across TIER_TOKENS by test. Bar tokens are exempt because
@@ -58,6 +67,11 @@ export const SHARE_TOKEN_SHAPE: Readonly<Record<ShareToken, string>> = {
   miss: "triangle",
   barFull: "square",
   barEmpty: "square",
+  up: "chevron-up",
+  down: "chevron-down",
+  left: "rewind",
+  right: "fast-forward",
+  unused: "block",
 };
 
 /** Padding token. The engine right pads short rows with this so requirement

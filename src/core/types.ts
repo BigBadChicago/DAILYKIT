@@ -141,3 +141,38 @@ export const SHARE_MAX_ROWS = 8;
  * every game to the widest game's bar. Requirement 3.5.4 therefore holds as an
  * engine invariant without constraining what a game may encode.
  */
+
+
+/** A bucket index into DistributionSpec.labels. */
+export type BucketId = number;
+
+/** The nine approved social telemetry patterns. ARCHITECTURE2 section 13. A v3
+ *  game declares at least two of these in its ShareCapabilities. */
+export type TelemetryPattern =
+  | "asymmetric-spatial"
+  | "deterministic-output"
+  | "spoiler-free-replay"
+  | "emergent-fingerprint"
+  | "consensus-heatmap"
+  | "seed-synchronous"
+  | "micro-replay-path"
+  | "playstyle-archetype"
+  | "comparative-friction";
+
+/**
+ * The v3 terminal result. ARCHITECTURE2 section 8 adds `bucket` and `difficulty`
+ * to the finished outcome. Kept separate from FinishedOutcome so the v2 games
+ * and engine stay untouched during the migration window.
+ */
+export interface FinishedOutcomeV3 {
+  readonly kind: "finished";
+  readonly score: number;
+  readonly won: boolean | null;
+  readonly detail: string;
+  readonly tier: TierOrdinal | null;
+  readonly bucket: BucketId;
+  /** The game's one emergent integer difficulty for this puzzle. Section 9. */
+  readonly difficulty: number;
+}
+
+export type OutcomeV3 = OngoingOutcome | FinishedOutcomeV3;

@@ -1,11 +1,19 @@
 /**
- * Layer 1. Requirement 4.1.6 and 8.5.
+ * Layer 1. Two telemetry concepts share this file, kept apart by section header.
  *
- * A seam, not a feature. Version 1 ships the no operation implementation and
- * nothing else, so the privacy claim in 8.5 is structurally true rather than a
- * promise. The seam exists so that adding a vendor later is a change to one
- * file rather than a change to every game.
+ * The first is the analytics seam of the original architecture (requirement
+ * 4.1.6 and 8.5): a no operation vendor interface so privacy is structurally
+ * true. The second is the v3 social telemetry (ARCHITECTURE2 section 13 and 17):
+ * the local run log a game turns into a shareable artifact. The two never mix;
+ * the analytics seam never sees puzzle or run content.
  */
+
+import { err, ok, type Result } from "../core/result.js";
+import type { FinishedOutcomeV3, ShareRow } from "../core/types.js";
+
+// ---------------------------------------------------------------------------
+// Analytics seam. Original architecture.
+// ---------------------------------------------------------------------------
 
 export interface TelemetryEvent {
   readonly name: string;
@@ -43,4 +51,62 @@ export function createConsoleTelemetry(sink: Pick<Console, "info" | "warn">): Te
       sink.warn(`[fault] ${message}`, fields ?? {});
     },
   };
+}
+
+// ---------------------------------------------------------------------------
+// Social telemetry. ARCHITECTURE2 sections 13 and 17.
+// ---------------------------------------------------------------------------
+
+/** Opaque to the engine, like SerializedState. A game reads its own entries. */
+export interface RunLog {
+  readonly v: number;
+  readonly entries: readonly unknown[];
+}
+
+/** A fingerprint point describes player behavior, never puzzle data. Section 18. */
+export type FingerprintShape = "accepted" | "refused" | "correction";
+
+export interface FingerprintPoint {
+  /** Action or attempt index along the run. */
+  readonly x: number;
+  /** Mapped quality of that action. */
+  readonly y: number;
+  readonly shape: FingerprintShape;
+}
+
+export interface Fingerprint {
+  readonly points: readonly FingerprintPoint[];
+}
+
+/**
+ * The canonical artifact. One model, two renderers, no second scoring path.
+ * `rows` are semantic tokens the engine renders and validates; a game never
+ * emits codepoints.
+ */
+export interface ArtifactModel {
+  readonly title: string;
+  readonly rows: readonly ShareRow[];
+  readonly outcome: FinishedOutcomeV3;
+  readonly fingerprint: Fingerprint;
+  readonly archetype?: string;
+}
+
+export interface RunLogFault {
+  readonly code: "malformed";
+  readonly detail: string;
+}
+
+/** A stored or reconstructed RunLog is validated before it drives an artifact. */
+export function validateRunLog(raw: unknown): Result<RunLog, RunLogFault> {
+  if (typeof raw !== "object" || raw === null) {
+    return err({ code: "malformed", detail: "run log is not an object" });
+  }
+  const log = raw as { v?: unknown; entries?: unknown };
+  if (typeof log.v !== "number" || !Number.isInteger(log.v)) {
+    return err({ code: "malformed", detail: "run log version is not an integer" });
+  }
+  if (!Array.isArray(log.entries)) {
+    return err({ code: "malformed", detail: "run log entries is not an array" });
+  }
+  return ok({ v: log.v, entries: log.entries });
 }

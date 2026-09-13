@@ -80,7 +80,7 @@ export const SUITE_GAMES: readonly SuiteGameEntry[] = [
     bucketCount: 4,
     hasWinLoss: true,
     stateVersion: 1,
-    status: "planned",
+    status: "live",
   },
   {
     id: "cipher",

@@ -1,5 +1,11 @@
 # DAILYKIT ARCHITECTURE
 
+> **Active target is ARCHITECTURE2.md (v3).** As of 2026-09-13 the project is
+> migrating to the v3 engine contract and the v3 concept pool. This document
+> stays authoritative for the v2 engine and the three live legacy games
+> (POKER GRID, CIPHER, VECTOR) until each is certified under v3. New work
+> follows ARCHITECTURE2.md.
+
 Living manifest. Every file in the repo is listed here with its one sentence
 responsibility and its dependencies. Update on every file added, removed, or
 repurposed. This file plus the project instructions must be sufficient to
@@ -9,10 +15,10 @@ resume work in a fresh conversation with no chat history.
 
 | Field | Value |
 |---|---|
-| Current phase | Phase 12 done, including the fixes in PHASE-12-FIXES.md. Phase 13 is specified in PHASE-13-PLAN.md and starts with VECTOR in its own chat. Phase 8's manual checklist is still unrun |
-| Games playable | POKER GRID and CIPHER, end to end in a browser, inside the suite shell |
+| Current phase | Phase 13 in progress. VECTOR, game three, is built, integrated, and green across the suite. TALLY DROP and RECALL remain. Phase 8's manual checklist is still unrun |
+| Games playable | POKER GRID, VECTOR, and CIPHER, end to end in a browser, inside the suite shell |
 | Engine contract version | 2, corrected by the Phase 11 defect report. Chunks are keyed entries, granularity is gone, tiers belong to the module |
-| Manifest horizon | POKER GRID 365 days from epoch 2026-01-01, verified with a solver replay. CIPHER 365 days from epoch 2026-01-05, the first Monday, verified against the fixed opening |
+| Manifest horizon | POKER GRID 365 days from epoch 2026-01-01, verified with a solver replay. CIPHER and VECTOR 365 days from epoch 2026-01-05, the first Monday. CIPHER verified against the fixed opening, VECTOR by re-derivation and an independent uniqueness search |
 
 ## Phase log
 
@@ -31,7 +37,7 @@ resume work in a fresh conversation with no chat history.
 | 10 | Suite shell | done | Hub, shell, per game entries, one pass release build with a shared engine chunk, suite storage and streak, daily card, cross promotion. One contract change and one renderer defect, both below |
 | 11 | Game two and abstraction test | done | CIPHER ships at 24.0 KB gzipped. Defect report written, eight defects, and the engine corrected for all of them. Both games rebuilt against the corrected contract and the full suite is green: 43 files, 463 tests, 57 seconds |
 | 12 | Template extraction | done | NEW_GAME.md, tools/new-game.ts, its tests, two insertion markers, and the template decisions are shipped for the Phase 13 games |
-| 13 | Games three, four, five | specified | PHASE-13-PLAN.md. VECTOR, then TALLY DROP, then RECALL, one chat each, run with /phase 13. Blocked until Phase 12 ships NEW_GAME.md and the scaffold |
+| 13 | Games three, four, five | in progress | PHASE-13-PLAN.md. VECTOR built and integrated: seven source files, three tools, a verified 365 day horizon, and green across 577 tests. Zero engine changes, the abstraction test passed. TALLY DROP and RECALL remain |
 | 14 | Suite launch readiness | not started | |
 
 ## Layer rule
@@ -229,6 +235,27 @@ Table columns are fixed as follows and every future entry uses them.
 | src/shell/entries/cipher.html | 5 | The CIPHER page | none |
 | tests/games/cipher/module.test.ts | n/a | Identity, manifest resolution, parse rejection, snapshot round trip, outcome grading, and share rows | games/cipher/module, games/cipher/rules |
 | tests/games/cipher/render.test.ts | n/a | Palette and slot accessibility, tap and keyboard play, announcement, reveal on loss, and teardown | games/cipher/render, games/cipher/rules |
+| src/games/vector/propagate.ts | 4 | VECTOR geometry, candidates and suppliers, the three deduction rules in rounds, the depth and per cell round measures, and the resolved solution | none |
+| src/games/vector/rules.ts | 4 | VECTOR cycle, set and submit, satisfaction check, terminal detection, tier and bucket mapping | core/result, core/types, games/vector/propagate |
+| src/games/vector/generator.ts | 4 | Seeded carve, the intensity measure, weekday bands, the screens, the unrated fallback, and the first session board | games/vector/propagate |
+| src/games/vector/module.ts | 4 | VECTOR GameModule, layout parsing, snapshot state, outcome, and share data | core/result, core/rng, core/seed, core/types, engine/manifest-codec, engine/tiers, contract/*, games/vector/generator, games/vector/help, games/vector/propagate, games/vector/render, games/vector/rules |
+| src/games/vector/render.ts | 4 | VECTOR play area: the grid, self drawn arrows, the ray highlight, the submission counter, and the reveal on loss | ui/dom, ui/gridCursor, contract/types, games/vector/propagate, games/vector/rules |
+| src/games/vector/style.css | 4 | VECTOR board, cell, arrow and highlight styling with 54 pixel cells above the 44 pixel floor | none |
+| src/games/vector/help.ts | 4 | VECTOR structured help content and the five cell worked example | contract/types, games/vector/propagate, games/vector/render |
+| src/shell/entries/vector.ts | 5 | The VECTOR bundler entry, the one file that names it | games/vector/module, shell/main |
+| src/shell/entries/vector.html | 5 | The VECTOR page | none |
+| tools/vector-generate.ts | tools | Carves and bands the horizon, then writes the year chunk and the index | core/rng, core/seed, engine/manifest-codec, games/vector/generator, games/vector/propagate |
+| tools/vector-verify.ts | tools | Re-derives every entry and proves uniqueness with an independent pruned search that never reads the propagator's answer | core/rng, core/seed, engine/manifest-codec, games/vector/generator, games/vector/propagate, tools/vector-generate |
+| tools/vector-calibrate.ts | tools | Measures the screened intensity distribution over the engine stream and prints the septile band edges | core/rng, core/seed, games/vector/generator |
+| tools/vector-play.ts | tools | Plays VECTOR in a terminal, the step two proof that the rules work before a browser sees them | games/vector/propagate, games/vector/rules |
+| data/vector/manifest.index.json | n/a | Horizon, codec, and the single chunk pointer | none |
+| data/vector/manifest.1-365.json | n/a | The 365 day VECTOR horizon as entries keyed by puzzle number, obfuscated, with the intensity, depth, opening, lever, and attempt | none |
+| data/vector/study.json | n/a | The checked in study behind VECTOR's carve decision and its band edges | none |
+| tests/games/vector/propagate.test.ts | n/a | Geometry, candidates and suppliers, the deduction rounds, stall and contradiction, and uniqueness by an independent search | games/vector/propagate |
+| tests/games/vector/rules.test.ts | n/a | Cycle, set and submit, every rejection path, terminal grading, and a random legal sequence property | games/vector/rules |
+| tests/games/vector/generator.test.ts | n/a | Carve invariants, intensity consistency, the screens, band ordering, the unrated fallback, and the first session board | games/vector/generator, games/vector/propagate |
+| tests/games/vector/module.test.ts | n/a | Identity, parse rejection, snapshot round trip, outcome grading, and share rows | games/vector/module, games/vector/rules |
+| tests/games/vector/fixtures.ts | n/a | A measured fixture board and its solution, shared by the VECTOR tests | games/vector/rules, games/vector/propagate |
 
 ## Planned repository layout
 
@@ -982,6 +1009,58 @@ game two only where they name it.
    games that start on different days: the suite record holds its own epoch and
    day number, so a later launching game inherits no fake history.
 
+## VECTOR generation decisions
+
+Settled while game three was built, in the same standing as the decisions
+above. They govern game three only where they name it, and VECTOR.md is the
+design document behind them.
+
+1. **The closed system.** Every arrow must reach a numbered cell, so a direction
+   that leaves the board is never a candidate. This resolves the design source's
+   permissive reading in VECTOR.md 3.1 and 14.1: a cell with two escaping
+   directions has two arrow placements that produce identical counts, which
+   forfeits the uniqueness the whole game rests on.
+2. **Boards are carved, not sampled.** Filling blanks at random and keeping the
+   boards that resolve yields roughly one in twenty thousand at the clue counts
+   this game wants, recorded in data/vector/study.json. A board is carved
+   instead: start dense, then remove clues one at a time and keep every removal
+   that still resolves.
+3. **Difficulty is intensity, the mean round in which a cell was forced, in
+   hundredths.** Propagation depth alone takes four values on this board size,
+   too few for seven weekday bands, so the finer measure is used and the
+   propagator returns a per cell round to feed it. `BAND_EDGES` is
+   `[217, 232, 244, 257, 271, 292]`, the septiles of the screened distribution,
+   confirmed against a fresh sample of 4,178 screened boards during integration.
+   Changing an edge invalidates every stored band, stated beside the constant.
+4. **A stall is the whole verification.** Nothing in this game ever guesses.
+   `DEPTH_FLOOR` is 4 and `OPENING_MAX_PERCENT` is 40, screens applied on every
+   path including the past horizon fallback.
+5. **The attempt ceiling is 3,000.** A carve succeeds on roughly one draw in
+   twenty and the target weekday band takes a further one in seven, so a rare
+   band day needs well over the design's provisional 600 carves. Measurement
+   during integration showed 600 left about one day in four of a full year
+   unfillable; 3,000 fills a 365 day horizon with margin, at 55,656 carves and a
+   38 second generation. Raising it is the generation step calibration
+   VECTOR.md 9.2 anticipates, not a rule change.
+6. **The propagator ships in the browser.** It carries no table, three rules
+   over 36 cells, so the reveal on a loss and the past horizon fallback both run
+   it, which inverts CIPHER's split. The uniqueness search is the piece that
+   stays in CI, in tools/vector-verify.ts so it cannot be imported by accident.
+7. **The uniqueness search prunes with a forward check.** VECTOR.md 10 describes
+   an independent search pruned near its root. The delivered search was plain
+   backtracking and exceeded the node ceiling on some boards, so it was given
+   most constrained cell ordering and a per clue supply against need check, both
+   sound. A full year now verifies in 91,526 nodes total and under a minute, and
+   the search still never reads the propagator's answer.
+8. **The horizon is one chunk.** A layout is 36 characters and a year is roughly
+   25 kilobytes, named for the span it covers. Obfuscation uses the engine codec
+   at radix 32, so VECTOR writes no codec of its own, the Phase 11 defect 2
+   correction working as intended.
+9. **VECTOR's epoch is 2026-01-05, the first Monday of the epoch year**, the same
+   as CIPHER, so puzzle 1 lands in the gentlest band. The tier is the submission
+   count on every day of the game's life, owing nothing to the manifest, so it
+   is correct past the horizon where the intensity is unrated.
+
 ## The charter is not in this repository
 
 The project charter, the document that defines the mission, the hard
@@ -1166,3 +1245,58 @@ one anyway, because it is the first time any of this code ran in a browser.
 3. **Phase 8 closed without a service worker.** Requirement 2.6 and 7.3.1 both
    need one and there is none. Logged in `BACKLOG.md` under Phase 8 remainder
    rather than built here, because it is not this phase's work.
+
+
+## Phase 13 VECTOR, the abstraction test
+
+**This section is a historical record**, in the standing of the Phase 11 report
+above. It says what was true while game three was integrated against the
+corrected contract, and is never edited to match today.
+
+Requirement 7.4. VECTOR was built under the zero engine changes rule.
+`src/core`, `src/engine`, `src/ui`, `src/contract` and `src/shared` were not
+touched. The only suite level edits were data and configuration: VECTOR flipped
+from planned to live in `src/shell/registry.ts`, gained a target in
+`vite.config.ts`, and its scripts joined `package.json`. Two suite tests moved
+to the three live game reality they now describe. The prediction of VECTOR.md 15
+held: a grid game with a tap, a manifest, a tier from play and a small
+serialized payload is the shape the contract was corrected into after Phase 11,
+and it found fewer engine defects than CIPHER did. It found none.
+
+**The four predicted defects, resolved.**
+1. One activation verb per grid cell. Confirmed and lived with: forward cycle
+   only, wrapping through empty, which VECTOR.md 14.4 accepts. No engine change.
+   The proposed correction, a grid game declaring extra pass through keys, stays
+   in BACKLOG.md because one game does not justify it.
+2. `FinishedOutcome.score` means lower is better in two games and higher in one.
+   Documentation only: the field is module private and no suite level code
+   compares it across games. No engine change.
+3. The backlogged shared list cursor got no second example, because VECTOR is a
+   lattice game and reuses `ui/gridCursor` unchanged. The item stays open for
+   TALLY DROP.
+4. `firstSessionPuzzle` returns a board with no manifest entry. Constructed in
+   `generator.ts` beside the constant board. No engine change.
+
+**What integration did require**, all inside VECTOR's own files and tools, none
+in the engine:
+- `propagate.ts` did not emit the per cell round that `generator.ts`, its tests
+  and both tools already read for the intensity measure. Added.
+- The delivered files were written against a looser tsconfig and tripped
+  `noUncheckedIndexedAccess` throughout. Hardened with the same casts the rest
+  of the repo uses.
+- The module and both tools imported `rngFromSeed` from `core/rng`, which
+  exports it from `core/seed`, and called a method `intBelow` that the engine
+  exposes as a free function. Corrected.
+- The verifier's `fail` was a const arrow, which does not narrow on a `never`
+  return, so `entry` and the re-derived board stayed possibly undefined. It is
+  now a function declaration, like CIPHER's.
+- `BAND_EDGES` and `ATTEMPT_CEILING` were calibrated against the engine stream,
+  and the uniqueness search was given the pruning VECTOR.md 10 always described.
+  Both are recorded under VECTOR generation decisions.
+
+The sentence 7.4 asks for: could game three have been authored in one file plus
+assets? Closer than CIPHER, but no: VECTOR is seven source files, three tools, a
+manifest and its tests. The residue is not engine debt this time. It is the
+irreducible shape of a game that carries a generator, a verifier and a
+propagator, and the abstraction test passed, because none of it reached the
+engine.

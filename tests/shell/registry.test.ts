@@ -48,10 +48,12 @@ describe("suite registry", () => {
   it("never offers a planned game as a cross promotion", () => {
     const ids = promotableIds();
     expect(ids).toEqual(LIVE_GAMES.map((entry) => entry.id));
-    /* Two live games, so cross promotion has something to offer for the first
-       time and each game offers the other. */
-    expect(crossPromotionTarget(emptySuiteRecord(), ids, "poker-grid")).toBe("cipher");
+    /* Three live games now, so cross promotion always has something to offer.
+       With nothing played yet the tie breaks on registry order, which runs
+       poker-grid, vector, cipher. */
+    expect(crossPromotionTarget(emptySuiteRecord(), ids, "poker-grid")).toBe("vector");
     expect(crossPromotionTarget(emptySuiteRecord(), ids, "cipher")).toBe("poker-grid");
+    expect(crossPromotionTarget(emptySuiteRecord(), ids, "vector")).toBe("poker-grid");
   });
 
   it("offers the least recently played live game once more than one exists", () => {

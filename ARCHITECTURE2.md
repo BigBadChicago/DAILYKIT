@@ -36,6 +36,9 @@ pipeline, theme/chrome, offline behavior, and certification gate.
 | Network policy | No network dependency for puzzle identity, gameplay, result, telemetry mapping, or share generation |
 | Storage policy | Small JSON snapshot for in-progress state; telemetry retained only when required for the local result artifact |
 | Deployment | Cloudflare Pages at `dailykit.providentia.games` |
+| Migration status | v3 adoption in progress. Phase 1, the v3 contract and engine seams, is in design. POKER GRID, CIPHER and VECTOR are live on the v2 contract and treated as legacy modules to migrate, not rewrite (section 47) |
+| Chosen lineup | Approved 2026-09-13: the five recommended concepts become the new build slate, DIFFERENCE RELAY, TURN TABLE, RING BALANCE, ORDER OF OPERATIONS, VECTOR LOCK. This supersedes SLATE.md's five for new work; the three legacy games stay live |
+| This document | The active architecture target. ARCHITECTURE.md is the v2 record the legacy games still satisfy and is retained until migration completes |
 
 The original architecture established the project as a layered static application with
 pure game logic, a shared deterministic RNG, a manifest-driven daily horizon, and an
@@ -2515,3 +2518,54 @@ renderer that merely makes those facts visible.
 
 That is the abstraction the 15 concepts need, and it is also the abstraction that keeps
 the existing POKER GRID/CIPHER architecture from turning into a pile of exceptions.
+
+
+---
+
+# 56. Migration log
+
+A running record of the v3 adoption so a fresh conversation can resume from this
+document alone. One entry per phase.
+
+## Phase 1, the v3 contract. Done 2026-09-13.
+
+The contract and the new engine seams landed additively, with no change to the
+v2 games or shell, and the full suite is green: 53 files, 597 tests, plus
+typecheck, dependency check, production build and byte budget.
+
+Added:
+- `src/contract/v3/game-module.ts` and `types.ts`. `GameModuleV3` is the v2
+  module plus `shareCapabilities`, `difficulty`, `telemetry`, `shareArtifact`
+  and `tierOf`, with `inspect` returning the v3 outcome. Three type parameters
+  kept; one erasure point `defineGameV3`. Proven v2 method names retained so a
+  legacy game migrates by adding methods, section 47.
+- `src/core/types.ts` gained `FinishedOutcomeV3` (adds `bucket` and
+  `difficulty`, section 8), `OutcomeV3`, `BucketId` and `TelemetryPattern`. The
+  v2 `FinishedOutcome` is untouched.
+- `src/core/canonical-json.ts` and `src/core/hash.ts`, section 30. Stable JSON
+  and a cyrb53 hash for puzzle identity and yearly duplicate detection.
+- `src/engine/telemetry.ts` now carries the social telemetry interfaces
+  (`RunLog`, `Fingerprint`, `ArtifactModel`, `validateRunLog`) beside the
+  original analytics seam, kept apart by section header.
+- `src/engine/share-grammar.ts` (grammars A to F, `renderArtifactText`,
+  `validateArtifactText`: nine line and eight token caps), `artifact.ts`
+  (`validateArtifact`, `renderArtifact`), `share-leak.ts` (the five checks as a
+  harness with game supplied probes), `certification.ts` (`VerificationResult`,
+  `CertificationRecord`, the nineteen step gate, `isProductionSafe`).
+- `src/shared/share-vocabulary.ts` extended with the direction glyphs and the
+  unused token, section 14. Existing glyphs are byte identical.
+- `src/games/toy-v3/module.ts`, a full v3 module proving the round trip
+  telemetry to artifact to grammar to leak clean. Not shipped: no entry, no
+  html, no registry row.
+
+Deferred to later phases: the analytics seam and the social telemetry both live
+in `telemetry.ts` for now; split into `analytics.ts` if it gets confusing. The
+v3 GraphicCardRenderer (section 17.1) is not built; only the text renderer is.
+The certification gate types exist but are not wired into CI yet, section 50.
+
+## Phase 2, migrate VECTOR to v3. Next.
+
+VECTOR is the cleanest legacy game to migrate first: closed system, tap grid, a
+tier from play. Add `difficulty`, `telemetry`, `shareArtifact`, `tierOf` and
+`shareCapabilities`, switch its `inspect` to the v3 outcome, and prove its
+artifact is leak clean, without touching the engine.

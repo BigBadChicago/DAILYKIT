@@ -83,6 +83,12 @@ const TARGETS: Readonly<Record<string, Target>> = {
   },
   about: { outPath: "about", html: "src/about/index.html", productionSafe: true },
   harness: { outPath: "harness", html: "tools/share-harness/index.html", productionSafe: false },
+  vector: {
+    outPath: "vector",
+    html: "src/shell/entries/vector.html",
+    gameId: "vector",
+    productionSafe: true,
+  },
   /* NEW_GAME_INSERTION: TARGETS */
 };
 

@@ -171,3 +171,30 @@ the result, which is a human pass across real devices.
   is a property of the one fixed opening. Rotating it yearly would widen the
   bands, and it would also invalidate every stored difficulty, so it is a
   migration rather than a knob.
+
+
+## Logged in Phase 13
+
+- **A grid game that declares extra pass through keys.** VECTOR predicted defect
+  1: a grid cell has one activation verb, so a forward cycle is the only tap and
+  there is no backward turn. VECTOR lives with it, wrapping through empty. The
+  correction, letting a grid game name extra keys the cursor passes through
+  untouched, waits for a second game that wants a second verb, because an
+  abstraction drawn from one example is the more expensive mistake.
+- **A direction on `FinishedOutcome.score`.** VECTOR predicted defect 2: score
+  means lower is better in VECTOR and CIPHER and higher in POKER GRID, with
+  nothing in the type saying which. It is safe today because the field is module
+  private and no suite level code compares it across games. If a suite feature
+  ever needs to, the field carries a direction or the comparison is refused.
+
+## Logged in the v3 migration
+
+- **SLATE.md's five are superseded for new builds.** The v3 adoption switched the
+  build slate to the design review's recommended pool: DIFFERENCE RELAY, TURN
+  TABLE, RING BALANCE, ORDER OF OPERATIONS, VECTOR LOCK. POKER GRID, CIPHER and
+  VECTOR stay live as legacy modules and are migrated to the v3 contract rather
+  than dropped. TALLY DROP and RECALL from the old slate are not built; they can
+  return to the pool if a later review wants them.
+- **VECTOR overlaps VECTOR LOCK.** VECTOR (shipped) and VECTOR LOCK (v3 pool) are
+  both arrow and ray games. Whether VECTOR LOCK ships alongside VECTOR, replaces
+  it, or is cut is a slate decision to settle before VECTOR LOCK is built.

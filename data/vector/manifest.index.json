@@ -1,0 +1,14 @@
+{
+  "codec": "xor-v1",
+  "horizon": {
+    "first": 1,
+    "last": 365
+  },
+  "chunks": [
+    {
+      "first": 1,
+      "last": 365,
+      "url": "manifest.1-365.json"
+    }
+  ]
+}
