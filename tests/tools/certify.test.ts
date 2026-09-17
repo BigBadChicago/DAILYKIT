@@ -63,7 +63,7 @@ describe("the plans", () => {
   });
 
   it("refuse a live game with no plan, and a plan missing a step", () => {
-    expect(() => planFor("rotate-lock")).toThrow(/no certification plan/);
+    expect(() => planFor("no-such-game")).toThrow(/no certification plan/);
     const partial = Object.fromEntries(
       Object.entries(GAME_PLANS["cipher"] as GamePlan).filter(([step]) => step !== "glyph-check"),
     );

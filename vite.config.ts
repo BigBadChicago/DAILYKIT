@@ -106,6 +106,12 @@ const TARGETS: Readonly<Record<string, Target>> = {
     gameId: "vector",
     productionSafe: false,
   },
+  "rotate-lock": {
+    outPath: "rotate-lock",
+    html: "src/shell/entries/rotate-lock.html",
+    gameId: "rotate-lock",
+    productionSafe: false,
+  },
   /* NEW_GAME_INSERTION: TARGETS */
 };
 

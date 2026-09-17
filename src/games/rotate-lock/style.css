@@ -1,0 +1,149 @@
+/*
+ * ROTATE LOCK play area. Requirement 7.3.8 gives a game its accent and board
+ * typography and nothing else; every other colour is the suite theme's.
+ *
+ * Arithmetic at the 360 pixel floor, ROTATE-LOCK.md 13.1: 344 pixels of content
+ * less five 4 pixel gaps leaves 324, six board columns of 54. The tray is four
+ * columns over two rows, 80 by 56 at that width, clear of the 44 pixel floor.
+ */
+
+.rl-game {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  max-width: 24rem;
+  margin: 0 auto;
+  font-family: var(--dk-board-font, ui-monospace, monospace);
+}
+
+.rl-status,
+.rl-moves {
+  margin: 0;
+  min-height: 1.4em;
+  text-align: center;
+  font-family: var(--dk-font, system-ui, sans-serif);
+  font-size: 0.95rem;
+}
+
+.rl-moves {
+  color: var(--dk-text-dim, inherit);
+}
+
+.rl-board {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 4px;
+  width: 100%;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.rl-cell {
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border: var(--dk-line-width, 1px) solid var(--dk-line, currentColor);
+  border-radius: 6px;
+  background: var(--dk-surface-raised, transparent);
+  color: var(--dk-text, inherit);
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+/* Every kind has a glyph; the styles below only reinforce it. */
+.rl-cell[data-kind="route"] {
+  color: var(--dk-accent, currentColor);
+  font-weight: 700;
+}
+
+.rl-cell[data-kind="start"],
+.rl-cell[data-kind="lock"],
+.rl-cell[data-kind="open"] {
+  background: var(--dk-surface, transparent);
+  font-weight: 700;
+}
+
+.rl-cell[data-kind="open"] {
+  background: var(--dk-accent, currentColor);
+  color: var(--dk-accent-text, inherit);
+}
+
+.rl-cell[data-kind="mark"] {
+  border-style: dashed;
+  font-weight: 700;
+}
+
+.rl-cell[data-kind="mark-taken"] {
+  border: 3px solid var(--dk-accent, currentColor);
+  color: var(--dk-accent, currentColor);
+  font-weight: 700;
+}
+
+.rl-cell[data-kind="fault"] {
+  border: 3px double var(--dk-text, currentColor);
+  font-weight: 700;
+}
+
+.rl-tray {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  width: 100%;
+}
+
+.rl-piece {
+  min-height: 56px;
+  min-width: 44px;
+  padding: 0;
+  border: var(--dk-line-width, 1px) solid var(--dk-line, currentColor);
+  border-radius: var(--dk-radius, 10px);
+  background: var(--dk-surface, transparent);
+  color: var(--dk-accent, currentColor);
+  font: inherit;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  touch-action: manipulation;
+  cursor: pointer;
+}
+
+/* Selection is a thick outline and an inverted fill, never a hue change alone. */
+.rl-piece[aria-pressed="true"] {
+  background: var(--dk-accent, currentColor);
+  color: var(--dk-accent-text, inherit);
+  outline: 3px solid var(--dk-text, currentColor);
+  outline-offset: 2px;
+}
+
+.rl-piece:focus-visible,
+.rl-rotate:focus-visible {
+  outline: 3px solid var(--dk-focus, currentColor);
+  outline-offset: 2px;
+}
+
+.rl-piece:disabled,
+.rl-rotate:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.rl-rotate {
+  width: 100%;
+  min-height: var(--dk-tap, 44px);
+  border: var(--dk-line-width, 1px) solid var(--dk-accent, currentColor);
+  border-radius: var(--dk-radius, 10px);
+  background: transparent;
+  color: var(--dk-accent, currentColor);
+  font-family: var(--dk-font, system-ui, sans-serif);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .rl-game:not([data-reduced-motion="true"]) .rl-cell,
+  .rl-game:not([data-reduced-motion="true"]) .rl-piece {
+    transition: background-color var(--dk-motion, 160ms), color var(--dk-motion, 160ms);
+  }
+}

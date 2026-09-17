@@ -1,0 +1,156 @@
+{
+  "game": "rotate-lock",
+  "purpose": "Evidence behind BAND_EDGES, PAR_FLOOR and PAR_CEILING in src/games/rotate-lock/generator.ts. Changing an edge invalidates every stored band in the horizon.",
+  "sample": {
+    "seeds": 400,
+    "attemptsPerSeed": 300,
+    "salt": "calibrate",
+    "attempts": 120000,
+    "screened": 3109,
+    "acceptancePercent": 2.59,
+    "rejections": {
+      "route": 89132,
+      "piece-count": 24764,
+      "marks": 794,
+      "decomposition": 466,
+      "symmetry": 0,
+      "uniqueness": 1735,
+      "scramble": 0,
+      "band": 0,
+      "accepted": 0
+    }
+  },
+  "stateSpace": {
+    "note": "Arrangements per day are 7! orders times 4^7 facings. Solver nodes are distinct partial routes, per screened day.",
+    "arrangementsPerDay": 82575360
+  },
+  "difficulty": {
+    "measure": "dead turns, ROTATE-LOCK.md 14",
+    "distinctValues": 1185,
+    "min": 32,
+    "median": 422,
+    "p95": 1520,
+    "max": 3175,
+    "bandEdges": [
+      168,
+      263,
+      365,
+      495,
+      691,
+      1013
+    ],
+    "screenedPerBand": [
+      448,
+      445,
+      442,
+      443,
+      444,
+      445,
+      442
+    ],
+    "hiddenTurnsPerBand": {
+      "note": "Rows are bands 0 to 6, columns hidden-0, hidden-1, hidden-2.",
+      "rows": [
+        [
+          384,
+          63,
+          1
+        ],
+        [
+          340,
+          96,
+          9
+        ],
+        [
+          254,
+          154,
+          34
+        ],
+        [
+          257,
+          149,
+          37
+        ],
+        [
+          225,
+          166,
+          53
+        ],
+        [
+          221,
+          164,
+          60
+        ],
+        [
+          188,
+          194,
+          60
+        ]
+      ]
+    },
+    "expectedDaysPerBand": [
+      52,
+      52,
+      52,
+      53,
+      52,
+      52,
+      52
+    ]
+  },
+  "par": {
+    "floor": 8,
+    "ceiling": 14,
+    "histogram": {
+      "8": 1186,
+      "9": 813,
+      "10": 552,
+      "11": 301,
+      "12": 155,
+      "13": 68,
+      "14": 34
+    }
+  },
+  "sampleHead": [
+    436,
+    200,
+    1572,
+    1605,
+    184,
+    695,
+    428,
+    921,
+    805,
+    317,
+    1058,
+    237,
+    620,
+    315,
+    169,
+    886,
+    425,
+    1894,
+    719,
+    394,
+    184,
+    1849,
+    1444,
+    886,
+    1038,
+    45,
+    387,
+    361,
+    137,
+    625,
+    223,
+    1804,
+    476,
+    463,
+    788,
+    1748,
+    309,
+    209,
+    652,
+    1013
+  ]
+}

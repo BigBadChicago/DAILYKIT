@@ -268,6 +268,33 @@ export const GAME_PLANS: Readonly<Record<string, GamePlan>> = {
     ),
     ...tailSteps("vector"),
   },
+  "rotate-lock": {
+    ...newGamePlan("rotate-lock"),
+    /* ROTATE-LOCK.md 15: the committed study and the test that recomputes its head. */
+    "difficulty-calibration": probes(
+      file("data/rotate-lock/study.json"),
+      testFile("tests/games/rotate-lock/generator.test.ts"),
+    ),
+    /* ROTATE-LOCK.md 11 and 12: the generator screens every day, the verifier
+       reruns both checkers on every committed day, and the generator test holds
+       each checker to a positive and a negative control. */
+    "decomposition-check": probes(npm("rotate-lock:verify"), testFile("tests/games/rotate-lock/generator.test.ts")),
+    "symmetry-check": probes(npm("rotate-lock:verify"), testFile("tests/games/rotate-lock/generator.test.ts")),
+    "share-leak-check": probes(testFile("tests/games/rotate-lock/telemetry.test.ts")),
+    /* Recorded in charter Phase 13 against a release shaped build. */
+    "offline-smoke": {
+      kind: "manual",
+      date: "2026-09-17",
+      evidence:
+        "Headless Chromium at 360 by 740 against vite preview of a release build, engine-v2, service worker controlling: " +
+        "hub, ROTATE LOCK twice (practice board, then day 256 from the manifest), two moves played, VECTOR, hub; context offline; " +
+        "hub and ROTATE LOCK rendered from cache with 36 cells, 7 pieces and the two moves restored, no console error, no horizontal scroll. " +
+        "The build admitted rotate-lock by a throwaway patch in a copy of the tree, because a planned game cannot enter a release build.",
+    },
+    /* manual-mobile-check stays the stub's empty list, which the gate refuses,
+       until the owner runs MANUAL-CHECKS.md for ROTATE LOCK on devices. No
+       exemption covers a new game and none is added. */
+  },
   /* NEW_GAME_INSERTION: GAME_PLANS */
 };
 

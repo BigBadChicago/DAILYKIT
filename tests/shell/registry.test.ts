@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import cipher from "../../src/games/cipher/module.js";
 import pokerGrid from "../../src/games/poker-grid/module.js";
 import vector from "../../src/games/vector/module.js";
+import rotateLock from "../../src/games/rotate-lock/module.js";
 import { LIVE_GAMES, SUITE_GAMES, entryFor, promotableIds } from "../../src/shell/registry.js";
 import { crossPromotionTarget } from "../../src/engine/stats.js";
 import { emptySuiteRecord } from "../../src/engine/storage.js";
@@ -44,6 +45,21 @@ describe("suite registry", () => {
       expect(entry!.stateVersion).toBe(built.stateVersion);
       expect(entry!.status).toBe("live");
     }
+  });
+
+  /* Charter Phase 13. ROTATE LOCK is built and stays planned until its own
+     certification record is production safe, so it is held to its module on
+     every field but status. */
+  it("agrees with ROTATE LOCK's module while it waits for certification", () => {
+    const entry = entryFor(rotateLock.identity.id);
+    expect(entry).not.toBeNull();
+    expect(entry!.displayName).toBe(rotateLock.identity.displayName);
+    expect(entry!.oneLineRule).toBe(rotateLock.identity.oneLineRule);
+    expect(entry!.epoch).toEqual(rotateLock.identity.epoch);
+    expect(entry!.accent).toEqual(rotateLock.identity.accent);
+    expect(entry!.bucketCount).toBe(rotateLock.distribution.labels.length);
+    expect(entry!.hasWinLoss).toBe(rotateLock.hasWinLoss);
+    expect(entry!.stateVersion).toBe(rotateLock.stateVersion);
   });
 
   it("starts every game after POKER GRID on the first Monday of the epoch year", () => {

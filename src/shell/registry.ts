@@ -117,6 +117,23 @@ export const SUITE_GAMES: readonly SuiteGameEntry[] = [
    * the registry test enforces only for games that exist.
    */
   {
+    /* Charter Phase 13, ROTATE-LOCK.md. The rule, the bucket count and the win
+       and loss flag are the design document's, replacing the provisional
+       values the scaffold adopted. First among the unbuilt games because it is
+       the first with a stated session length, two to five minutes. Planned
+       until its own certification record is production safe. */
+    id: "rotate-lock",
+    displayName: "ROTATE LOCK",
+    oneLineRule: "Order and rotate the route pieces so the path takes every marked turn and ends at the lock.",
+    path: "/rotate-lock/",
+    accent: { hue: "308", boardFontStack: MONO },
+    epoch: { year: 2026, month: 1, day: 5 },
+    bucketCount: 5,
+    hasWinLoss: true,
+    stateVersion: 1,
+    status: "planned",
+  },
+  {
     id: "difference-relay",
     displayName: "DIFFERENCE RELAY",
     oneLineRule: "Order the numbers so every neighbouring pair differs by the amount marked between them.",
@@ -158,18 +175,6 @@ export const SUITE_GAMES: readonly SuiteGameEntry[] = [
     oneLineRule: "Order the signed operators so the running total hits every checkpoint.",
     path: "/order-of-operations/",
     accent: { hue: "228", boardFontStack: MONO },
-    epoch: { year: 2026, month: 1, day: 5 },
-    bucketCount: 4,
-    hasWinLoss: false,
-    stateVersion: 1,
-    status: "planned",
-  },
-  {
-    id: "rotate-lock",
-    displayName: "ROTATE LOCK",
-    oneLineRule: "Order and rotate the route pieces so the path takes every marked turn.",
-    path: "/rotate-lock/",
-    accent: { hue: "308", boardFontStack: MONO },
     epoch: { year: 2026, month: 1, day: 5 },
     bucketCount: 4,
     hasWinLoss: false,

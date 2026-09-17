@@ -8,6 +8,13 @@
  * tools/certify.ts. The game ships only through its own committed certification
  * record, and the plan the scaffold writes cannot produce a safe one until the
  * author replaces its five empty steps. NEW_GAME.md is the procedure.
+ *
+ * Template decision 10, approved 2026-09-17: an id that already has a `planned`
+ * registry row is adopted rather than refused. The slate's unbuilt games are
+ * registry rows before they are code, so the scaffold reads the row's display
+ * name, rule, accent, epoch, bucket count, win and loss flag and state version,
+ * writes the game from them, and leaves the registry alone. A `live` id is
+ * still refused. The row's values are provisional inputs the author may correct.
  */
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -24,13 +31,18 @@ export const GAME_PLANS_MARKER = "/* NEW_GAME_INSERTION: GAME_PLANS */";
 
 export interface NewGameOptions {
   readonly id: string;
-  readonly name: string;
-  readonly hue: number;
+  /** Required for a new id. Optional when adopting a planned row, and refused
+   *  when it disagrees with the row, because the row is the one source. */
+  readonly name?: string;
+  readonly hue?: number;
 }
 
 export interface NewGameOutput {
   readonly files: ReadonlyMap<string, string>;
-  readonly registryInsertion: string;
+  /** Null when the id adopted an existing planned row, which is left untouched. */
+  readonly registryInsertion: string | null;
+  /** True when the game was generated from an existing planned registry row. */
+  readonly adopted: boolean;
   readonly targetsInsertion: string;
   readonly plansInsertion: string;
 }
@@ -46,20 +58,131 @@ interface Names {
   readonly id: string;
   readonly displayName: string;
   readonly hue: number;
+  readonly oneLineRule: string;
+  readonly boardFontStack: string;
+  readonly epoch: { readonly year: number; readonly month: number; readonly day: number };
+  readonly bucketCount: number;
+  readonly hasWinLoss: boolean;
+  readonly stateVersion: number;
 }
 
-export function validateGameId(id: string): string {
+/** The subset of a registry row the scaffold reads. */
+export interface AdoptableRow {
+  readonly id: string;
+  readonly displayName: string;
+  readonly oneLineRule: string;
+  readonly accent: { readonly hue: string; readonly boardFontStack: string };
+  readonly epoch: { readonly year: number; readonly month: number; readonly day: number };
+  readonly bucketCount: number;
+  readonly hasWinLoss: boolean;
+  readonly stateVersion: number;
+  readonly status: "live" | "planned";
+}
+
+/** What a new id gets. Template decision 4 fixes the epoch. */
+const DEFAULT_RULE = "Tap the target cell before the board says no.";
+const DEFAULT_FONT_STACK = "ui-monospace, monospace";
+const DEFAULT_EPOCH = { year: 2026, month: 1, day: 5 } as const;
+const DEFAULT_BUCKETS = 4;
+
+/* The stub allows one miss fewer than it has buckets and shares one row per tap,
+   so three buckets is the fewest that leaves a miss before the find and seven
+   the most whose longest run fits the seven share rows. */
+export const MIN_BUCKETS = 3;
+export const MAX_BUCKETS = 7;
+
+/** Refuses a malformed id, a live id and the fixture id. A planned id passes;
+ *  adoptedRow says whether it has a row to adopt. */
+export function validateGameId(id: string, games: readonly AdoptableRow[] = SUITE_GAMES): string {
   const clean = id.trim();
   if (!/^[a-z]+(?:-[a-z]+)*$/.test(clean)) {
     throw new RangeError(`game id must be lowercase kebab case, got ${JSON.stringify(id)}`);
   }
-  if (SUITE_GAMES.some((entry) => entry.id === clean)) {
-    throw new RangeError(`game id already exists in SUITE_GAMES: ${clean}`);
+  const existing = games.find((entry) => entry.id === clean);
+  if (existing !== undefined && existing.status !== "planned") {
+    throw new RangeError(`game id already exists in SUITE_GAMES as a ${existing.status} game: ${clean}`);
   }
   if (clean === "toy-v3") {
     throw new RangeError("toy-v3 is reserved for the contract fixture");
   }
   return clean;
+}
+
+/** The planned row an id adopts, or null for a new id. */
+export function adoptedRow(id: string, games: readonly AdoptableRow[] = SUITE_GAMES): AdoptableRow | null {
+  return games.find((entry) => entry.id === id && entry.status === "planned") ?? null;
+}
+
+/* Everything the templates put inside a double quoted string. */
+function templateSafe(label: string, value: string): string {
+  if (value.length === 0 || /["`\\$\n]/.test(value)) {
+    throw new RangeError(`${label} must be non empty and free of quotes, backticks, backslashes, dollar signs and newlines`);
+  }
+  return value;
+}
+
+function namesFromRow(row: AdoptableRow, options: NewGameOptions): Names {
+  if (options.name !== undefined && displayNameFrom(options.name) !== row.displayName) {
+    throw new RangeError(`--name disagrees with the planned registry row for ${row.id}, which says ${row.displayName}; edit the row instead`);
+  }
+  const hue = Number(row.accent.hue);
+  if (!Number.isInteger(hue) || hue < 0 || hue > 359) {
+    throw new RangeError(`the planned registry row for ${row.id} has hue ${row.accent.hue}, not an integer from 0 to 359`);
+  }
+  if (options.hue !== undefined && options.hue !== hue) {
+    throw new RangeError(`--hue disagrees with the planned registry row for ${row.id}, which says ${row.accent.hue}; edit the row instead`);
+  }
+  if (!Number.isInteger(row.bucketCount) || row.bucketCount < MIN_BUCKETS || row.bucketCount > MAX_BUCKETS) {
+    throw new RangeError(`the planned registry row for ${row.id} has ${String(row.bucketCount)} buckets; the scaffold writes ${String(MIN_BUCKETS)} to ${String(MAX_BUCKETS)}`);
+  }
+  if (!Number.isInteger(row.stateVersion) || row.stateVersion < 1) {
+    throw new RangeError(`the planned registry row for ${row.id} has state version ${String(row.stateVersion)}`);
+  }
+  const { year, month, day } = row.epoch;
+  if (![year, month, day].every(Number.isInteger)) {
+    throw new RangeError(`the planned registry row for ${row.id} has a malformed epoch`);
+  }
+  return {
+    id: row.id,
+    displayName: templateSafe("display name", displayNameFrom(row.displayName)),
+    hue,
+    oneLineRule: templateSafe("one line rule", row.oneLineRule),
+    boardFontStack: templateSafe("board font stack", row.accent.boardFontStack),
+    epoch: { year, month, day },
+    bucketCount: row.bucketCount,
+    hasWinLoss: row.hasWinLoss,
+    stateVersion: row.stateVersion,
+  };
+}
+
+function namesForNewId(id: string, options: NewGameOptions): Names {
+  if (options.name === undefined || options.hue === undefined) {
+    throw new RangeError(`${id} has no planned registry row, so --name and --hue are required`);
+  }
+  return {
+    id,
+    displayName: displayNameFrom(options.name),
+    hue: hueFrom(options.hue),
+    oneLineRule: DEFAULT_RULE,
+    boardFontStack: DEFAULT_FONT_STACK,
+    epoch: DEFAULT_EPOCH,
+    bucketCount: DEFAULT_BUCKETS,
+    hasWinLoss: true,
+    stateVersion: 1,
+  };
+}
+
+function epochText(n: Names): string {
+  return `{ year: ${String(n.epoch.year)}, month: ${String(n.epoch.month)}, day: ${String(n.epoch.day)} }`;
+}
+
+const NUMBER_WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight"] as const;
+
+/** Cells the stub's tests tap as misses, never the given target, in order. */
+function missCells(target: number, count: number): string {
+  const cells: number[] = [];
+  for (let cell = 0; cell < 9 && cells.length < count; cell += 1) if (cell !== target) cells.push(cell);
+  return `[${cells.join(", ")}]`;
 }
 
 function displayNameFrom(name: string): string {
@@ -77,13 +200,13 @@ function registryInsertion(n: Names): string {
   return `  {
     id: "${n.id}",
     displayName: "${n.displayName}",
-    oneLineRule: "Tap the target cell before the board says no.",
+    oneLineRule: "${n.oneLineRule}",
     path: "/${n.id}/",
-    accent: { hue: "${String(n.hue)}", boardFontStack: "ui-monospace, monospace" },
-    epoch: { year: 2026, month: 1, day: 5 },
-    bucketCount: 4,
-    hasWinLoss: true,
-    stateVersion: 1,
+    accent: { hue: "${String(n.hue)}", boardFontStack: "${n.boardFontStack}" },
+    epoch: ${epochText(n)},
+    bucketCount: ${String(n.bucketCount)},
+    hasWinLoss: ${String(n.hasWinLoss)},
+    stateVersion: ${String(n.stateVersion)},
     status: "planned",
   },`;
 }
@@ -148,7 +271,7 @@ import { err, ok, type Result } from "../../core/result.js";
 import type { BucketId, Rejection, TierOrdinal } from "../../core/types.js";
 
 export const GRID_SIZE = 9;
-export const MAX_MISSES = 3;
+export const MAX_MISSES = ${String(n.bucketCount - 1)};
 
 export interface Puzzle {
   readonly number: number;
@@ -198,9 +321,9 @@ export function bucketFor(state: State): BucketId {
   return found(state) ? misses(state) : MAX_MISSES;
 }
 
-/** One tier per bucket, worst for a board never found. */
+/** Tier by misses, capped below the worst tier, which a board never found takes. */
 export function tierFor(state: State): TierOrdinal {
-  return found(state) ? (misses(state) as TierOrdinal) : 4;
+  return found(state) ? (Math.min(misses(state), 3) as TierOrdinal) : 4;
 }
 `;
 }
@@ -221,6 +344,13 @@ export function generatePuzzle(puzzleNumber: PuzzleNumber, seed: Seed): Puzzle {
   return { number: puzzleNumber, target: intBelow(rngFromSeed(seed), GRID_SIZE) };
 }
 `;
+}
+
+function distributionLabels(n: Names): string {
+  const labels: string[] = [];
+  for (let miss = 0; miss < n.bucketCount - 1; miss += 1) labels.push(`"${String(miss)} ${miss === 1 ? "miss" : "misses"}"`);
+  labels.push('"Not found"');
+  return labels.join(", ");
 }
 
 function moduleFile(n: Names): string {
@@ -275,23 +405,23 @@ import {
   type State,
 } from "./rules.js";
 
-const STATE_VERSION = 1;
+const STATE_VERSION = ${String(n.stateVersion)};
 const RUN_LOG_VERSION = 1;
 
 const identity: GameIdentity = {
   id: "${n.id}",
   displayName: "${n.displayName}",
   /* First Monday of the epoch year, so puzzle 1 lands in the gentlest band. */
-  epoch: { year: 2026, month: 1, day: 5 },
+  epoch: ${epochText(n)},
   shareUrl: "dailykit.providentia.games",
-  accent: { hue: "${String(n.hue)}", boardFontStack: "ui-monospace, monospace" },
-  oneLineRule: "Tap the target cell before the board says no.",
+  accent: { hue: "${String(n.hue)}", boardFontStack: "${n.boardFontStack}" },
+  oneLineRule: "${n.oneLineRule}",
 };
 
 const input: InputDescriptor = { kind: "grid", cols: 3, rows: 3, pointer: "tap" };
 const manifest: ManifestDescriptor = { indexUrl: \`/data/\${identity.id}/manifest.index.json\`, lookaheadDays: 7 };
 const distribution: DistributionSpec = {
-  labels: ["0 misses", "1 miss", "2 misses", "Not found"],
+  labels: [${distributionLabels(n)}],
   distinguishedIndex: 0,
 };
 /* One row per tap, and a player taps at most every miss plus the find. */
@@ -354,7 +484,7 @@ function finishedOutcome(state: State): FinishedOutcomeV3 {
   return {
     kind: "finished",
     score: won ? MAX_MISSES - misses(state) : 0,
-    won,
+    ${n.hasWinLoss ? "won" : "won: null"},
     detail: won ? \`Found after \${String(misses(state))} misses\` : "Not found",
     tier: tierFor(state),
     bucket: bucketFor(state),
@@ -388,7 +518,7 @@ function shareArtifact(_puzzle: Puzzle, state: State, run: RunLog, context: Shar
     points: taps.map((hit, x) => ({ x, y: hit ? 1 : 0, shape: hit ? "accepted" : "refused" })),
   };
   const outcome = finishedOutcome(state);
-  const label = outcome.won ? \`found in \${String(taps.length)}\` : "not found";
+  const label = found(state) ? \`found in \${String(taps.length)}\` : "not found";
   const streak = context.currentStreak > 1 ? \`, streak \${String(context.currentStreak)}\` : "";
   return {
     title: \`\${identity.displayName} #\${String(context.puzzleNumber)} \${label}\${streak}\`,
@@ -411,7 +541,7 @@ const game: GameModuleV3<State, Action, Puzzle> = {
   input,
   manifest,
   archiveEnabled: true,
-  hasWinLoss: true,
+  hasWinLoss: ${String(n.hasWinLoss)},
   stateVersion: STATE_VERSION,
   distribution,
   shareCapabilities,
@@ -555,10 +685,10 @@ function helpFile(n: Names): string {
 import type { HelpContent } from "../../core/types.js";
 
 export const HELP: HelpContent = {
-  headline: "Tap the target cell before the board says no.",
+  headline: "${n.oneLineRule}",
   steps: [
     "Every day has one target cell, the same for everyone.",
-    "A wrong cell is a miss, and three misses end the day.",
+    "A wrong cell is a miss, and ${NUMBER_WORDS[n.bucketCount - 1] ?? String(n.bucketCount - 1)} misses end the day.",
     "Finding the target ends the day at once.",
   ],
   example: {
@@ -612,7 +742,8 @@ describe("${n.displayName} rules", () => {
   });
 
   it("ends the day after the last allowed miss", () => {
-    const misses = [0, 1, 2].slice(0, MAX_MISSES);
+    const misses = ${missCells(4, n.bucketCount - 1)};
+    expect(misses).toHaveLength(MAX_MISSES);
     expect(isTerminal(play(misses.slice(0, -1)))).toBe(false);
     expect(isTerminal(play(misses))).toBe(true);
   });
@@ -620,7 +751,8 @@ describe("${n.displayName} rules", () => {
   it("buckets and tiers by misses, with the last bucket and worst tier for a day not found", () => {
     expect([bucketFor(play([4])), tierFor(play([4]))]).toEqual([0, 0]);
     expect([bucketFor(play([0, 1, 4])), tierFor(play([0, 1, 4]))]).toEqual([2, 2]);
-    expect([bucketFor(play([0, 1, 2])), tierFor(play([0, 1, 2]))]).toEqual([MAX_MISSES, 4]);
+    const lost = play(${missCells(4, n.bucketCount - 1)});
+    expect([bucketFor(lost), tierFor(lost)]).toEqual([MAX_MISSES, 4]);
   });
 
   it("never reaches a state with a repeated tap or more taps than a day allows", () => {
@@ -707,7 +839,7 @@ describe("${n.displayName} contract surface", () => {
     expect(game.identity.id).toBe("${n.id}");
     expect(game.shareCapabilities.patterns.length).toBeGreaterThanOrEqual(2);
     expect(game.shareCapabilities.maxRows).toBeLessThanOrEqual(7);
-    expect(game.distribution.labels.length).toBe(4);
+    expect(game.distribution.labels.length).toBe(${String(n.bucketCount)});
   });
 
   it("agrees with its registry entry", () => {
@@ -717,6 +849,9 @@ describe("${n.displayName} contract surface", () => {
     expect(entry?.hasWinLoss).toBe(game.hasWinLoss);
     expect(entry?.stateVersion).toBe(game.stateVersion);
     expect(entry?.oneLineRule).toBe(game.identity.oneLineRule);
+    expect(entry?.displayName).toBe(game.identity.displayName);
+    expect(entry?.epoch).toEqual(game.identity.epoch);
+    expect(entry?.accent).toEqual(game.identity.accent);
   });
 });
 
@@ -733,7 +868,7 @@ describe("${n.displayName} state round trip", () => {
   const puzzle = { number: 12, target: 5 };
 
   it("restores every reachable state it serialized", () => {
-    for (const cells of [[], [0], [0, 5], [0, 1, 2]]) {
+    for (const cells of [[], [0], [0, 5], ${missCells(5, n.bucketCount - 1)}]) {
       const state = play(puzzle, cells);
       expect(internals.deserialize(puzzle, internals.serialize(state))).toEqual({ ok: true, value: state });
     }
@@ -755,8 +890,8 @@ describe("${n.displayName} outcome and share", () => {
     expect(internals.inspect(play(puzzle, [1]))).toEqual({ kind: "ongoing" });
     expect(internals.inspect(play(puzzle, [1, 0]))).toEqual({
       kind: "finished",
-      score: 2,
-      won: true,
+      score: ${String(n.bucketCount - 2)},
+      won: ${n.hasWinLoss ? "true" : "null"},
       detail: "Found after 1 misses",
       tier: 1,
       bucket: 1,
@@ -768,12 +903,12 @@ describe("${n.displayName} outcome and share", () => {
     const artifact = artifactOf(play(puzzle, [1, 0]));
     expect(artifact.title).toBe("${n.displayName} #7 found in 2");
     expect(artifact.rows).toEqual([["miss"], ["best"]]);
-    expect(artifactOf(play(puzzle, [1, 2, 3])).title).toBe("${n.displayName} #7 not found");
+    expect(artifactOf(play(puzzle, ${missCells(0, n.bucketCount - 1)})).title).toBe("${n.displayName} #7 not found");
     expect(artifactOf(play(puzzle, [0]), { currentStreak: 4 }).title).toBe("${n.displayName} #7 found in 1, streak 4");
   });
 
   it("validates, renders inside the grammar and ends with the URL", () => {
-    for (const cells of [[0], [1, 0], [1, 2, 3]]) {
+    for (const cells of [[0], [1, 0], ${missCells(0, n.bucketCount - 1)}]) {
       const state = play(puzzle, cells);
       expect(validateRunLog(internals.telemetry(state)).ok).toBe(true);
       const artifact = artifactOf(state);
@@ -898,12 +1033,10 @@ describe("${n.displayName} renderer", () => {
 `;
 }
 
-export function buildNewGame(options: NewGameOptions): NewGameOutput {
-  const n: Names = {
-    id: validateGameId(options.id),
-    displayName: displayNameFrom(options.name),
-    hue: hueFrom(options.hue),
-  };
+export function buildNewGame(options: NewGameOptions, games: readonly AdoptableRow[] = SUITE_GAMES): NewGameOutput {
+  const id = validateGameId(options.id, games);
+  const row = adoptedRow(id, games);
+  const n: Names = row === null ? namesForNewId(id, options) : namesFromRow(row, options);
   const gameDir = `src/games/${n.id}`;
   const testDir = `tests/games/${n.id}`;
 
@@ -926,7 +1059,8 @@ export function buildNewGame(options: NewGameOptions): NewGameOutput {
 
   return {
     files,
-    registryInsertion: registryInsertion(n),
+    registryInsertion: row === null ? registryInsertion(n) : null,
+    adopted: row !== null,
     targetsInsertion: targetsInsertion(n),
     plansInsertion: plansInsertion(n),
   };
@@ -950,9 +1084,14 @@ interface ConfigFile {
   readonly insertion: string;
 }
 
+/* An adopted row is already in the registry, so the registry is not patched. */
 function configFiles(root: string, id: string, output: NewGameOutput): ConfigFile[] {
+  const registry: ConfigFile[] =
+    output.registryInsertion === null
+      ? []
+      : [{ path: resolve(root, "src/shell/registry.ts"), marker: REGISTRY_MARKER, taken: `id: "${id}"`, insertion: output.registryInsertion }];
   return [
-    { path: resolve(root, "src/shell/registry.ts"), marker: REGISTRY_MARKER, taken: `id: "${id}"`, insertion: output.registryInsertion },
+    ...registry,
     { path: resolve(root, "vite.config.ts"), marker: TARGETS_MARKER, taken: `"${id}": {`, insertion: output.targetsInsertion },
     { path: resolve(root, "tools/certify.ts"), marker: GAME_PLANS_MARKER, taken: `"${id}": {`, insertion: output.plansInsertion },
   ];
@@ -968,11 +1107,15 @@ export function main(argv: readonly string[]): void {
   const id = flags.get("--id");
   const name = flags.get("--name");
   const hue = flags.get("--hue");
-  if (id === undefined || name === undefined || hue === undefined) {
-    throw new Error('usage: npm run new-game -- --id <kebab-case-id> --name "<DISPLAY NAME>" --hue <0-359>');
+  if (id === undefined) {
+    throw new Error('usage: npm run new-game -- --id <kebab-case-id> [--name "<DISPLAY NAME>" --hue <0-359>], name and hue required unless the id has a planned registry row');
   }
 
-  const output = buildNewGame({ id, name, hue: Number.parseInt(hue, 10) });
+  const output = buildNewGame({
+    id,
+    ...(name === undefined ? {} : { name }),
+    ...(hue === undefined ? {} : { hue: Number.parseInt(hue, 10) }),
+  });
   const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
   const cleanId = id.trim();
 
@@ -994,7 +1137,8 @@ export function main(argv: readonly string[]): void {
     writeFileSync(target, contents, "utf8");
   }
   for (const { path, text } of patched) writeFileSync(path, text, "utf8");
-  process.stdout.write(`scaffolded ${cleanId}; it ships only through data/${cleanId}/certification.json, see NEW_GAME.md\n`);
+  const adopted = output.adopted ? " from its planned registry row, which was left as it is" : "";
+  process.stdout.write(`scaffolded ${cleanId}${adopted}; it ships only through data/${cleanId}/certification.json, see NEW_GAME.md\n`);
 }
 
 if (process.argv[1]?.replaceAll("\\", "/").endsWith("tools/new-game.ts")) {
