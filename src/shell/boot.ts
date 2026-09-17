@@ -6,7 +6,7 @@
  * are one file rather than a habit repeated in five games.
  */
 
-import type { AnyGameModule, OpaquePuzzle } from "../contract/game-module.js";
+import type { AnyGameModuleV3, OpaquePuzzle } from "../contract/v3/game-module.js";
 import { isErr } from "../core/result.js";
 import { seedFor } from "../core/seed.js";
 import type { PuzzleNumber } from "../core/types.js";
@@ -89,7 +89,7 @@ export class PuzzleSource {
   private readonly chunks = new Map<string, unknown>();
 
   constructor(
-    private readonly game: AnyGameModule,
+    private readonly game: AnyGameModuleV3,
     private readonly fetchJson: FetchJson = browserFetchJson,
   ) {}
 

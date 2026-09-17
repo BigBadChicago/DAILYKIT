@@ -1,25 +1,28 @@
 /**
  * Layer 3. The v3 game seam. ARCHITECTURE2 section 3.
  *
- * v3 is the v2 GameModule plus four additions and a richer outcome: an emergent
- * `difficulty`, a local `telemetry` run log, a `shareArtifact` mapper, and
- * `tierOf` split out from `bucketOf`. The proven v2 method names are kept so a
- * legacy game migrates by adding methods rather than being rewritten, which is
- * the migration stance of section 47. Three type parameters are retained; the
- * run log stays opaque rather than becoming a fourth.
+ * v3 is the v2 GameModule plus three additions and a richer outcome: an emergent
+ * `difficulty`, a local `telemetry` run log, and a `shareArtifact` mapper. The
+ * proven v2 method names are kept so a legacy game migrates by adding methods
+ * rather than being rewritten, which is the migration stance of section 47.
+ * Three type parameters are retained; the run log stays opaque rather than
+ * becoming a fourth.
+ *
+ * The bucket and the tier are fields of the finished outcome and nothing else.
+ * `bucketOf` and `tierOf` were removed in v3 migration phase 5: they restated
+ * facts `inspect` already returns, which is two answers to one question and
+ * the drift section 53 exists to prevent. The shell reads the outcome.
  */
 
 import type { Result } from "../../core/result.js";
 import type {
   DistributionSpec,
-  FinishedOutcomeV3,
   OutcomeV3,
   PuzzleNumber,
   Rejection,
   Seed,
   SerializedState,
   ShareContext,
-  TierOrdinal,
 } from "../../core/types.js";
 import type { ArtifactModel, RunLog } from "../../engine/telemetry.js";
 import type {
@@ -59,9 +62,6 @@ export interface GameModuleV3<TState, TAction, TPuzzle> {
 
   /** New in v3. One emergent integer, measured the way the puzzle is certified. */
   difficulty(puzzle: TPuzzle): number;
-  bucketOf(outcome: FinishedOutcomeV3, state: TState): number;
-  /** New in v3. Split from bucketOf so the histogram and the tier are separate. */
-  tierOf(outcome: FinishedOutcomeV3, state: TState): TierOrdinal | null;
 
   /** New in v3. The compact local run log, section 13. */
   telemetry(state: TState): RunLog;

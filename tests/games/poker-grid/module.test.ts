@@ -149,6 +149,28 @@ describe("POKER GRID module", () => {
     expect(Number.isInteger(internals.difficulty(graded))).toBe(true);
   });
 
+  /* v3 migration phase 5. The shell reads the bucket from the outcome, so the
+     v2 bucketOf that the stats history was written with must agree with it on
+     every board, graded or not. */
+  it("keeps the v2 bucketOf agreed with the outcome the shell now reads", () => {
+    resetDifficultyMemo();
+    for (const best of [null, { score: 5670, hands: 7, method: "beam" as const, width: 400 }]) {
+      const board: PokerPuzzle = { ...puzzle(), best };
+      for (const cleared of [0, 5, 20, 35]) {
+        const start = game.initialState(board);
+        const state: PokerState = {
+          ...start,
+          grid: start.grid.map((card, cell) => (cell < cleared ? null : card)),
+          terminal: true,
+        };
+        const outcome = pokerGridV3.inspect(state as never);
+        expect(outcome.kind).toBe("finished");
+        if (outcome.kind !== "finished") continue;
+        expect(internals.bucketOf(outcome, state)).toBe(outcome.bucket);
+      }
+    }
+  });
+
   /* The v2 block and the v3 artifact are built from the same two functions, so
      a change to one that did not reach the other would fail here. */
   it("keeps the v2 block and the v3 artifact agreed", () => {

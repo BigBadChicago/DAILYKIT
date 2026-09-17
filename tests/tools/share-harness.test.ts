@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest";
 import { HARNESS_CASES } from "../../tools/share-harness/cases.js";
+import { assembleShareString } from "../../tools/share-harness/bind.js";
+import { SHARE_MAX_LINES } from "../../src/engine/share-grammar.js";
 import { graphemeWidth, widthReport } from "../../tools/share-harness/main.js";
 
 describe("harness width measurement", () => {
@@ -33,6 +35,14 @@ describe("harness cases", () => {
     const ids = new Set(HARNESS_CASES.map((c) => c.id));
     for (const required of ["zero-hands", "one-hand", "perfect-clear", "unrated", "over-max-rows"]) {
       expect(ids.has(required)).toBe(true);
+    }
+  });
+
+  it("are refused by the grammar exactly where they say they are", () => {
+    for (const sample of HARNESS_CASES) {
+      const assembled = assembleShareString(sample.block, { url: "dailykit.providentia.games" });
+      expect(assembled.fault !== null, sample.id).toBe(sample.faulted);
+      expect(assembled.text.split("\n").length).toBeLessThanOrEqual(SHARE_MAX_LINES);
     }
   });
 });

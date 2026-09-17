@@ -3,7 +3,7 @@
  *
  * Requirement 7.3.3 wants namespaced but unified storage. That splits cleanly:
  * Layer 1 owns the two record shapes and their migrations, and this file owns
- * the fact that there are five of the first kind and one of the second. Neither
+ * the fact that there are eight of the first kind and one of the second. Neither
  * the engine nor a game ever learns how many games exist.
  */
 
@@ -25,7 +25,7 @@ import {
 import { resultFor } from "../engine/stats.js";
 import { resolve, type Resolution } from "../engine/scheduler.js";
 import {
-  dailyCardBlock,
+  dailyCardShare,
   dailyCardSummary,
   type DailyCardEntry,
   type DailyCardInput,
@@ -210,4 +210,4 @@ export function dailyCardInput(
   };
 }
 
-export { dailyCardBlock, dailyCardSummary, emptySuiteRecord };
+export { dailyCardShare, dailyCardSummary, emptySuiteRecord };

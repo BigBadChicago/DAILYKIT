@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { isErr, isOk } from "../../../src/core/result.js";
 import { seedFor } from "../../../src/core/seed.js";
-import { SHARE_MAX_ROWS, type SerializedState, type ShareContext } from "../../../src/core/types.js";
+import type { SerializedState, ShareContext } from "../../../src/core/types.js";
+import { SHARE_MAX_ROWS } from "../../../src/engine/share-grammar.js";
 import { SHARE_GLYPHS } from "../../../src/shared/share-vocabulary.js";
 import { validateArtifact } from "../../../src/engine/artifact.js";
 import { validateRunLog } from "../../../src/engine/telemetry.js";
@@ -292,7 +293,7 @@ describe("v3 contract surface", () => {
     expect(outcome.difficulty).not.toBe(puzzle.best?.remaining);
   });
 
-  it("agrees with itself across inspect, tierOf and bucketOf", () => {
+  it("keeps the v2 bucketOf agreed with the outcome the shell now reads", () => {
     const states = [
       play(state(puzzle), [CODE]),
       play(state(puzzle), [[1, 4, 5, 1], CODE]),
@@ -305,7 +306,6 @@ describe("v3 contract surface", () => {
       const outcome = cipherV3.inspect(played as never);
       expect(outcome.kind).toBe("finished");
       if (outcome.kind !== "finished") continue;
-      expect(internals.tierOf(outcome, played)).toBe(outcome.tier);
       expect(internals.bucketOf(outcome, played)).toBe(outcome.bucket);
     }
   });

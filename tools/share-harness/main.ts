@@ -3,7 +3,7 @@
  * and glyph rendering can be checked by eye in one screen.
  *
  * Never bundled into a production build. Selected by GAME=harness and excluded
- * by the same allow list that excludes toy-tap.
+ * by the same allow list that excludes toy-v3.
  */
 
 import { el, on, setText } from "../../src/ui/dom.js";
@@ -31,9 +31,12 @@ export function widthReport(shareString: string): { widths: number[]; uniform: b
 
 function renderCase(sample: HarnessCase): HTMLElement {
   let text: string;
+  let fault: string | null = null;
   let failed = false;
   try {
-    text = assembleShareString(sample.block, { url: SHARE_URL });
+    const assembled = assembleShareString(sample.block, { url: SHARE_URL });
+    text = assembled.text;
+    fault = assembled.fault === null ? null : assembled.fault.code;
   } catch (error) {
     failed = true;
     text = `assembly threw: ${String(error)}`;
@@ -46,7 +49,7 @@ function renderCase(sample: HarnessCase): HTMLElement {
     meta,
     `${lineCount} lines, row widths ${report.widths.join(",") || "none"}, ${
       report.uniform ? "uniform" : "RAGGED"
-    }`,
+    }, ${fault === null ? "grammar ok" : `repaired: ${fault}`}`,
   );
 
   return el("section", { class: "hz-card" }, [

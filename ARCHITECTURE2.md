@@ -25,7 +25,7 @@ pipeline, theme/chrome, offline behavior, and certification gate.
 | Field | Value |
 |---|---|
 | Current architecture generation | Rewrite for the 15-concept puzzle pool and the social-telemetry specification |
-| Existing production games | POKER GRID, CIPHER |
+| Existing production games | POKER GRID, CIPHER, VECTOR |
 | New concept pool | DIFFERENCE RELAY, TURN TABLE, RING BALANCE, INTERVAL PACK, CARD CASCADE, THREE-WAY SPLIT, ROTATE LOCK, DIVISIBLE FENCE, WORD WEAVE, PRIME PAIRING, SHADOW LEDGER, COVER CHARGE, PARITY PARADE, CROSS CURRENT, ORDER OF OPERATIONS |
 | Recommended concepts from the design review | DIFFERENCE RELAY, TURN TABLE, RING BALANCE, ORDER OF OPERATIONS, ROTATE LOCK |
 | Engine contract | v3 target contract: deterministic puzzle, pure action transition, terminal result, telemetry artifact, share export, certification metadata |
@@ -36,7 +36,7 @@ pipeline, theme/chrome, offline behavior, and certification gate.
 | Network policy | No network dependency for puzzle identity, gameplay, result, telemetry mapping, or share generation |
 | Storage policy | Small JSON snapshot for in-progress state; telemetry retained only when required for the local result artifact |
 | Deployment | Cloudflare Pages at `dailykit.providentia.games` |
-| Migration status | v3 adoption complete for the three legacy games. Phases 1 to 4 are done: the contract and engine seams, then VECTOR, CIPHER and POKER GRID, each implementing v2 and v3 at once with no engine change. The shell is still v2 and leads nothing (section 56) |
+| Migration status | Phases 1 to 4 are done: the contract and engine seams, then VECTOR, CIPHER and POKER GRID, each implementing v2 and v3 at once. Phase 5 part A is done: the shell, the hub and the daily card read v3 only and there is one share composer. Part B, the certification gate as a CI job, is next, then phase 6 retires the v2 contract (section 56) |
 | Chosen lineup | Approved 2026-09-13: the five recommended concepts become the new build slate, DIFFERENCE RELAY, TURN TABLE, RING BALANCE, ORDER OF OPERATIONS, ROTATE LOCK. This supersedes SLATE.md's five for new work; the three legacy games stay live. Composition A approved the same day: the suite is eight games, not five, and TALLY DROP and RECALL are cancelled. ROTATE LOCK was named VECTOR LOCK until the rename that removed the collision with the shipped VECTOR. Carried into `src/shell/registry.ts`, section 56 |
 | This document | The active architecture target. ARCHITECTURE.md is the v2 record the legacy games still satisfy and is retained until migration completes |
 
@@ -2890,11 +2890,122 @@ to draw thresholds from; the graphic card, still unbuilt for every game; and the
 shared effort record, which phase 2 said phase 4 was the last chance to make a
 pattern.
 
-## Phase 5, the shell on v3. Next.
+## Phase 5, the shell on v3. Part A done 2026-09-16, part B next.
 
-All three legacy games now satisfy both contracts and nothing imports the v3
-seam, because a game cannot lead the shell. The remaining work is the engine and
-shell side: `main.ts` reading `OutcomeV3`, the artifact path replacing the v2
-share path, the daily card moving onto the v3 grammar, which is the live conflict
-the slate reconciliation recorded, and the certification gate of section 45
-becoming a CI job rather than a set of types.
+Part A moved the shell, the hub and the daily card onto v3 and left one share
+composer in the codebase. Green after the change: 59 files, 762 tests, three
+typechecks, the dependency check, all three verifiers including the full 365
+day POKER GRID horizon, the production build, a development build of the
+fixture, and the byte budget with POKER GRID at 27.8 KB gzipped. A headless
+Chromium pass at 360 pixels booted the hub and all three games with no console
+error, finished a CIPHER day, shared it, and read the clipboard and the hub's
+daily card back, both inside the grammar.
+
+### Decisions, approved 2026-09-16
+
+1. **One switch, no flag.** Each entry mounts the game's `*V3` export and
+   `main.ts` takes `AnyGameModuleV3`. Phases 2 to 4 had already proved the v3
+   title and rows equal to the v2 block for every game, and every row in every
+   live block is the same width, so v2's padding was doing nothing. The claim is
+   now a test: `tests/shell/share-context.test.ts` asserts, per game and across
+   rated and unrated outcomes, that the string the shell delivers is byte
+   identical to the string v2 shipped.
+2. **`bucketOf` and `tierOf` are gone from `GameModuleV3`.** Both restated
+   fields `inspect` already returns, which is section 53's drift inside the
+   contract. The shell reads `outcome.bucket` and `outcome.tier`. The games keep
+   `bucketOf` only because the v2 contract still names it, and a test in each
+   game holds it equal to the outcome until phase 6 deletes it.
+3. **`toy-v3` is the permanent fixture**, with the entry and page `toy-tap` had.
+   `toy-tap` is deleted and contract decision 12 is amended.
+4. **The v2 share path is removed now; the v2 contract waits for phase 6.**
+   `composeShare`, the padding, `SHARE_PAD_TOKEN` and the v2 `SHARE_MAX_ROWS`
+   of 8 are deleted. `ShareBlock` and the games' `shareBlock` remain as types and
+   methods nothing renders, because the v2 `GameModule` and `tools/new-game.ts`
+   still require them.
+
+### What changed
+
+**One composer.** `engine/share-grammar.ts` gained `ShareText`, the title and
+rows the grammar actually reads, and `composeShareText`, which validates,
+renders and repairs. `SHARE_MAX_ROWS` is now `SHARE_MAX_LINES - 2`, so the old
+disagreement between v2's eight rows and the nine line cap cannot recur.
+
+**Requirement 3.5.4 moved from padding to validation.** v2 made rows uniform by
+padding them; v3 has no padding, so the grammar refuses ragged rows with a new
+`ragged-rows` fault. All three live games already comply, which their shape
+probes assert.
+
+**Engine decision 21 carried into v3.** A defect found at share time is a
+telemetry fault and a repaired string, never an exception. The repair only
+removes: the title is cut to its first line, rows and tokens are capped, empty
+rows are dropped. A ragged block ships as it is, because padding would add a
+claim the player did not make. A bad URL still throws, since it is a suite
+constant rather than module output. `engine/artifact.ts` gained
+`composeArtifact`, which adds the two faults only an artifact can have, a missing
+fingerprint and an unfinished outcome, neither of which changes the string.
+
+**`engine/share.ts` is delivery only.** Section 53 answers "how is the share
+delivered" with this file and "what does the player share" with telemetry to
+ArtifactModel; the file now holds the first and nothing of the second.
+
+**The daily card is a `ShareText`, not an `ArtifactModel`.** It has no outcome
+and no fingerprint, and inventing either would be the second scoring path
+section 52 risk 1 names. `dailyCardShare` replaces `dailyCardBlock` and the hub
+composes it with the same `composeShareText` a game's artifact goes through. A
+fully finished eight game suite is three lines. A ninth game would wrap into a
+short second row, which the grammar refuses as ragged; `dailycard.test.ts`
+fails on that day by design, so how a partial row reads is decided then.
+
+**The shell's share path is a pure function.** `composeResultShare` in
+`shell/share-context.ts` runs the module's run log, the module's artifact and
+the engine's composer, and `main.ts` calls nothing else to share.
+
+**`ENGINE_VERSION` is 2.** The engine chunk's exports changed, and the version
+bearing URL is what stops a cached `engine-v1.js` meeting a game chunk that
+imports the v3 composer. The chunk grew from 10.67 to 11.10 KB gzipped.
+
+### Files
+
+| Path | Change |
+|---|---|
+| src/engine/share-grammar.ts | `ShareText`, `ragged-rows`, `SHARE_MAX_ROWS`, `composeShareText` |
+| src/engine/artifact.ts | `composeArtifact` |
+| src/engine/share.ts | Assembly removed; delivery only |
+| src/engine/dailycard.ts | Returns `ShareText` as `dailyCardShare` |
+| src/core/types.ts | v2 `SHARE_MAX_ROWS` removed; `ShareBlock` marked for phase 6 |
+| src/shared/share-vocabulary.ts | `SHARE_PAD_TOKEN` removed |
+| src/contract/v3/game-module.ts | `bucketOf` and `tierOf` removed |
+| src/games/cipher/module.ts, poker-grid/module.ts, vector/module.ts | `tierOf` removed |
+| src/games/toy-v3/module.ts | Promoted to the permanent fixture |
+| src/games/toy-tap/module.ts | Deleted |
+| src/shell/main.ts | Reads `AnyGameModuleV3` and `OutcomeV3`; shares through `composeResultShare` |
+| src/shell/boot.ts | `PuzzleSource` takes the v3 module |
+| src/shell/share-context.ts | `composeResultShare` |
+| src/shell/suite.ts, src/hub/hub.ts | Daily card through the grammar |
+| src/shell/entries/*.ts, toy-v3.html | Mount the v3 exports; toy-tap entry replaced |
+| tools/share-harness/bind.ts, cases.ts, main.ts | Compose through the grammar and report repairs |
+| tools/new-game.ts | Reserves `toy-v3` instead of `toy-tap` |
+| vite.config.ts | `toy-v3` target; `ENGINE_VERSION` 2 |
+| tests/engine/share-grammar.test.ts | New: rendering, every refusal, every repair |
+| tests/engine/artifact.test.ts, dailycard.test.ts, share.test.ts | Moved to the one composer |
+| tests/shell/share-context.test.ts | Byte identity per game, replay streak, defective artifact |
+| tests/shell/boot.test.ts, tests/tools/share-harness.test.ts | v3 module type; harness cases held to their expected fault |
+| tests/games/cipher, poker-grid, vector module tests | `bucketOf` held equal to the outcome; `SHARE_MAX_ROWS` from the grammar |
+| NEW_GAME.md, .github/copilot-instructions.md, .github/instructions/contract and tools-and-build | Fixture and share path references |
+
+### Part B, next
+
+The section 45 gate as a CI job, as approved: `tools/certify.ts` writes
+`data/<game>/certification.json`; an `n/a` outcome requires a written reason; any
+failing automated step fails CI; the manual mobile check is `pending` under a
+dated exemption for the three live games until MANUAL-CHECKS.md is run once;
+`vite.config.ts` reads `productionSafe` from the record; `ci.yml` gains
+`vector:verify`, which it has never run, and the certify job.
+
+## Phase 6, retire the v2 contract. After part B, before any new game.
+
+Delete the v2 `GameModule`, `defineGame`, `ShareBlock`, and each game's
+`bucketOf`, `shareBlock` and default v2 export; make each `*V3` export the
+default; rewrite `tools/new-game.ts` and NEW_GAME.md to scaffold v3; rewrite the
+byte identity tests in `tests/shell/share-context.test.ts` against fixed strings,
+since the v2 block they compare against will be gone.

@@ -1,14 +1,18 @@
 /**
- * The single point of coupling between the harness and engine/share.ts. If the
- * engine's exported name differs, this file is the only edit.
+ * The single point of coupling between the harness and the engine's share
+ * composer. If the engine's exported name differs, this file is the only edit.
  */
 
-import { composeShare } from "../../src/engine/share.js";
-import type { ShareBlock } from "../../src/core/types.js";
+import { composeShareText, type GrammarFault, type ShareText } from "../../src/engine/share-grammar.js";
 
-export function assembleShareString(
-	block: ShareBlock,
-	options: { readonly url: string },
-): string {
-	return composeShare(block, { shareUrl: options.url }).text;
+export interface AssembledShare {
+  readonly text: string;
+  /** The grammar fault the case had, or null. A faulted case renders the
+   *  repaired string the player would actually receive. */
+  readonly fault: GrammarFault | null;
+}
+
+export function assembleShareString(share: ShareText, options: { readonly url: string }): AssembledShare {
+  const composed = composeShareText(share, options.url);
+  return { text: composed.text, fault: composed.fault };
 }

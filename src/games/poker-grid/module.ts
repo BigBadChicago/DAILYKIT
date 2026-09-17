@@ -24,7 +24,6 @@ import type {
   SerializedState,
   ShareBlock,
   ShareContext,
-  TierOrdinal,
 } from "../../core/types.js";
 import { defineGame, type GameModule } from "../../contract/game-module.js";
 import { defineGameV3, type GameModuleV3 } from "../../contract/v3/game-module.js";
@@ -59,7 +58,7 @@ import {
   type PokerEffort,
   type PokerState,
 } from "./rules.js";
-import { CLEAR_VALUE_PER_HAND, scoreHands, tierFor } from "./scoring.js";
+import { CLEAR_VALUE_PER_HAND, scoreHands } from "./scoring.js";
 import {
   SHARE_ROW_WIDTH,
   artifactRows,
@@ -323,12 +322,6 @@ function bucketOf(_outcome: FinishedOutcome, state: PokerState): number {
   return bucketFor(state.grid);
 }
 
-/** v3. Split from bucketOf. Both read the state, because both are facts about
- *  how the player finished and neither needs the outcome to restate them. */
-function tierOf(_outcome: FinishedOutcome, state: PokerState): TierOrdinal | null {
-  return tierFor(state.puzzle.best, state.hands, state.score);
-}
-
 /** v3. Measured from the board, never read from a stored field. The stored
  *  optimum is the denominator and that is read; see difficulty.ts. */
 function difficulty(puzzle: PokerPuzzle): number {
@@ -402,7 +395,6 @@ const pokerGrid = {
   inspect,
   difficulty,
   bucketOf,
-  tierOf,
   telemetry,
   shareArtifact,
   shareBlock,
@@ -432,7 +424,6 @@ export const internals = {
   shareBlock,
   difficulty,
   bucketOf,
-  tierOf,
   telemetry,
   shareArtifact,
   SHARE_ROW_WIDTH,

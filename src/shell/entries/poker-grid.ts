@@ -1,6 +1,7 @@
-/** Layer 5. The poker-grid entry. One file per game, listed in vite.config.ts. */
+/** Layer 5. The poker-grid entry. One file per game, listed in vite.config.ts. It
+ *  mounts the v3 view of the module, which is the only contract the shell reads. */
 
-import gameModule from "../../games/poker-grid/module.js";
+import { pokerGridV3 } from "../../games/poker-grid/module.js";
 import { mountShell } from "../main.js";
 
-mountShell(gameModule);
+mountShell(pokerGridV3);

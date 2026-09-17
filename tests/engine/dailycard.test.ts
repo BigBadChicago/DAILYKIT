@@ -2,18 +2,17 @@ import { describe, expect, it } from "vitest";
 
 import {
   DAILY_CARD_ROW_WIDTH,
-  dailyCardBlock,
   dailyCardCell,
   dailyCardRows,
+  dailyCardShare,
   dailyCardSummary,
   dailyCardTitle,
   type DailyCardEntry,
   type DailyCardInput,
 } from "../../src/engine/dailycard.js";
 import { TIER_COUNT, type TierIndex } from "../../src/engine/tiers.js";
-import { SHARE_MAX_ROWS } from "../../src/core/types.js";
 import { SHARE_TOKEN_SHAPE, TIER_TOKENS } from "../../src/shared/share-vocabulary.js";
-import { composeShare } from "../../src/engine/share.js";
+import { composeShareText, validateArtifactText } from "../../src/engine/share-grammar.js";
 
 const unplayed = (gameId: string): DailyCardEntry => ({ gameId, status: "unplayed", tier: null });
 
@@ -66,6 +65,19 @@ describe("daily card rows", () => {
     expect(rows[0]).toHaveLength(EIGHT.length);
   });
 
+  /* The decision point finding 3 of v3 migration phase 5 left open. A ninth
+     game wraps into a short second row, which the grammar refuses as ragged.
+     When this fails because the registry grew, decide how a partial row reads
+     and change this test with that decision, not before. */
+  it("wraps a ninth game into a row the grammar refuses as ragged", () => {
+    const games = Array.from({ length: DAILY_CARD_ROW_WIDTH + 1 }, (_v, i) =>
+      i === 0 ? ({ gameId: "G0", status: "graded", tier: 0 } as DailyCardEntry) : unplayed(`G${i}`),
+    );
+    const checked = validateArtifactText(dailyCardShare(base({ games }))!, "dailykit.providentia.games");
+    expect(checked.ok).toBe(false);
+    if (!checked.ok) expect(checked.error.code).toBe("ragged-rows");
+  });
+
   it("wraps past the row token cap rather than breaking it", () => {
     const games = Array.from({ length: DAILY_CARD_ROW_WIDTH + 1 }, (_v, i) => unplayed(`G${i}`));
     const rows = dailyCardRows(base({ games }));
@@ -75,9 +87,9 @@ describe("daily card rows", () => {
   });
 });
 
-describe("daily card block", () => {
+describe("daily card share", () => {
   it("is null when nothing was finished", () => {
-    expect(dailyCardBlock(base({ games: EIGHT.map(unplayed) }))).toBeNull();
+    expect(dailyCardShare(base({ games: EIGHT.map(unplayed) }))).toBeNull();
   });
 
   it("carries the count and shows a streak only from two days", () => {
@@ -91,10 +103,9 @@ describe("daily card block", () => {
       status: "graded",
       tier: (i % TIER_COUNT) as TierIndex,
     }));
-    const block = dailyCardBlock(base({ games }))!;
-    expect(block.rows.length).toBeLessThanOrEqual(SHARE_MAX_ROWS);
-    const composed = composeShare(block, { shareUrl: "dailykit.providentia.games" });
-    expect(composed.truncated).toBe(false);
+    const card = dailyCardShare(base({ games }))!;
+    const composed = composeShareText(card, "dailykit.providentia.games");
+    expect(composed.fault).toBeNull();
     /* Title, one row, URL. ARCHITECTURE2 section 49 caps a block at nine lines
        and a full house now sits at three. The old meter sat at ten. */
     expect(composed.lines).toHaveLength(3);
@@ -102,7 +113,7 @@ describe("daily card block", () => {
 
   it("leaks no game state beyond the tier", () => {
     const allowed = new Set<string>([...TIER_TOKENS, "ungraded", "unused"]);
-    const block = dailyCardBlock(base())!;
+    const block = dailyCardShare(base())!;
     expect(block.rows.flat().every((token) => allowed.has(token))).toBe(true);
   });
 

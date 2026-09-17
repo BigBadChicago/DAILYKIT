@@ -5,8 +5,14 @@
  */
 
 import { err, ok, type Result } from "../core/result.js";
-import { renderArtifactText, validateArtifactText, type GrammarFault } from "./share-grammar.js";
-import type { ArtifactModel } from "./telemetry.js";
+import {
+  composeShareText,
+  renderArtifactText,
+  validateArtifactText,
+  type ComposedShareText,
+  type GrammarFault,
+} from "./share-grammar.js";
+import { NO_OP_TELEMETRY, type ArtifactModel, type Telemetry } from "./telemetry.js";
 
 export interface ArtifactFault {
   readonly code: "no-fingerprint" | "not-finished" | GrammarFault["code"];
@@ -30,4 +36,29 @@ export function validateArtifact(model: ArtifactModel, url: string): Result<Arti
 /** The clipboard string: title, token rows, then the bare URL. */
 export function renderArtifact(model: ArtifactModel, url: string): string {
   return renderArtifactText(model, url).join("\n");
+}
+
+export interface ComposedArtifact {
+  readonly text: string;
+  readonly lines: readonly string[];
+  readonly fault: ArtifactFault | null;
+}
+
+/**
+ * What the shell delivers. The text always comes from composeShareText, so a
+ * grammar defect is repaired there under engine decision 21. The two faults
+ * only an artifact can have, a missing fingerprint and an unfinished outcome,
+ * cannot change the string, so they are reported and the string still ships.
+ */
+export function composeArtifact(
+  model: ArtifactModel,
+  url: string,
+  telemetry: Telemetry = NO_OP_TELEMETRY,
+): ComposedArtifact {
+  const composed: ComposedShareText = composeShareText(model, url, telemetry);
+  if (composed.fault !== null) return composed;
+  const checked = validateArtifact(model, url);
+  if (checked.ok) return { ...composed, fault: null };
+  telemetry.fault("artifact failed validation", { code: checked.error.code, detail: checked.error.detail });
+  return { ...composed, fault: checked.error };
 }

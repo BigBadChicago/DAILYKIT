@@ -4,21 +4,21 @@
  *
  * It names no game. `virtual:dk-game` is resolved by the GAME allow list in
  * vite.config.ts, which is contract decision 12's list doing a second job: it
- * both excludes toy-tap from production and selects the entry for a build.
+ * both excludes toy-v3 from production and selects the entry for a build.
  */
 
 import "../ui/chrome.css";
 import "./shell.css";
 
 import type {
-  AnyGameModule,
+  AnyGameModuleV3,
   OpaqueAction,
   OpaquePuzzle,
   OpaqueState,
-} from "../contract/game-module.js";
+} from "../contract/v3/game-module.js";
 import type { GameView } from "../contract/types.js";
 import { isErr } from "../core/result.js";
-import type { FinishedOutcome, PuzzleNumber } from "../core/types.js";
+import type { FinishedOutcomeV3, PuzzleNumber } from "../core/types.js";
 import { SessionMachine } from "../engine/state-machine.js";
 import {
   Countdown,
@@ -40,7 +40,7 @@ import {
   resumableState,
 } from "../engine/stats.js";
 import type { GameRecord, StoredResult } from "../engine/storage.js";
-import { browserShareDeps, composeShare, deliverShare } from "../engine/share.js";
+import { browserShareDeps, deliverShare } from "../engine/share.js";
 import { TIER_NAMES, UNRATED_LABEL } from "../engine/tiers.js";
 import { createLiveRegion, prefersReducedMotion } from "../ui/a11y.js";
 import { el, on, setClass, setText } from "../ui/dom.js";
@@ -54,7 +54,7 @@ import { PuzzleSource } from "./boot.js";
 import { APP_VERSION, pendingChangelog, type ChangelogEntry } from "./changelog.js";
 import { registerServiceWorker } from "./register-sw.js";
 import { HUB_PATH, SUITE_SHARE_URL, entryFor, promotableIds } from "./registry.js";
-import { shareStreakFor } from "./share-context.js";
+import { composeResultShare } from "./share-context.js";
 import { openGameStore, openSuite, suiteThemePort } from "./suite.js";
 
 const ARCHIVE_PAGE = 60;
@@ -97,7 +97,7 @@ interface Session {
  * rather than as configuration, and it is what lets every game be its own
  * bundler entry and therefore its own chunk. Requirement 7.3.2.
  */
-export function bootGame(game: AnyGameModule, root: HTMLElement): void {
+export function bootGame(game: AnyGameModuleV3, root: HTMLElement): void {
   const entry = entryFor(game.identity.id);
   if (entry === null) {
     throw new Error(`game ${game.identity.id} is not in the suite registry`);
@@ -358,7 +358,7 @@ export function bootGame(game: AnyGameModule, root: HTMLElement): void {
     if (outcome.kind === "finished") finish(outcome);
   }
 
-  function finish(outcome: FinishedOutcome): void {
+  function finish(outcome: FinishedOutcomeV3): void {
     if (session === null || session.finished) return;
     session.finished = true;
 
@@ -372,7 +372,10 @@ export function bootGame(game: AnyGameModule, root: HTMLElement): void {
     const result: StoredResult = {
       score: outcome.score,
       won: outcome.won,
-      bucket: game.bucketOf(outcome, session.state),
+      /* v3 migration phase 5. The bucket and the tier are read from the
+         outcome and nowhere else, so the histogram, the end screen and the
+         daily card cannot disagree with what inspect said. */
+      bucket: outcome.bucket,
       detail: outcome.detail,
       /* Phase 11 correction, defect 4. The module decides whether it has a
          grade: POKER GRID returns null when no stored optimum exists, and
@@ -524,7 +527,7 @@ export function bootGame(game: AnyGameModule, root: HTMLElement): void {
   // End screen
   // -------------------------------------------------------------------------
 
-  function showEndScreen(outcome: FinishedOutcome): void {
+  function showEndScreen(outcome: FinishedOutcomeV3): void {
     if (session === null) return;
     const active = session;
     /* Same correction. A null tier is the module saying it has nothing to
@@ -567,7 +570,7 @@ export function bootGame(game: AnyGameModule, root: HTMLElement): void {
         body.appendChild(share);
 
         const stats = el("button", { class: "dk-button", text: "Statistics", attrs: { type: "button" } });
-        on(stats, "click", () => openStats(game.bucketOf(outcome, active.state)));
+        on(stats, "click", () => openStats(outcome.bucket));
         body.appendChild(stats);
 
         if (active.mode === "live") {
@@ -609,12 +612,7 @@ export function bootGame(game: AnyGameModule, root: HTMLElement): void {
 
   async function shareResult(): Promise<void> {
     if (session === null) return;
-    const block = game.shareBlock(session.state, {
-      puzzleNumber: session.puzzleNumber,
-      currentStreak: shareStreakFor(session.mode, record.currentStreak),
-      rated: session.rated,
-    });
-    const composed = composeShare(block, { shareUrl: SUITE_SHARE_URL });
+    const composed = composeResultShare(game, session, record.currentStreak, SUITE_SHARE_URL);
     const result = await deliverShare(composed.text, browserShareDeps());
     if (result === "copied") toaster.show("Copied to clipboard.");
     else if (result === "shared") toaster.show("Shared.");
@@ -687,7 +685,7 @@ export function bootGame(game: AnyGameModule, root: HTMLElement): void {
 }
 
 /** Every game entry calls this. The root is fixed by the shared index.html. */
-export function mountShell(game: AnyGameModule): void {
+export function mountShell(game: AnyGameModuleV3): void {
   const root = document.getElementById("app");
   if (root === null) throw new Error("game root #app is missing");
   bootGame(game, root);

@@ -19,7 +19,6 @@ import type {
   SerializedState,
   ShareBlock,
   ShareContext,
-  TierOrdinal,
 } from "../../core/types.js";
 import { rngFromSeed } from "../../core/seed.js";
 import { intBelow } from "../../core/rng.js";
@@ -47,7 +46,6 @@ import {
   inspect,
   isSatisfied,
   makePuzzle,
-  tierFor,
   type Effort,
   type VectorAction,
   type VectorBest,
@@ -317,12 +315,6 @@ function bucketOf(_outcome: FinishedOutcome, state: VectorState): number {
   return bucketFor(state);
 }
 
-/** v3. Split from bucketOf. Both read the state, because both are facts about
- *  how the player finished and neither needs the outcome to restate them. */
-function tierOf(_outcome: FinishedOutcome, state: VectorState): TierOrdinal | null {
-  return tierFor(state);
-}
-
 /** v3. Recomputed, never read from the manifest. See rules.difficultyFor. */
 function difficulty(puzzle: VectorPuzzle): number {
   return difficultyFor(puzzle);
@@ -389,7 +381,6 @@ const vector = {
   inspect,
   difficulty,
   bucketOf,
-  tierOf,
   telemetry,
   shareArtifact,
   shareBlock,
@@ -419,7 +410,6 @@ export const internals = {
   shareBlock,
   difficulty,
   bucketOf,
-  tierOf,
   telemetry,
   shareArtifact,
   LAYOUT_RADIX,

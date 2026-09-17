@@ -1,7 +1,10 @@
 /**
- * Layer 4. A trivial game that implements GameModuleV3 end to end, so the v3
- * contract is proven before an expensive game is migrated. Not shipped: it has
- * no entry, no html, and no registry row. Guess the hidden digit in three tries.
+ * Layer 4. The permanent contract fixture. A trivial game that implements
+ * GameModuleV3 end to end, so a contract change is proven against the smallest
+ * possible game before an expensive one. Replaced toy-tap in v3 migration phase
+ * 5, when the shell stopped reading v2. It has an entry and a page and is
+ * excluded from production by the allow list, contract decision 12 as amended.
+ * It has no registry row. Guess the hidden digit in three tries.
  */
 
 import { err, ok, type Result } from "../../core/result.js";
@@ -94,8 +97,6 @@ function finishedOutcome(state: ToyState): FinishedOutcomeV3 {
 }
 function inspect(state: ToyState): OutcomeV3 { return finished(state) ? finishedOutcome(state) : { kind: "ongoing" }; }
 function difficulty(_puzzle: ToyPuzzle): number { return 1; }
-function bucketOf(outcome: FinishedOutcomeV3): number { return outcome.bucket; }
-function tierOf(outcome: FinishedOutcomeV3): TierOrdinal | null { return outcome.tier; }
 
 function telemetry(state: ToyState): RunLog {
   return { v: 1, entries: state.guesses.map((value, index) => ({ index, correct: value === state.puzzle.target })) };
@@ -139,7 +140,7 @@ const toyV3: GameModuleV3<ToyState, ToyAction, ToyPuzzle> = {
   identity, input, manifest, archiveEnabled: true, hasWinLoss: true, stateVersion: 1,
   distribution, shareCapabilities,
   parsePuzzle, generatePuzzle, initialState, serialize, deserialize, migrateState,
-  apply, inspect, difficulty, bucketOf, tierOf, telemetry, shareArtifact, mount, help,
+  apply, inspect, difficulty, telemetry, shareArtifact, mount, help,
 };
 
 export default defineGameV3(toyV3);

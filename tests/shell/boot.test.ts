@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { ok } from "../../src/core/result.js";
-import type { AnyGameModule } from "../../src/contract/game-module.js";
+import type { AnyGameModuleV3 } from "../../src/contract/v3/game-module.js";
 import { PuzzleSource } from "../../src/shell/boot.js";
 
 /** Only the fields PuzzleSource reads. The rest of the contract is irrelevant
  *  here and stubbing it would be noise. */
-function moduleStub(overrides: Partial<AnyGameModule> = {}): AnyGameModule {
+function moduleStub(overrides: Partial<AnyGameModuleV3> = {}): AnyGameModuleV3 {
   return {
     identity: { id: "stub" },
     manifest: {
@@ -15,7 +15,7 @@ function moduleStub(overrides: Partial<AnyGameModule> = {}): AnyGameModule {
     parsePuzzle: (_number: number, raw: unknown) => ok(raw),
     generatePuzzle: (number: number) => ok({ generated: number }),
     ...overrides,
-  } as unknown as AnyGameModule;
+  } as unknown as AnyGameModuleV3;
 }
 
 const index = { horizon: 10, chunks: [{ from: 1, to: 10, url: "/data/stub/chunk.json" }] };

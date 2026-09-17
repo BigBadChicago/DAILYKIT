@@ -105,13 +105,13 @@ Use real implementations when writing a new game.
 
 | Checklist item | POKER GRID | CIPHER | Smallest complete fixture |
 |---|---|---|---|
-| Contract, parse, state, outcome, share | `src/games/poker-grid/module.ts` | `src/games/cipher/module.ts` | `src/games/toy-tap/module.ts` |
-| Rules and rejections | `src/games/poker-grid/rules.ts` | `src/games/cipher/rules.ts` | `src/games/toy-tap/module.ts` |
-| Generator and weekday behavior | `src/games/poker-grid/generator.ts` | `src/games/cipher/generator.ts` | `src/games/toy-tap/module.ts` |
-| Generation and verification tools | `tools/generate.ts`, `tools/verify.ts` | `tools/cipher-generate.ts`, `tools/cipher-verify.ts` | `src/games/toy-tap/module.ts` |
-| Renderer and accessibility | `src/games/poker-grid/render.ts` | `src/games/cipher/render.ts` | `src/games/toy-tap/module.ts` |
-| Help and text equivalent | `src/games/poker-grid/help.ts` | `src/games/cipher/help.ts` | `src/games/toy-tap/module.ts` |
-| Styles | `src/games/poker-grid/style.css` | `src/games/cipher/style.css` | `src/games/toy-tap/module.ts` |
+| Contract, parse, state, outcome, share | `src/games/poker-grid/module.ts` | `src/games/cipher/module.ts` | `src/games/toy-v3/module.ts` |
+| Rules and rejections | `src/games/poker-grid/rules.ts` | `src/games/cipher/rules.ts` | `src/games/toy-v3/module.ts` |
+| Generator and weekday behavior | `src/games/poker-grid/generator.ts` | `src/games/cipher/generator.ts` | `src/games/toy-v3/module.ts` |
+| Generation and verification tools | `tools/generate.ts`, `tools/verify.ts` | `tools/cipher-generate.ts`, `tools/cipher-verify.ts` | `src/games/toy-v3/module.ts` |
+| Renderer and accessibility | `src/games/poker-grid/render.ts` | `src/games/cipher/render.ts` | `src/games/toy-v3/module.ts` |
+| Help and text equivalent | `src/games/poker-grid/help.ts` | `src/games/cipher/help.ts` | `src/games/toy-v3/module.ts` |
+| Styles | `src/games/poker-grid/style.css` | `src/games/cipher/style.css` | `src/games/toy-v3/module.ts` |
 | Rules tests | `tests/games/poker-grid/rules.test.ts` | `tests/games/cipher/rules.test.ts` | `tests/games/poker-grid/module.test.ts` |
 | Module and share tests | `tests/games/poker-grid/module.test.ts` | `tests/games/cipher/module.test.ts` | `tests/games/poker-grid/module.test.ts` |
 

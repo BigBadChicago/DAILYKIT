@@ -7,7 +7,8 @@ import { encodeSymbols } from "../../../src/engine/manifest-codec.js";
 import { runShareLeakChecks } from "../../../src/engine/share-leak.js";
 import { validateRunLog } from "../../../src/engine/telemetry.js";
 import { TIER_NAMES } from "../../../src/engine/tiers.js";
-import { SHARE_MAX_ROWS, type ShareContext } from "../../../src/core/types.js";
+import type { ShareContext } from "../../../src/core/types.js";
+import { SHARE_MAX_ROWS } from "../../../src/engine/share-grammar.js";
 import { renderShareRow } from "../../../src/shared/share-vocabulary.js";
 import { entryFor } from "../../../src/shell/registry.js";
 import { internals } from "../../../src/games/vector/module.js";
@@ -43,7 +44,6 @@ const {
   shareBlock,
   difficulty,
   bucketOf,
-  tierOf,
   telemetry,
   shareArtifact,
   LAYOUT_RADIX,
@@ -445,7 +445,7 @@ describe("v3 contract surface", () => {
     expect(outcome.difficulty).toBe(FIXTURE_INTENSITY);
   });
 
-  it("agrees with itself across inspect, tierOf and bucketOf", () => {
+  it("keeps the v2 bucketOf agreed with the outcome the shell now reads", () => {
     for (const state of [
       solvedAfter(1, true),
       solvedAfter(2, true),
@@ -455,7 +455,6 @@ describe("v3 contract surface", () => {
       const outcome = inspect(state);
       expect(outcome.kind).toBe("finished");
       if (outcome.kind !== "finished") continue;
-      expect(tierOf(outcome, state)).toBe(outcome.tier);
       expect(bucketOf(outcome, state)).toBe(outcome.bucket);
     }
   });

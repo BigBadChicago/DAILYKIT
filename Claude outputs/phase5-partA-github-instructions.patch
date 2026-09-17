@@ -1,0 +1,59 @@
+diff --git a/.github/copilot-instructions.md b/.github/copilot-instructions.md
+index a3c0d71..d8fc7df 100644
+--- a/.github/copilot-instructions.md
++++ b/.github/copilot-instructions.md
+@@ -212,8 +212,8 @@ ambiguous about which pass condition failed, ask before touching code.
+ faithful reproduction:
+ 
+ - Share block shapes and widths: `npm run build:harness` and read `/harness/`,
+-  or write a Vitest case against `src/engine/share.ts` and the module's
+-  `shareBlock`.
++  or write a Vitest case against `src/engine/share-grammar.ts` and the module's
++  `shareArtifact`, the way `tests/shell/share-context.test.ts` does.
+ - Layout and viewport: build, preview, and inspect at 360 pixels.
+ - Storage, streaks, migrations, clock jumps: a Vitest case against
+   `src/engine/storage.ts` or `src/engine/stats.ts`. Never a manual browser poke.
+@@ -256,10 +256,10 @@ decision or added a backlog entry, say so at the top, not the bottom.
+ 
+ | Symptom | Look first | Then |
+ |---|---|---|
+-| Share block rows misaligned or a glyph wrong | `src/shared/share-vocabulary.ts` | `src/engine/share.ts` padding, then the module's `shareBlock` |
+-| Share block too tall, or truncated in a client | the module's `shareBlock` row cap | `src/engine/share.ts`, then `POKER-GRID.md` or `CIPHER.md` share sections |
++| Share block rows misaligned or a glyph wrong | `src/shared/share-vocabulary.ts` | `src/engine/share-grammar.ts`, which refuses ragged rows and never pads, then the module's `shareArtifact` |
++| Share block too tall, or truncated in a client | the module's `shareArtifact` and its `shareCapabilities.maxRows` | `src/engine/share-grammar.ts` `composeShareText`, then `POKER-GRID.md` or `CIPHER.md` share sections |
+ | Daily card row wrong or misaligned | `src/engine/dailycard.ts` | `src/shell/suite.ts`, then the hub |
+-| Copy or share sheet misbehaves | `src/engine/share.ts` delivery chain | the caller in `src/shell/main.ts` |
++| Copy or share sheet misbehaves | `src/engine/share.ts` delivery chain | `composeResultShare` in `src/shell/share-context.ts`, then the caller in `src/shell/main.ts` |
+ | Wrong puzzle number, rollover late or early | `src/core/date.ts` | `src/engine/scheduler.ts` |
+ | Streak wrong after a gap, a jump, or a replay | `src/engine/stats.ts` | `src/engine/storage.ts`, then the watermark rules in `ARCHITECTURE.md` |
+ | Progress lost, or a banner about saving | `src/engine/storage.ts` | the module's `serialize` and `deserialize` |
+diff --git a/.github/instructions/contract.instructions.md b/.github/instructions/contract.instructions.md
+index 5eaf8ec..6cf64df 100644
+--- a/.github/instructions/contract.instructions.md
++++ b/.github/instructions/contract.instructions.md
+@@ -31,7 +31,8 @@ and prove it is necessary before making one.
+ 6. **Anything optional must degrade cleanly.** An absent optional method disables
+    a feature for that game rather than breaking the shell, the way an absent
+    `firstSessionPuzzle` disables the tutorial state.
+-7. **`toy-tap` is the regression fixture.** It exists to prove the contract stays
+-   implementable in under a hundred lines, it is CI enforced, and it is excluded
+-   from production builds. A contract change that makes `toy-tap` longer or
+-   harder to write is a contract change worth arguing about.
++7. **`toy-v3` is the regression fixture.** It replaced `toy-tap` in v3 migration
++   phase 5, when the shell stopped reading v2. It exists to prove the v3 contract
++   stays implementable in a small file, it is typechecked and tested in CI, and
++   it is excluded from production builds. A contract change that makes `toy-v3`
++   longer or harder to write is a contract change worth arguing about.
+diff --git a/.github/instructions/tools-and-build.instructions.md b/.github/instructions/tools-and-build.instructions.md
+index 6213a03..3b8193b 100644
+--- a/.github/instructions/tools-and-build.instructions.md
++++ b/.github/instructions/tools-and-build.instructions.md
+@@ -20,7 +20,7 @@ configuration is the single place a game becomes shippable.
+    not throw away the boards already earned.
+ 4. **The allow list in `vite.config.ts` is how a game ships.** Adding an entry
+    there and its `src/shell/entries/<id>.ts` file is the whole build surface of a
+-   game. `toy-tap` and the share harness are excluded from production
++   game. `toy-v3` and the share harness are excluded from production
+    deliberately and permanently.
+ 5. **A release is one build.** All entries in one pass, because that is the only
+    construction that computes a shared engine chunk across them. `GAME=<id> vite

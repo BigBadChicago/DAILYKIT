@@ -41,8 +41,8 @@ export function validateGameId(id: string): string {
   if (usedIds.has(clean)) {
     throw new RangeError(`game id already exists in SUITE_GAMES: ${clean}`);
   }
-  if (clean === "toy-tap") {
-    throw new RangeError("toy-tap is reserved for the contract fixture");
+  if (clean === "toy-v3") {
+    throw new RangeError("toy-v3 is reserved for the contract fixture");
   }
   return clean;
 }

@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { renderArtifact, validateArtifact } from "../../src/engine/artifact.js";
+import { describe, expect, it, vi } from "vitest";
+import { composeArtifact, renderArtifact, validateArtifact } from "../../src/engine/artifact.js";
 import { SHARE_MAX_TOKENS_PER_ROW } from "../../src/engine/share-grammar.js";
 import type { ArtifactModel } from "../../src/engine/telemetry.js";
 import { SHARE_GLYPHS } from "../../src/shared/share-vocabulary.js";
@@ -49,5 +49,34 @@ describe("renderArtifact", () => {
   it("renders title, token rows, then the bare url", () => {
     const text = renderArtifact(model(), URL);
     expect(text).toBe(["TOY V3 #1 guess 1", SHARE_GLYPHS.best, URL].join("\n"));
+  });
+});
+
+describe("composeArtifact", () => {
+  const sink = () => ({ track: vi.fn(), fault: vi.fn() });
+
+  it("delivers a valid artifact with no fault", () => {
+    const telemetry = sink();
+    const out = composeArtifact(model(), URL, telemetry);
+    expect(out.fault).toBeNull();
+    expect(out.text).toBe(renderArtifact(model(), URL));
+    expect(telemetry.fault).not.toHaveBeenCalled();
+  });
+
+  it("repairs a grammar defect through the one composer and reports it once", () => {
+    const telemetry = sink();
+    const rows = Array.from({ length: 9 }, () => ["best"]) as ShareRow[];
+    const out = composeArtifact(model({ rows }), URL, telemetry);
+    expect(out.fault?.code).toBe("too-tall");
+    expect(out.lines).toHaveLength(9);
+    expect(telemetry.fault).toHaveBeenCalledOnce();
+  });
+
+  it("still ships the string when only the fingerprint is missing", () => {
+    const telemetry = sink();
+    const out = composeArtifact(model({ fingerprint: { points: [] } }), URL, telemetry);
+    expect(out.fault?.code).toBe("no-fingerprint");
+    expect(out.text).toBe(renderArtifact(model(), URL));
+    expect(telemetry.fault).toHaveBeenCalledOnce();
   });
 });

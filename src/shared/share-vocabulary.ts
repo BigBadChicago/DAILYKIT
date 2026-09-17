@@ -79,10 +79,6 @@ export const SHARE_TOKEN_SHAPE: Readonly<Record<ShareToken, string>> = {
   ungraded: "dash",
 };
 
-/** Padding token. The engine right pads short rows with this so requirement
- *  3.5.4 holds without every game counting its own columns. */
-export const SHARE_PAD_TOKEN: ShareToken = "barEmpty";
-
 export function glyphFor(token: ShareToken): string {
   return SHARE_GLYPHS[token];
 }

@@ -7,11 +7,15 @@
  *
  * It lives in Layer 1 rather than in the hub because it is share assembly, and
  * every other piece of share assembly is here. The hub supplies facts and gets
- * a ShareBlock back, which is the same arrangement a game module has.
+ * a ShareText back, which it composes through share-grammar.ts exactly as the
+ * shell composes a game's artifact. It is not an ArtifactModel, because it has
+ * no outcome and no fingerprint of its own and inventing either would be a
+ * second scoring path.
  */
 
-import type { ShareBlock, ShareRow } from "../core/types.js";
+import type { ShareRow } from "../core/types.js";
 import type { ShareToken } from "../shared/share-vocabulary.js";
+import type { ShareText } from "./share-grammar.js";
 import { TIER_NAMES, type TierIndex } from "./tiers.js";
 import { TIER_TOKENS } from "../shared/share-vocabulary.js";
 
@@ -24,7 +28,10 @@ import { TIER_TOKENS } from "../shared/share-vocabulary.js";
  * also spent five cells to carry one value between zero and four.
  *
  * Eight is section 49's per row token cap, so a ninth game wraps to a second
- * row rather than breaking the contract.
+ * row rather than breaking the token cap. That second row would be shorter
+ * than the first, which the grammar refuses as ragged, so a ninth game fails
+ * the daily card test on the day it is added. That is deliberate: how a
+ * partial row should read is a product decision, and it is made then.
  */
 export const DAILY_CARD_ROW_WIDTH = 8;
 
@@ -85,7 +92,7 @@ export function dailyCardTitle(input: DailyCardInput): string {
  * an advertisement rather than a result, and the hub hides the share control
  * instead of offering one.
  */
-export function dailyCardBlock(input: DailyCardInput): ShareBlock | null {
+export function dailyCardShare(input: DailyCardInput): ShareText | null {
   if (finishedCount(input) === 0) return null;
   return { title: dailyCardTitle(input), rows: dailyCardRows(input) };
 }

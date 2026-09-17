@@ -3,7 +3,7 @@
  * ARCHITECTURE.md.
  *
  * The allow list below is the single place a game becomes shippable. It both
- * excludes toy-tap and the share harness from production and names every entry
+ * excludes toy-v3 and the share harness from production and names every entry
  * a release build contains.
  *
  * ## Why the release build assembles the whole suite in one pass
@@ -43,7 +43,11 @@ import {
 
 const root = dirname(fileURLToPath(import.meta.url));
 
-export const ENGINE_VERSION = 1;
+/* 2 since v3 migration phase 5, which changed the chunk's exports: the shell
+   imports the v3 composer and engine/share.ts lost composeShare. A player's
+   HTTP cache holding engine-v1.js must never be paired with a game chunk that
+   expects the new exports. */
+export const ENGINE_VERSION = 2;
 
 /** Bumped by hand when the worker's own behaviour changes. Together with the
  *  engine version and the build id it names the cache. */
@@ -75,10 +79,10 @@ const TARGETS: Readonly<Record<string, Target>> = {
     gameId: "cipher",
     productionSafe: true,
   },
-  "toy-tap": {
-    outPath: "toy-tap",
-    html: "src/shell/entries/toy-tap.html",
-    gameId: "toy-tap",
+  "toy-v3": {
+    outPath: "toy-v3",
+    html: "src/shell/entries/toy-v3.html",
+    gameId: "toy-v3",
     productionSafe: false,
   },
   about: { outPath: "about", html: "src/about/index.html", productionSafe: true },

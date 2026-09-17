@@ -20,7 +20,7 @@ configuration is the single place a game becomes shippable.
    not throw away the boards already earned.
 4. **The allow list in `vite.config.ts` is how a game ships.** Adding an entry
    there and its `src/shell/entries/<id>.ts` file is the whole build surface of a
-   game. `toy-tap` and the share harness are excluded from production
+   game. `toy-v3` and the share harness are excluded from production
    deliberately and permanently.
 5. **A release is one build.** All entries in one pass, because that is the only
    construction that computes a shared engine chunk across them. `GAME=<id> vite

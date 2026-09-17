@@ -111,11 +111,13 @@ export interface DistributionSpec {
 
 export type ShareRow = readonly ShareToken[];
 
-/** What a module returns from shareBlock. The engine appends the URL line and
- *  validates the shape. It never invents rows and never edits the title. */
+/**
+ * What a v2 module returns from shareBlock. Nothing renders it since v3
+ * migration phase 5: the shell composes the v3 ArtifactModel instead. It stays
+ * only because the v2 GameModule still names it, and it is removed with that
+ * contract in v3 migration phase 6.
+ */
 export interface ShareBlock {
-  /** Game name, puzzle number, result summary, and streak if any.
-   *  Requirement 3.5.1 and charter decision 1 and 7. */
   readonly title: string;
   readonly rows: readonly ShareRow[];
 }
@@ -128,20 +130,6 @@ export interface ShareContext {
    *  recorded conflict resolution 3. */
   readonly rated: boolean;
 }
-
-/** Rows only. A block is this plus a title line and a URL line, so charter
- *  decision 1's ten line cap is eight rows. */
-export const SHARE_MAX_ROWS = 8;
-
-/**
- * Rows within one block are padded by the engine to the width of the widest row
- * in that same block, using SHARE_PAD_TOKEN. Width is per block and not a suite
- * constant, because POKER GRID pairs one glyph hand rows with a wide summary bar
- * and a fixed suite width would either truncate the bar or pad every hand row of
- * every game to the widest game's bar. Requirement 3.5.4 therefore holds as an
- * engine invariant without constraining what a game may encode.
- */
-
 
 /** A bucket index into DistributionSpec.labels. */
 export type BucketId = number;

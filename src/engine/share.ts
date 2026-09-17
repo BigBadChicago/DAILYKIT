@@ -1,76 +1,12 @@
 /**
- * Layer 1. Requirement 3.5 and 4.1.3.
+ * Layer 1. Share delivery. Requirement 3.5.5 and ARCHITECTURE2 section 38.
  *
- * Assembly is driven entirely by the module's ShareBlock. The engine pads,
- * enforces the row cap, and appends the URL. It never invents a row and never
- * edits the title, which is what keeps the family look of 7.3.6 an engine
- * invariant rather than five games agreeing to behave.
+ * Assembly moved to share-grammar.ts in v3 migration phase 5, so this file
+ * owns one fact, how a finished string reaches the player, and never what the
+ * string says. Section 53 gives each of those one authoritative answer.
  */
 
-import { SHARE_MAX_ROWS, type ShareBlock } from "../core/types.js";
-import {
-  SHARE_PAD_TOKEN,
-  renderShareRow,
-  type ShareToken,
-} from "../shared/share-vocabulary.js";
 import { NO_OP_TELEMETRY, type Telemetry } from "./telemetry.js";
-
-export interface ComposeOptions {
-  /** Bare host, no scheme and no trailing slash. From GameIdentity.shareUrl. */
-  readonly shareUrl: string;
-  readonly telemetry?: Telemetry;
-}
-
-export interface ComposedShare {
-  readonly text: string;
-  readonly lines: readonly string[];
-  /** True when the module exceeded SHARE_MAX_ROWS and rows were dropped. A
-   *  module defect, surfaced rather than hidden. */
-  readonly truncated: boolean;
-}
-
-/**
- * Padding is per block, to the widest row in that same block, not to a suite
- * constant. Contract decision 4. A suite constant would either truncate a wide
- * row or pad every one glyph row of every game to the widest game's width,
- * which reads as an empty progress bar.
- */
-function padRows(rows: readonly (readonly ShareToken[])[]): readonly (readonly ShareToken[])[] {
-  let width = 0;
-  for (const row of rows) if (row.length > width) width = row.length;
-
-  return rows.map((row) => {
-    if (row.length === width) return row;
-    const padded = row.slice();
-    while (padded.length < width) padded.push(SHARE_PAD_TOKEN);
-    return padded;
-  });
-}
-
-export function composeShare(block: ShareBlock, options: ComposeOptions): ComposedShare {
-  const telemetry = options.telemetry ?? NO_OP_TELEMETRY;
-
-  if (block.title.includes("\n")) {
-    throw new Error("share title must be a single line");
-  }
-  if (options.shareUrl.includes("\n") || options.shareUrl.trim() === "") {
-    throw new Error("share url must be a non empty single line");
-  }
-
-  let rows = block.rows;
-  let truncated = false;
-  if (rows.length > SHARE_MAX_ROWS) {
-    telemetry.fault("share block exceeded the row cap", {
-      rows: rows.length,
-      cap: SHARE_MAX_ROWS,
-    });
-    rows = rows.slice(0, SHARE_MAX_ROWS);
-    truncated = true;
-  }
-
-  const lines = [block.title, ...padRows(rows).map(renderShareRow), options.shareUrl];
-  return { text: lines.join("\n"), lines, truncated };
-}
 
 // ---------------------------------------------------------------------------
 // Delivery

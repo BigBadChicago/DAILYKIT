@@ -31,7 +31,8 @@ and prove it is necessary before making one.
 6. **Anything optional must degrade cleanly.** An absent optional method disables
    a feature for that game rather than breaking the shell, the way an absent
    `firstSessionPuzzle` disables the tutorial state.
-7. **`toy-tap` is the regression fixture.** It exists to prove the contract stays
-   implementable in under a hundred lines, it is CI enforced, and it is excluded
-   from production builds. A contract change that makes `toy-tap` longer or
-   harder to write is a contract change worth arguing about.
+7. **`toy-v3` is the regression fixture.** It replaced `toy-tap` in v3 migration
+   phase 5, when the shell stopped reading v2. It exists to prove the v3 contract
+   stays implementable in a small file, it is typechecked and tested in CI, and
+   it is excluded from production builds. A contract change that makes `toy-v3`
+   longer or harder to write is a contract change worth arguing about.

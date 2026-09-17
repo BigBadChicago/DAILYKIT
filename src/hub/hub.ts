@@ -18,13 +18,14 @@ import { createCountdown } from "../ui/countdown.js";
 import { applyAccent, installTheme, type ThemeChoice } from "../ui/theme.js";
 import { msUntilNextLocalMidnight } from "../core/date.js";
 import { TIER_NAMES, UNRATED_LABEL } from "../engine/tiers.js";
-import { browserShareDeps, composeShare, deliverShare } from "../engine/share.js";
+import { browserShareDeps, deliverShare } from "../engine/share.js";
+import { composeShareText } from "../engine/share-grammar.js";
 import { createClock, debugDateOverride } from "../engine/scheduler.js";
 import { registerServiceWorker } from "../shell/register-sw.js";
 import { SUITE_GAMES, SUITE_SHARE_URL } from "../shell/registry.js";
 import {
   allStatuses,
-  dailyCardBlock,
+  dailyCardShare,
   dailyCardInput,
   dailyCardSummary,
   openSuite,
@@ -201,24 +202,22 @@ export function mountHub(root: HTMLElement, clock: () => Date): HubHandle {
 
   function paintDailyCard(): void {
     const input = dailyCardInput(statuses, suite.record, clock());
-    const block = dailyCardBlock(input);
+    const card = dailyCardShare(input);
     setText(cardSummary, dailyCardSummary(input));
-    if (block === null) {
+    if (card === null) {
       setText(cardBlock, "");
       setClass(dailySection, "dk-hidden", true);
       return;
     }
     setClass(dailySection, "dk-hidden", false);
-    const composed = composeShare(block, { shareUrl: SUITE_SHARE_URL });
-    setText(cardBlock, composed.text);
+    setText(cardBlock, composeShareText(card, SUITE_SHARE_URL).text);
   }
 
   async function shareDailyCard(): Promise<void> {
     const input = dailyCardInput(statuses, suite.record, clock());
-    const block = dailyCardBlock(input);
-    if (block === null) return;
-    const composed = composeShare(block, { shareUrl: SUITE_SHARE_URL });
-    const outcome = await deliverShare(composed.text, browserShareDeps());
+    const card = dailyCardShare(input);
+    if (card === null) return;
+    const outcome = await deliverShare(composeShareText(card, SUITE_SHARE_URL).text, browserShareDeps());
     if (outcome === "copied") toaster.show("Card copied.");
     else if (outcome === "shared") toaster.show("Card shared.");
     else if (outcome === "manual") toaster.show("Copy failed. Select the block above to copy it.");

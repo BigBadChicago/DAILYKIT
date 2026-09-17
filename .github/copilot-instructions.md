@@ -212,8 +212,8 @@ ambiguous about which pass condition failed, ask before touching code.
 faithful reproduction:
 
 - Share block shapes and widths: `npm run build:harness` and read `/harness/`,
-  or write a Vitest case against `src/engine/share.ts` and the module's
-  `shareBlock`.
+  or write a Vitest case against `src/engine/share-grammar.ts` and the module's
+  `shareArtifact`, the way `tests/shell/share-context.test.ts` does.
 - Layout and viewport: build, preview, and inspect at 360 pixels.
 - Storage, streaks, migrations, clock jumps: a Vitest case against
   `src/engine/storage.ts` or `src/engine/stats.ts`. Never a manual browser poke.
@@ -256,10 +256,10 @@ decision or added a backlog entry, say so at the top, not the bottom.
 
 | Symptom | Look first | Then |
 |---|---|---|
-| Share block rows misaligned or a glyph wrong | `src/shared/share-vocabulary.ts` | `src/engine/share.ts` padding, then the module's `shareBlock` |
-| Share block too tall, or truncated in a client | the module's `shareBlock` row cap | `src/engine/share.ts`, then `POKER-GRID.md` or `CIPHER.md` share sections |
+| Share block rows misaligned or a glyph wrong | `src/shared/share-vocabulary.ts` | `src/engine/share-grammar.ts`, which refuses ragged rows and never pads, then the module's `shareArtifact` |
+| Share block too tall, or truncated in a client | the module's `shareArtifact` and its `shareCapabilities.maxRows` | `src/engine/share-grammar.ts` `composeShareText`, then `POKER-GRID.md` or `CIPHER.md` share sections |
 | Daily card row wrong or misaligned | `src/engine/dailycard.ts` | `src/shell/suite.ts`, then the hub |
-| Copy or share sheet misbehaves | `src/engine/share.ts` delivery chain | the caller in `src/shell/main.ts` |
+| Copy or share sheet misbehaves | `src/engine/share.ts` delivery chain | `composeResultShare` in `src/shell/share-context.ts`, then the caller in `src/shell/main.ts` |
 | Wrong puzzle number, rollover late or early | `src/core/date.ts` | `src/engine/scheduler.ts` |
 | Streak wrong after a gap, a jump, or a replay | `src/engine/stats.ts` | `src/engine/storage.ts`, then the watermark rules in `ARCHITECTURE.md` |
 | Progress lost, or a banner about saving | `src/engine/storage.ts` | the module's `serialize` and `deserialize` |

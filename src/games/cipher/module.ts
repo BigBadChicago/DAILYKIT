@@ -25,7 +25,6 @@ import type {
   SerializedState,
   ShareBlock,
   ShareContext,
-  TierOrdinal,
 } from "../../core/types.js";
 import { defineGame, type GameModule } from "../../contract/game-module.js";
 import { defineGameV3, type GameModuleV3 } from "../../contract/v3/game-module.js";
@@ -56,7 +55,6 @@ import {
   isSymbol,
   isTerminal,
   scoreGuess,
-  tierFor,
   type CipherAction,
   type CipherState,
   type Code,
@@ -224,12 +222,6 @@ function bucketOf(_outcome: FinishedOutcome, state: CipherState): number {
   return bucketFor(state.guesses.length, state.solved);
 }
 
-/** v3. Split from bucketOf. Both read the state, because both are facts about
- *  how the player finished and neither needs the outcome to restate them. */
-function tierOf(_outcome: FinishedOutcome, state: CipherState): TierOrdinal | null {
-  return tierFor(state.guesses.length, state.solved);
-}
-
 /** v3. Recomputed from the code, never read from `puzzle.best.remaining`.
  *  See difficulty.remainingAfterOpening. */
 function difficulty(puzzle: CipherPuzzle): number {
@@ -298,7 +290,6 @@ const cipher = {
   inspect,
   difficulty,
   bucketOf,
-  tierOf,
   telemetry,
   shareArtifact,
   shareBlock,
@@ -328,7 +319,6 @@ export const internals = {
   shareBlock,
   difficulty,
   bucketOf,
-  tierOf,
   telemetry,
   shareArtifact,
   SHARE_ROW_WIDTH,

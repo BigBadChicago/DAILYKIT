@@ -17,7 +17,7 @@ resume work in a fresh conversation with no chat history.
 |---|---|
 | Current phase | Phase 13 in progress. VECTOR, game three, is built, integrated, and green across the suite. TALLY DROP and RECALL remain. Phase 8's manual checklist is still unrun |
 | Games playable | POKER GRID, VECTOR, and CIPHER, end to end in a browser, inside the suite shell |
-| Engine contract version | 2, corrected by the Phase 11 defect report. Chunks are keyed entries, granularity is gone, tiers belong to the module. All three live games additionally satisfy v3 as of the v3 migration's phase 4; the engine and shell are still v2 |
+| Engine contract version | The shell reads v3 only as of v3 migration phase 5, part A, 2026-09-16. The v2 contract still exists because the three live games and the scaffold implement it, and nothing in the shell or hub renders a v2 share block any more. It is retired in v3 migration phase 6. ARCHITECTURE2.md section 56 |
 | Manifest horizon | POKER GRID 365 days from epoch 2026-01-01, verified with a solver replay. CIPHER and VECTOR 365 days from epoch 2026-01-05, the first Monday. CIPHER verified against the fixed opening, VECTOR by re-derivation and an independent uniqueness search |
 
 ## Phase log
@@ -83,7 +83,7 @@ Table columns are fixed as follows and every future entry uses them.
 | src/core/types.ts | 0 | Structural engine, input, and help types independent of the contract | shared/share-vocabulary |
 | src/contract/types.ts | 3 | Identity, manifest, help, view, and failure descriptors composed from core types | core/types |
 | src/contract/game-module.ts | 3 | The GameModule interface and the single erasure boundary | core/result, core/types, contract/types |
-| src/games/toy-tap/module.ts | 4 | Contract regression fixture, never shipped | core/result, core/types, contract/* |
+| src/games/toy-v3/module.ts | 4 | The contract regression fixture on v3, never shipped. Replaced toy-tap in v3 migration phase 5 | core/result, core/rng, core/seed, core/types, contract/types, contract/v3/*, engine/telemetry, shared/share-vocabulary |
 | src/games/poker-grid/evaluator.ts | 4 | Five card hand classification and card decoding | shared/poker-hands |
 | src/games/poker-grid/scoring.ts | 4 | Empirically calibrated hand point table, the clearing dominance constants, and tier calculation | shared/poker-hands, games/poker-grid/evaluator |
 | src/games/poker-grid/rules.ts | 4 | Pure selection, gravity, commit, terminal, and connected move rules with lazy enumeration, plus the per hand effort record and the board facts the outcome is built from | core/result, core/types, shared/poker-hands, games/poker-grid/evaluator, games/poker-grid/scoring, games/poker-grid/generator |
@@ -107,7 +107,7 @@ Table columns are fixed as follows and every future entry uses them.
 | src/engine/stats.ts | 1 | Streak, distribution, and suite aggregate computation as pure functions | core/types, engine/storage |
 | src/engine/state-machine.ts | 1 | Session lifecycle, generic over the module's board state | core/types, engine/telemetry |
 | src/engine/scheduler.ts | 1 | Puzzle resolution, archive listing, debug date override, and the countdown | core/date, core/types |
-| src/engine/share.ts | 1 | Share string assembly and the delivery fallback chain | core/types, shared/share-vocabulary, engine/telemetry |
+| src/engine/share.ts | 1 | The share delivery fallback chain only. Assembly moved to engine/share-grammar.ts in v3 migration phase 5 | engine/telemetry |
 | vitest.config.ts | n/a | Test runner configuration | none |
 | tools/rngvectors.ts | tools | Regenerates the committed determinism vector table | core/rng, core/seed |
 | tools/generate.ts | tools | Screens, bands, and regenerates candidate boards, then writes monthly chunks and the index | core/date, core/seed, games/poker-grid/generator, games/poker-grid/greedy, games/poker-grid/manifest-codec, games/poker-grid/solver |
@@ -122,7 +122,7 @@ Table columns are fixed as follows and every future entry uses them.
 | tests/engine/stats.test.ts | n/a | Streak rule, aggregate isolation, capping, and cross promotion | engine/storage, engine/stats |
 | tests/engine/state-machine.test.ts | n/a | Transition table integrity, legal paths, and illegal transition handling | engine/state-machine |
 | tests/engine/scheduler.test.ts | n/a | Resolution modes, archive paging, debug override, and countdown drift | core/date, engine/scheduler |
-| tests/engine/share.test.ts | n/a | Block assembly, padding, row cap, and the delivery fallback chain | core/types, shared/share-vocabulary, engine/share |
+| tests/engine/share.test.ts | n/a | The delivery fallback chain | engine/share |
 | src/ui/dom.ts | 2 | Element creation, idempotent setters, and keyed child reconciliation | none |
 | src/ui/a11y.ts | 2 | Focus trapping, dual live regions, and reduced motion preference | ui/dom |
 | src/ui/theme.ts | 2 | Theme choice resolution, persistence port, and per game accent application | none |
@@ -137,7 +137,7 @@ Table columns are fixed as follows and every future entry uses them.
 | tools/share-harness/index.html | tools | Harness page shell and its own styling, served at /harness/ by `npm run harness` | ui/chrome.css |
 | tools/share-harness/main.ts | tools | Renders every sample block with a width and line count report | ui/dom, ui/theme, harness/cases, harness/bind |
 | tools/share-harness/cases.ts | tools | Sample share blocks spanning the outcome space | core/types |
-| tools/share-harness/bind.ts | tools | The harness's single import point into engine/share.ts | engine/share |
+| tools/share-harness/bind.ts | tools | The harness's single import point into the engine's share composer | engine/share-grammar |
 | tests/ui/dom.test.ts | n/a | Creation, setter idempotence, and keyed reconcile identity | ui/dom |
 | tests/ui/a11y.test.ts | n/a | Tab wrapping, focus restoration, live region routing, motion preference | ui/a11y |
 | tests/ui/theme.test.ts | n/a | System following, explicit override, cycle order, persistence, contrast probe | ui/theme |
@@ -165,12 +165,12 @@ Table columns are fixed as follows and every future entry uses them.
 | .github/workflows/generate.yml | n/a | The job that regenerates and verifies the horizon | none |
 | .gitignore | n/a | Keeps dependencies, build output, and runner scratch out of the repo | none |
 | vite.config.ts | n/a | The GAME allow list, the entry set, the pinned engine chunk, static root file emission, and manifest data deployment | none |
-| src/engine/dailycard.ts | 1 | The suite's combined share block, one glyph per game in registry order | core/types, engine/tiers, shared/share-vocabulary |
+| src/engine/dailycard.ts | 1 | The suite's combined share text, one glyph per game in registry order, composed through the v3 grammar | core/types, engine/share-grammar, engine/tiers, shared/share-vocabulary |
 | src/shell/registry.ts | 5 | The five suite games as data, readable without loading a game | none |
-| src/shell/share-context.ts | 5 | What a share block is told about the session, so a replay carries no streak | none |
+| src/shell/share-context.ts | 5 | What a share is told about the session, so a replay carries no streak, and composeResultShare, the one path from a finished session to its share string | contract/v3/game-module, core/types, engine/artifact, engine/telemetry |
 | src/shell/suite.ts | 5 | Suite storage, per game today status, theme port, and daily card assembly | core/date, core/result, core/types, engine/dailycard, engine/scheduler, engine/stats, engine/storage, ui/theme, shell/registry |
 | src/shell/boot.ts | 5 | Manifest index and chunk fetching, prefetch, and the past horizon fallback | contract/game-module, core/result, core/seed, core/types |
-| src/shell/main.ts | 5 | Session lifecycle, chrome, end screen, share, archive, and cross promotion | contract/*, core/*, engine/*, ui/*, shell/boot, shell/registry, shell/suite |
+| src/shell/main.ts | 5 | Session lifecycle, chrome, end screen, share, archive, and cross promotion, over the v3 module only | contract/v3/*, contract/types, core/*, engine/*, ui/*, shell/boot, shell/changelog, shell/register-sw, shell/registry, shell/share-context, shell/suite |
 | src/shell/shell.css | 5 | Game page layout, end screen, and archive list styling | none |
 | src/shell/env.d.ts | 5 | Ambient CSS module and import.meta.env declarations for browser builds | none |
 | src/shell/entries/poker-grid.ts | 5 | The POKER GRID bundler entry, the one file that names it | games/poker-grid/module, shell/main |
@@ -192,13 +192,13 @@ Table columns are fixed as follows and every future entry uses them.
 | COPILOT.md | n/a | The short usage page for working this repository with Copilot | none |
 | MANUAL-CHECKS.md | n/a | The Section 10.7 list, with a results table to fill in per run | none |
 | tests/shell/changelog.test.ts | n/a | Version windowing, game scoping, and the two cases that must show nothing | shell/changelog |
-| tests/shell/share-context.test.ts | n/a | A replay and a tutorial carry no streak, a live session carries its own | shell/share-context |
+| tests/shell/share-context.test.ts | n/a | The streak rule, and per game that the v3 share string is byte identical to what v2 shipped, carries no streak out of a replay, and survives a defective artifact | shell/share-context, shell/registry, games/cipher/*, games/poker-grid/*, games/vector/*, tests/games/vector/fixtures |
 | tests/games/poker-grid/tutorial.test.ts | n/a | Board legality, that it is graded by nothing, and that it is easier than a scheduled day | games/poker-grid/tutorial |
 | tsconfig.sw.json | n/a | The worker's own program, because the WebWorker lib cannot share a program with DOM | none |
 | tests/tools/sw-manifest.test.ts | n/a | Precache coverage, worker exclusion, and cache name movement | tools/sw-manifest |
 | src/shell/entries/poker-grid.html | 5 | The POKER GRID page | none |
-| src/shell/entries/toy-tap.ts | 5 | The toy-tap entry, excluded from production by the allow list | games/toy-tap/module, shell/main |
-| src/shell/entries/toy-tap.html | 5 | The toy-tap page | none |
+| src/shell/entries/toy-v3.ts | 5 | The toy-v3 entry, excluded from production by the allow list | games/toy-v3/module, shell/main |
+| src/shell/entries/toy-v3.html | 5 | The toy-v3 page | none |
 | src/hub/hub.ts | 5 | The hub, its cards, the suite streak, and the daily card control | core/date, engine/*, ui/*, shell/registry, shell/suite |
 | src/hub/boot.ts | 5 | The hub's bundler entry | hub/hub |
 | src/hub/index.html | 5 | The hub page, deployed at the site root | none |
@@ -209,7 +209,7 @@ Table columns are fixed as follows and every future entry uses them.
 | static/icon-192.png | n/a | Suite icon raster for the install prompt | none |
 | static/icon-512.png | n/a | Suite icon raster for the install prompt and maskable slot | none |
 | static/site.webmanifest | n/a | Web app manifest, deployed at the site root | none |
-| tests/engine/dailycard.test.ts | n/a | Row shape, the ungraded case, the row cap, and the text equivalent | engine/dailycard, engine/share, engine/tiers |
+| tests/engine/dailycard.test.ts | n/a | Row shape, the ungraded case, the grammar, the ninth game decision point, and the text equivalent | engine/dailycard, engine/share-grammar, engine/tiers |
 | tests/shell/registry.test.ts | n/a | Registry uniqueness, agreement with built modules, and cross promotion | shell/registry, engine/stats, games/poker-grid/module |
 | tests/shell/boot.test.ts | n/a | Chunk lookup by puzzle number, the format and missing day messages, the horizon fallback, and chunk caching | shell/boot |
 | tests/shell/suite.test.ts | n/a | Today status per game, read only guarantees, daily card input, theme port | shell/suite, shell/registry, engine/* |
@@ -290,7 +290,7 @@ dailykit/
     shell/           Layer 5. main.ts boot.ts index.html
     hub/             Layer 5. hub.ts hub.css index.html
     games/
-	  toy-tap/
+	  toy-v3/
         module.ts      Contract regression fixture, excluded from production builds
       poker-grid/
         module.ts      GameModule implementation, the only export the shell sees
@@ -364,7 +364,9 @@ true. Two properties keep the original constraints intact:
   leaves the other four unchanged.
 
 Bumping `ENGINE_VERSION` in `vite.config.ts` is the deliberate act that
-invalidates the shared chunk and redeploys every game together.
+invalidates the shared chunk and redeploys every game together. It is 2 since v3
+migration phase 5, whose change to the chunk's exports would otherwise have let
+a cached `engine-v1.js` meet a game chunk expecting the v3 composer.
 
 **The worker and its precache list.** A release build also emits `dist/sw.js`
 and `dist/sw-manifest.json`. The worker is only added to the entry set for a
@@ -454,8 +456,11 @@ Settled in Phase 1. Inputs to every later phase.
 11. **Input is a tagged descriptor.** A `grid` variant activates
     `ui/gridCursor.ts` for keyboard play over a lattice; `custom` receives raw
     keys. The presentation kit therefore serves grid games without assuming one.
-12. **`toy-tap` is permanent**, CI enforced, and excluded from production builds
-    by an explicit `GAME` allow list in `vite.config.ts`.
+12. **A contract fixture is permanent**, CI enforced, and excluded from production
+    builds by an explicit `GAME` allow list in `vite.config.ts`. Amended in v3
+    migration phase 5: the fixture is `toy-v3`, and `toy-tap` was deleted,
+    because a v3 shell cannot mount a v2 module and a fixture the shell cannot
+    mount proves nothing about the contract the shell reads.
 13. **A manifest chunk is `entries`, keyed by puzzle number, and the contract
     says so.** Phase 11 correction, defect 7. The engine reads one entry by key
     and never inspects it; how many chunks a horizon has is the index's
@@ -559,7 +564,12 @@ contract decisions above.
     reads wrong by however long the player was in another app.
 21. **A share block over `SHARE_MAX_ROWS` is truncated with a telemetry fault**,
     not thrown. It is a module defect, and the moment the player taps share is
-    the worst possible time for an exception.
+    the worst possible time for an exception. Carried into v3 in v3 migration
+    phase 5: `composeShareText` in `engine/share-grammar.ts` is the one composer,
+    `SHARE_MAX_ROWS` is seven, and the repair only removes. It cuts a title to
+    its first line, caps rows and tokens, and drops empty rows. A ragged block
+    is delivered unchanged with a fault, because padding would add a claim the
+    player did not make.
 22. **A dismissed native share sheet returns `cancelled`** and never falls
     through to the clipboard. The player made a decision.
 
@@ -757,6 +767,12 @@ phase and are not to be reopened without a stated reason.
    GRID's seven hands both fit inside with one row of headroom. The constant is
    the authority and this line now matches it. What is capped is rows, and the
    two extra lines are the title and the URL.
+
+   Superseded in v3 migration phase 5, 2026-09-16. ARCHITECTURE2.md section 49
+   is now enforced on every string the suite emits: nine lines including title
+   and URL, so seven rows. `SHARE_MAX_ROWS` lives in `engine/share-grammar.ts`
+   and is derived from `SHARE_MAX_LINES`. No live game changed a byte, because
+   the tallest, POKER GRID's seven hand clear, was already nine lines.
 2. **First session.** The difficulty override seam stays in the contract. POKER
    GRID implements it as a fixed easy tutorial board that is not today's puzzle,
    played before the first real puzzle, never shareable and never counted in

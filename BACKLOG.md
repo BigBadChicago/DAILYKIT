@@ -206,6 +206,23 @@ the result, which is a human pass across real devices.
   would remove the tolerance and it is a manifest regeneration, so it waits for
   one.
 
+## Logged in the v3 migration, phase 5
+
+- **The fixture page cannot boot.** `bootGame` throws when a game has no
+  registry entry, and `toy-v3` has none, exactly as `toy-tap` had none since
+  Phase 10. The fixture is proven by typecheck, tests and a development build,
+  not by a page. Giving it a registry row would put it on the hub; teaching the
+  shell to mount an unregistered game is a shell feature for a page nobody
+  opens. Logged rather than built.
+- **How a partial daily card row reads.** A ninth suite game wraps into a
+  second row shorter than the first, which the grammar refuses as ragged.
+  `dailycard.test.ts` fails on the day the registry reaches nine, which is when
+  this is decided.
+- **A share defect is repaired silently to the player.** `composeResultShare`
+  returns the fault and the shell delivers the repaired string without saying
+  so, as engine decision 21 always did. The fault reaches only the no operation
+  analytics seam, so in version 1 nobody learns of it outside a test.
+
 ## Logged in Phase 12
 
 - **A shared non grid keyboard cursor.** The scaffold keeps custom keyboard
