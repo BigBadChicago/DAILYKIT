@@ -36,6 +36,11 @@ jobs:
       # build. The uniqueness search makes this the slowest step, about 100
       # seconds, and it stays in CI anyway.
       - run: npm run vector:verify
+      # Game four, ROTATE LOCK. Its search enumerates arrangements by piece id
+      # without the game's solver, about 55 seconds. The certify test requires a
+      # live game's verifier to run before the certify step, so it is here from
+      # the change that adds the game rather than the change that makes it live.
+      - run: npm run rotate-lock:verify
       # Phase 10. The release build is the only build that produces the shared
       # engine chunk, so a change that breaks bundling must fail here rather
       # than at deploy time.

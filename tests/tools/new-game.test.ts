@@ -2,9 +2,14 @@ import { readFileSync } from "node:fs";
 
 import { describe, expect, it } from "vitest";
 
+import { SUITE_GAMES } from "../../src/shell/registry.js";
 import { newGamePlan, uniqueProbes } from "../../tools/certify.js";
 import {
+  MAX_BUCKETS,
+  MIN_BUCKETS,
+  adoptedRow,
   buildNewGame,
+  type AdoptableRow,
   GAME_PLANS_MARKER,
   insertAtMarker,
   NEW_GAME_CONFIG_MARKERS,
@@ -111,10 +116,16 @@ describe("buildNewGame", () => {
     expect(moduleFile).toContain("epoch: { year: 2026, month: 1, day: 5 }");
   });
 
-  it("rejects invalid ids and duplicate ids", () => {
+  it("rejects invalid ids and live ids", () => {
     expect(() => validateGameId("Scaffold")).toThrow();
     expect(() => validateGameId("scaffold_check")).toThrow();
-    expect(() => validateGameId("poker-grid")).toThrow();
+    expect(() => validateGameId("poker-grid")).toThrow(/live/);
+    expect(() => validateGameId("toy-v3")).toThrow();
+  });
+
+  it("requires a name and a hue for an id with no planned row", () => {
+    expect(() => buildNewGame({ id: "sample-game" })).toThrow(/--name and --hue are required/);
+    expect(() => buildNewGame({ id: "sample-game", name: "SAMPLE GAME" })).toThrow(/--name and --hue are required/);
   });
 
   it("is byte identical for the same options", () => {
@@ -194,5 +205,82 @@ describe("insertAtMarker", () => {
         "",
       ].join("\n"),
     );
+  });
+});
+
+/* Template decision 10. A planned registry row is adopted, not refused. */
+describe("adopting a planned registry row", () => {
+  const row: AdoptableRow = {
+    id: "slate-game",
+    displayName: "SLATE GAME",
+    oneLineRule: "Turn the dial until the slate reads true.",
+    accent: { hue: "212", boardFontStack: "ui-monospace, 'SF Mono', Menlo, monospace" },
+    epoch: { year: 2026, month: 1, day: 5 },
+    bucketCount: 5,
+    hasWinLoss: false,
+    stateVersion: 2,
+    status: "planned",
+  };
+  const live: AdoptableRow = { ...row, id: "live-game", status: "live" };
+  const games = [row, live];
+
+  it("adopts every planned slate id in the real registry and still refuses every live one", () => {
+    for (const entry of SUITE_GAMES) {
+      if (entry.status === "planned") {
+        expect(adoptedRow(entry.id)).toBe(entry);
+        const output = buildNewGame({ id: entry.id });
+        expect(output.adopted).toBe(true);
+        expect(output.registryInsertion).toBeNull();
+      } else {
+        expect(() => buildNewGame({ id: entry.id })).toThrow(/live/);
+      }
+    }
+  });
+
+  it("writes the module from the row and leaves the registry alone", () => {
+    const output = buildNewGame({ id: "slate-game" }, games);
+    expect(output.adopted).toBe(true);
+    expect(output.registryInsertion).toBeNull();
+    const moduleFile = output.files.get("src/games/slate-game/module.ts") as string;
+    expect(moduleFile).toContain('displayName: "SLATE GAME"');
+    expect(moduleFile).toContain('oneLineRule: "Turn the dial until the slate reads true."');
+    expect(moduleFile).toContain(`accent: { hue: "212", boardFontStack: "ui-monospace, 'SF Mono', Menlo, monospace" }`);
+    expect(moduleFile).toContain("epoch: { year: 2026, month: 1, day: 5 }");
+    expect(moduleFile).toContain("const STATE_VERSION = 2;");
+    expect(moduleFile).toContain("  hasWinLoss: false,");
+    expect(moduleFile).toContain("    won: null,");
+    expect(moduleFile).toContain("const label = found(state) ?");
+    expect(moduleFile).toContain('labels: ["0 misses", "1 miss", "2 misses", "3 misses", "Not found"]');
+    expect(output.files.get("src/games/slate-game/rules.ts")).toContain("export const MAX_MISSES = 4;");
+    expect(output.files.get("src/games/slate-game/help.ts")).toContain('headline: "Turn the dial until the slate reads true."');
+    expect(output.files.get("src/games/slate-game/help.ts")).toContain("four misses end the day");
+    expect(output.targetsInsertion).toContain('"slate-game": {');
+    expect(output.plansInsertion).toContain('...newGamePlan("slate-game")');
+  });
+
+  it("accepts a name and hue that agree with the row and refuses ones that do not", () => {
+    expect(buildNewGame({ id: "slate-game", name: "slate game", hue: 212 }, games).adopted).toBe(true);
+    expect(() => buildNewGame({ id: "slate-game", name: "OTHER GAME" }, games)).toThrow(/edit the row instead/);
+    expect(() => buildNewGame({ id: "slate-game", hue: 40 }, games)).toThrow(/edit the row instead/);
+    expect(() => buildNewGame({ id: "live-game" }, games)).toThrow(/live/);
+  });
+
+  it("refuses a row the stub cannot honestly write", () => {
+    for (const bucketCount of [MIN_BUCKETS - 1, MAX_BUCKETS + 1, 4.5]) {
+      expect(() => buildNewGame({ id: "slate-game" }, [{ ...row, bucketCount }])).toThrow(/buckets/);
+    }
+    expect(() => buildNewGame({ id: "slate-game" }, [{ ...row, oneLineRule: 'Say "open".' }])).toThrow(/one line rule/);
+    expect(() => buildNewGame({ id: "slate-game" }, [{ ...row, accent: { ...row.accent, hue: "red" } }])).toThrow(/hue/);
+    expect(() => buildNewGame({ id: "slate-game" }, [{ ...row, stateVersion: 0 }])).toThrow(/state version/);
+  });
+
+  it("writes tests whose miss lists fit every bucket count it accepts", () => {
+    for (let bucketCount = MIN_BUCKETS; bucketCount <= MAX_BUCKETS; bucketCount += 1) {
+      const files = buildNewGame({ id: "slate-game" }, [{ ...row, bucketCount }]).files;
+      const rulesTest = files.get("tests/games/slate-game/rules.test.ts") as string;
+      const misses = /const misses = \[([^\]]*)\]/.exec(rulesTest)?.[1]?.split(", ").map(Number) ?? [];
+      expect(misses).toHaveLength(bucketCount - 1);
+      expect(misses).not.toContain(4);
+    }
   });
 });

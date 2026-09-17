@@ -344,3 +344,38 @@ the result, which is a human pass across real devices.
   `FinishedOutcomeV3`, `GameModuleV3` and `defineGameV3` to plain names is a
   mechanical rename across every game and test with no behavior in it, so it
   waits for a phase with nothing else in flight.
+
+## Logged in charter Phase 13, ROTATE LOCK
+
+- **No game renders its own accent.** Found by the 360 pixel smoke. `theme.ts`
+  `applyAccent` sets `--dk-accent-hue` on the game root, but `--dk-accent` and
+  `--dk-focus` are declared on `:root` in `chrome.css`, where `var()` resolves
+  against the root's hue, 210, and children inherit that computed colour. So
+  POKER GRID, CIPHER, VECTOR and ROTATE LOCK all draw blue. Requirement 7.3.8.
+  Engine defect 1 of the ROTATE LOCK report; the correction redeclares the
+  accent colours on the element that receives the hue, and is owed before the
+  next game, per requirement 7.4.
+- **The header truncates a two word name at 360 pixels.** ROTATE LOCK reads
+  "ROTATE ..." in the chrome header beside its four icons. DIFFERENCE RELAY and
+  ORDER OF OPERATIONS are longer. Engine defect 2 of the report.
+- **A list cursor for ORDER games.** ARCHITECTURE2 section 21 names an ORDER
+  adapter as reusable, and none exists in `src/ui/`. ROTATE LOCK wrote its own
+  roving focus, select and swap keyboard model, the second custom list model
+  after CIPHER's. Two examples now; DIFFERENCE RELAY, RING BALANCE and ORDER OF
+  OPERATIONS are all ORDER games, so the third would be copying. Engine defect 3.
+- **A counterclockwise rotation in ROTATE LOCK.** A piece that needs a quarter
+  turn left costs three moves. Par counts it the same way, so the tier is fair,
+  but it may read as busywork. A rule change that lowers every par, so it waits
+  for the manual mobile check. ROTATE-LOCK.md risk 2.
+- **The registry agreement test has no loop for a built but planned game.**
+  ROTATE LOCK got its own test beside the live loop. When the second new game is
+  built the two should become one loop over built modules with status checked
+  separately.
+- **ROTATE LOCK's manual mobile check.** The gate's only refusal for it. With the
+  registry row set live in a copy of the tree, every automated probe passed and
+  the stub's empty `manual-mobile-check` refused, which also fails the certify
+  test that every live plan is passable, so the row stays planned. Run
+  MANUAL-CHECKS.md for ROTATE LOCK on devices, record it as a `manual` step in
+  its `GAME_PLANS` row, flip the row to live and commit the record.
+- The **`unused` glyph** item above now has a second reason: ROTATE LOCK is the
+  first game whose ordinary result, any run over eight moves, shows it.

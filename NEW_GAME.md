@@ -11,7 +11,7 @@ A game is a module whose default export is `defineGameV3(...)` over a `GameModul
 ## 2. The order of work
 
 1. **Design document.** Write the game's design document before any code. Exit condition: it answers every item of ARCHITECTURE2.md section 44, listed in section 4 below, and the rules are testable in Node without a browser and need no invented behavior.
-2. **Scaffold.** Run `npm run new-game -- --id <kebab-case-id> --name "<DISPLAY NAME>" --hue <0-359>`. Exit condition: the scaffold's own tests pass under `npm test` and nothing else was edited. Section 11 lists what it writes.
+2. **Scaffold.** For a slate game that already has a `planned` registry row, run `npm run new-game -- --id <id>`: the row is adopted and the registry is left alone, template decision 10. For a new id, run `npm run new-game -- --id <kebab-case-id> --name "<DISPLAY NAME>" --hue <0-359>`. A live id is refused either way. Exit condition: the scaffold's own tests pass under `npm test` and nothing else was edited. Section 12 lists what it writes. Correct the adopted row's provisional values in the same change that builds the game, because the module test holds the two together.
 3. **Rules.** Replace the scaffold's rules with the real ones, with complete tests, before any renderer is touched. Exit condition: every rejection path, terminal condition, determinism property and one legal state property pass in Node.
 4. **Generation.** Build the generator, its generate and verify tools as two separate programs, and the verified manifest. Add `<id>:generate` and `<id>:verify` to `package.json`, and add `npm run <id>:verify` to `.github/workflows/ci.yml` before the certify step. Exit condition: at least 365 days are generated, a separate process verifies every day, and `data/<id>/manifest.index.json` declares the horizon.
 5. **Module.** Fill in the module and its state shape. Exit condition: parsing, fallback generation, snapshot round trip, outcome grading with bucket and difficulty, the run log, the artifact and the share leak checks pass module tests.
@@ -181,6 +181,8 @@ Use real implementations when writing a new game. The scaffold output is the sma
 | Module and share tests | `tests/games/poker-grid/module.test.ts` | `tests/games/cipher/module.test.ts` | `tests/games/vector/module.test.ts` |
 | Certification plan | `GAME_PLANS["poker-grid"]` | `GAME_PLANS.cipher` | `GAME_PLANS.vector` |
 
+ROTATE LOCK, the first game authored on v3 through this guide, is the reference for a `custom` input game with an ORDER plus rotation tray, a route solver shipped to the browser, a verifier that enumerates by a different method, and a plan row that overrides four of the stub's five empty steps: `src/games/rotate-lock/` and `ROTATE-LOCK.md`.
+
 ## 11. The traps
 
 - `dispatch` is synchronous and a renderer must not read its own state after dispatching. The shell applies synchronously and then calls update.
@@ -211,9 +213,9 @@ It writes these files:
 - `tests/games/<id>/module.test.ts`
 - `tests/games/<id>/render.test.ts`
 
-And it inserts three rows, each above its marker, after checking every file and marker before writing anything:
+And it inserts up to three rows, each above its marker, after checking every file and marker before writing anything:
 
-- `src/shell/registry.ts`, `/* NEW_GAME_INSERTION: SUITE_GAMES */`: a `planned` row.
+- `src/shell/registry.ts`, `/* NEW_GAME_INSERTION: SUITE_GAMES */`: a `planned` row, for a new id only. An id with a `planned` row is adopted instead: the module takes the row's display name, rule, accent, epoch, bucket count from 3 to 7, win and loss flag and state version, and the registry is not written.
 - `vite.config.ts`, `/* NEW_GAME_INSERTION: TARGETS */`: a target with `productionSafe: false`, which stays false forever.
 - `tools/certify.ts`, `/* NEW_GAME_INSERTION: GAME_PLANS */`: the `newGamePlan` row of section 6.
 

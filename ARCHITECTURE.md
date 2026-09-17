@@ -16,11 +16,11 @@ resume work in a fresh conversation with no chat history.
 
 | Field | Value |
 |---|---|
-| Current phase | Phase 13 in progress. VECTOR, game three, is built, integrated, and green across the suite. TALLY DROP and RECALL remain. Phase 8's manual checklist is still unrun |
+| Current phase | Phase 13 in progress. VECTOR is live. ROTATE LOCK, the first new game on v3, is built, verified and green, and stays planned until the owner runs its manual mobile check, 2026-09-17. Four new games remain. Phase 8's manual checklist is still unrun |
 | Games playable | POKER GRID, VECTOR, and CIPHER, end to end in a browser, inside the suite shell |
 | Engine contract version | v3 only. The shell has read v3 alone since v3 migration phase 5, part A, 2026-09-16, and phase 6, 2026-09-17, deleted the v2 `GameModule`, `defineGame` and `ShareBlock`. Each game's default export is its v3 module and `npm run new-game` scaffolds v3. ARCHITECTURE2.md section 56 |
 | Release gate | Since v3 migration phase 5 part B a game enters a release only through a production safe `data/<game>/certification.json`, produced by `npm run certify` and checked in CI. The manual mobile check is pending for the three live games under an exemption that expires 2026-12-15. ARCHITECTURE2.md sections 45 and 56 |
-| Manifest horizon | POKER GRID 365 days from epoch 2026-01-01, verified with a solver replay. CIPHER and VECTOR 365 days from epoch 2026-01-05, the first Monday. CIPHER verified against the fixed opening, VECTOR by re-derivation and an independent uniqueness search |
+| Manifest horizon | POKER GRID 365 days from epoch 2026-01-01, verified with a solver replay. CIPHER, VECTOR and ROTATE LOCK 365 days from epoch 2026-01-05, the first Monday. CIPHER verified against the fixed opening, VECTOR by re-derivation and an independent uniqueness search, ROTATE LOCK by re-derivation and an independent arrangement enumeration |
 
 ## Phase log
 
@@ -39,7 +39,7 @@ resume work in a fresh conversation with no chat history.
 | 10 | Suite shell | done | Hub, shell, per game entries, one pass release build with a shared engine chunk, suite storage and streak, daily card, cross promotion. One contract change and one renderer defect, both below |
 | 11 | Game two and abstraction test | done | CIPHER ships at 24.0 KB gzipped. Defect report written, eight defects, and the engine corrected for all of them. Both games rebuilt against the corrected contract and the full suite is green: 43 files, 463 tests, 57 seconds |
 | 12 | Template extraction | done | NEW_GAME.md, tools/new-game.ts, its tests, two insertion markers, and the template decisions are shipped for the Phase 13 games. Rewritten for v3 with a third marker in v3 migration phase 6 |
-| 13 | Games three, four, five | in progress | PHASE-13-PLAN.md. VECTOR built and integrated: seven source files, three tools, a verified 365 day horizon, and green across 577 tests. Zero engine changes, the abstraction test passed. TALLY DROP and RECALL remain |
+| 13 | Games three, four, five | in progress | PHASE-13-PLAN.md. VECTOR built and integrated: seven source files, three tools, a verified 365 day horizon, and green across 577 tests. Zero engine changes, the abstraction test passed. Composition A replaced TALLY DROP and RECALL with five new v3 games. ROTATE LOCK built 2026-09-17: nine source files, three tools, a verified year, 909 tests green, zero engine changes, two engine defects reported in ARCHITECTURE2.md section 56. Planned until its manual mobile check |
 | 14 | Suite launch readiness | not started | |
 
 ## Layer rule
@@ -265,6 +265,32 @@ Table columns are fixed as follows and every future entry uses them.
 | data/vector/manifest.index.json | n/a | Integer horizon, codec, and the single site absolute chunk pointer, in the shape shell/boot reads | none |
 | data/vector/manifest.1-365.json | n/a | The 365 day VECTOR horizon as entries keyed by puzzle number, obfuscated, with the intensity, depth, opening, lever, and attempt | none |
 | data/vector/study.json | n/a | The checked in study behind VECTOR's carve decision and its band edges | none |
+| tools/rotate-lock-calibrate.ts | tools | Samples screened ROTATE LOCK puzzles over a salted stream and writes the study behind the band edges and par bounds | core/rng, core/seed, games/rotate-lock/generator, games/rotate-lock/rules |
+| src/games/rotate-lock/route.ts | 4 | ROTATE LOCK geometry, the arrangement types and the trace, the whole route rule | none |
+| src/games/rotate-lock/solver.ts | 4 | The route level search, dead turns, the arrangements that draw a route, and exact par | games/rotate-lock/route |
+| src/games/rotate-lock/rules.ts | 4 | Puzzle construction with its uniqueness and par proof, swap and rotate, refusals, the jam, tier and bucket, and the move codec | core/result, core/types, games/rotate-lock/route, games/rotate-lock/solver |
+| src/games/rotate-lock/generator.ts | 4 | Direct route construction, the decomposition and symmetry screens, scramble, weekday bands, the unrated fallback and the first session board | games/rotate-lock/route, games/rotate-lock/rules, games/rotate-lock/solver |
+| src/games/rotate-lock/layout-codec.ts | 4 | The 29 symbol manifest layout over the engine codec | engine/manifest-codec, games/rotate-lock/route |
+| src/games/rotate-lock/telemetry.ts | 4 | ROTATE LOCK run log, rows from revisits, title, fingerprint, artifact and the four leak probes | core/types, engine/share-leak, engine/telemetry, engine/tiers, shared/share-vocabulary, games/rotate-lock/rules |
+| src/games/rotate-lock/module.ts | 4 | ROTATE LOCK v3 GameModule: parse, fallback, move log state, outcome, run log and artifact | core/*, contract/*, engine/telemetry, games/rotate-lock/* |
+| src/games/rotate-lock/render.ts | 4 | ROTATE LOCK play area: the glyph board, the route sentence, the tray with selection and the custom keyboard model | ui/dom, contract/types, games/rotate-lock/route, games/rotate-lock/rules |
+| src/games/rotate-lock/style.css | 4 | ROTATE LOCK board, tray and selection styling at 54 pixel cells and 80 by 56 pieces | none |
+| src/games/rotate-lock/help.ts | 4 | ROTATE LOCK structured help and its three piece worked example | core/types |
+| src/shell/entries/rotate-lock.ts | 5 | The ROTATE LOCK bundler entry, written by the scaffold | games/rotate-lock/module, shell/main |
+| src/shell/entries/rotate-lock.html | 5 | The ROTATE LOCK page | none |
+| tools/rotate-lock-generate.ts | tools | Generates and bands the horizon, refuses repeated layouts, writes the chunk and the index | core/rng, core/seed, engine/manifest-codec, games/rotate-lock/generator, games/rotate-lock/layout-codec |
+| tools/rotate-lock-verify.ts | tools | Replays every day and proves one route and par with its own arrangement enumeration that never imports the solver | engine/manifest-codec, games/rotate-lock/generator, games/rotate-lock/layout-codec, games/rotate-lock/rules, tools/rotate-lock-generate |
+| data/rotate-lock/manifest.index.json | n/a | Integer horizon, codec and the one chunk pointer | none |
+| data/rotate-lock/manifest.1-365.json | n/a | The 365 day ROTATE LOCK horizon, obfuscated layouts with par, difficulty, levers and attempt | none |
+| data/rotate-lock/study.json | n/a | The calibration study behind the band edges and par bounds, with a sample head a test recomputes | none |
+| tests/games/rotate-lock/fixtures.ts | n/a | The tutorial board, openings, solving lines and a play helper | games/rotate-lock/* |
+| tests/games/rotate-lock/route.test.ts | n/a | Geometry and every trace failure | games/rotate-lock/route |
+| tests/games/rotate-lock/solver.test.ts | n/a | Uniqueness, the limit, agreement with the verifier's enumeration, par formulas and par exact by breadth first search | games/rotate-lock/*, tools/rotate-lock-verify |
+| tests/games/rotate-lock/rules.test.ts | n/a | Every refusal, revisits, tier edges, the jam, layout refusals, the move codec and a random play property | games/rotate-lock/rules |
+| tests/games/rotate-lock/generator.test.ts | n/a | Determinism, bands, par range, the fallback budget, the study recompute, both screens with controls and the tutorial board | games/rotate-lock/generator, tools/rotate-lock-calibrate, tools/rotate-lock-generate |
+| tests/games/rotate-lock/module.test.ts | n/a | Contract surface, registry agreement, every committed day parsed and measured, refusals, state round trip and the artifact | games/rotate-lock/module |
+| tests/games/rotate-lock/telemetry.test.ts | n/a | Run log, fixed share strings, rows independent of the puzzle, the leak matrix and a positive control per probe | games/rotate-lock/telemetry, engine/artifact, engine/share-leak |
+| tests/games/rotate-lock/render.test.ts | n/a | ROTATE LOCK's accessibility contract: labels, one tab stop, tap and keyboard play, announcements, the drawn route, read only and teardown | games/rotate-lock/render, games/rotate-lock/rules |
 | tests/games/vector/propagate.test.ts | n/a | Geometry, candidates and suppliers, the deduction rounds, stall and contradiction, and uniqueness by an independent search | games/vector/propagate |
 | tests/games/vector/rules.test.ts | n/a | Cycle, set and submit, every rejection path, terminal grading, and a random legal sequence property | games/vector/rules |
 | tests/games/vector/generator.test.ts | n/a | Carve invariants, intensity consistency, the screens, band ordering, the unrated fallback, and the first session board | games/vector/generator, games/vector/propagate |
@@ -797,6 +823,19 @@ for later games without changing the engine seam.
    marked the untapped target cell with a question mark, which put the day's
    answer on screen, and never imported its stylesheet. Both are corrected, and
    a render test asserts the target cell is indistinguishable until found.
+10. **The scaffold adopts a planned registry row.** Approved 2026-09-17 as
+    option A, charter Phase 13. The slate's unbuilt games are registry rows
+    before they are code, and `validateGameId` refused every one of them. Now a
+    `planned` id is adopted: the scaffold reads the row's display name, rule,
+    accent, epoch, bucket count, win and loss flag and state version, writes the
+    game from them, and does not touch the registry; a `live` id is still
+    refused, and `--name` and `--hue` become optional and are refused when they
+    disagree with the row. The stub's miss count follows the bucket count, which
+    is held to 3 to 7 so its longest run fits seven share rows. Deleting the row
+    first was rejected because it throws away the slate order and the hue
+    spacing the registry records, and a printed row to paste back is the
+    remembering this scaffold exists to remove. The row's values are provisional
+    inputs the author corrects in the same change that builds the game.
 
 ## Settled charter decisions
 

@@ -36,7 +36,7 @@ pipeline, theme/chrome, offline behavior, and certification gate.
 | Network policy | No network dependency for puzzle identity, gameplay, result, telemetry mapping, or share generation |
 | Storage policy | Small JSON snapshot for in-progress state; telemetry retained only when required for the local result artifact |
 | Deployment | Cloudflare Pages at `dailykit.providentia.games` |
-| Migration status | Phases 1 to 4 are done: the contract and engine seams, then VECTOR, CIPHER and POKER GRID, each implementing v2 and v3 at once. Phase 5 is done: part A moved the shell, the hub and the daily card to v3 with one share composer, and part B made the section 45 gate a CI job whose committed records decide which games a release contains. Phase 6 is done, 2026-09-17: the v2 contract is deleted, every game's default export is its v3 module, and the scaffold writes v3 and a certification plan row. The first new game on v3 is next (section 56) |
+| Migration status | Phases 1 to 4 are done: the contract and engine seams, then VECTOR, CIPHER and POKER GRID, each implementing v2 and v3 at once. Phase 5 is done: part A moved the shell, the hub and the daily card to v3 with one share composer, and part B made the section 45 gate a CI job whose committed records decide which games a release contains. Phase 6 is done, 2026-09-17: the v2 contract is deleted, every game's default export is its v3 module, and the scaffold writes v3 and a certification plan row. Charter Phase 13, 2026-09-17: ROTATE LOCK, the first new game on v3, is built and verified, and stays planned until its manual mobile check (section 56) |
 | Chosen lineup | Approved 2026-09-13: the five recommended concepts become the new build slate, DIFFERENCE RELAY, TURN TABLE, RING BALANCE, ORDER OF OPERATIONS, ROTATE LOCK. This supersedes SLATE.md's five for new work; the three legacy games stay live. Composition A approved the same day: the suite is eight games, not five, and TALLY DROP and RECALL are cancelled. ROTATE LOCK was named VECTOR LOCK until the rename that removed the collision with the shipped VECTOR. Carried into `src/shell/registry.ts`, section 56 |
 | This document | The active architecture target. ARCHITECTURE.md is the v2 record the legacy games still satisfy and is retained until migration completes |
 
@@ -3268,3 +3268,145 @@ choice is whether the scaffold adopts an existing planned row and its provisiona
 | .github/copilot-instructions.md, .github/instructions/contract, games and tools-and-build, .github/prompts/onboard.prompt.md | v3 contract names, applied by the owner from `phase6-github.patch` |
 | ARCHITECTURE.md | Status, manifest rows, contract decisions 2, 3 and 5 amended, template decisions 1 and 5 amended, 7 to 9 added |
 | BACKLOG.md | The folder fold and the V3 suffix rename |
+
+## Charter Phase 13, ROTATE LOCK. Built 2026-09-17, planned until its manual mobile check.
+
+Not a migration phase: the first game authored on v3 from its first line, logged
+here because this section is the handoff record. ROTATE-LOCK.md is the design
+document and answers every item of section 44.
+
+### Decisions, approved 2026-09-17
+
+1. **ROTATE LOCK first** among the five, the most complex, overriding
+   PHASE-13-PLAN.md section 1.1's order.
+2. **Scaffold option A.** `npm run new-game` adopts a planned registry row.
+   Template decision 10 in ARCHITECTURE.md. Built and tested before the scaffold
+   ran for `rotate-lock`, and proven in two throwaway copies: the real row, and a
+   row changed to seven buckets, win and loss, state version 3, each typechecking
+   and passing its own tests with the registry byte for byte unchanged.
+3. **The design document and the build in one conversation**, the owner's answer
+   to HANDOFF's open question.
+
+### What was built
+
+Nine source files under `src/games/rotate-lock/`: `route.ts` (the trace, the
+whole rule), `solver.ts` (route level search, dead turns, exact par), `rules.ts`,
+`generator.ts`, `layout-codec.ts`, `telemetry.ts`, `module.ts`, `render.ts`,
+`help.ts`, plus `style.css`. Three tools: generate, verify, calibrate. A 365 day
+manifest, the calibration study, and seven test files.
+
+The game as settled, briefly: seven straight pieces of length 1 to 3 on a six by
+six board; swap two or rotate one clockwise, each a move; the route opens the
+lock when it stays on the board, never re-enters a cell, turns at every mark and
+ends on the lock, and it may turn elsewhere. Scored by moves against an exact
+par, five tiers, a jam at 56 moves. Difficulty is dead turns. Share grammar B:
+one meter token per move, a hollow one for a move back into an arrangement the
+run had already been in.
+
+### Found while building, inside the game
+
+1. **The rule that turns happen only at marks made every board trivially
+   unique.** The prototype found one route for every candidate and a difficulty
+   of at most a few dozen dead turns, which cannot fill seven bands and reads as
+   connect the dots. Allowing unmarked turns and hiding up to two corners as a
+   lever made uniqueness a real screen (half the candidates at one hidden turn,
+   six sevenths at two) and the difficulty an 871 value distribution.
+2. **The first verifier took 117 seconds.** A sound distance and parity prune,
+   written in the verifier and not borrowed from the solver, brought it to 53.
+3. **The scaffold's share title read the win flag.** An adopted row with
+   `hasWinLoss: false` titled a found target "not found". Fixed in the template
+   to read the find itself, with a test.
+
+### Green after the change
+
+| Gate | Result |
+|---|---|
+| Typecheck | the three programs |
+| Dependency check | layers verified |
+| Tests | 69 files, 909 tests, 62 and 833 before |
+| Verifiers | POKER GRID 365, CIPHER 365, VECTOR 365, ROTATE LOCK 365 in about 53 seconds |
+| Production build | engine chunk `engine-v2.js` 30,262 bytes, byte identical; ROTATE LOCK absent, as a planned game must be |
+| Byte budget | Hub 17.6, POKER GRID 27.8, CIPHER 25.7, VECTOR 28.0, About 3.4 KB gzipped; ROTATE LOCK 28.3 in a certification build |
+| `certify -- --check` | three games production safe, every committed record unchanged |
+| ROTATE LOCK gate, registry set live in a copy | every automated probe passed; refused on `manual-mobile-check` alone |
+
+### Offline smoke, recorded 2026-09-17
+
+Headless Chromium at 360 by 740 against `vite preview` of a release shaped build
+whose target list admitted rotate-lock by a patch in a throwaway copy: the hub,
+ROTATE LOCK twice (the practice board, then day 256 from the manifest), two
+moves played, VECTOR and the hub, all with the worker controlling; then offline,
+the hub and ROTATE LOCK from cache with 36 cells, 7 pieces and both moves
+restored. No console error and no horizontal scroll. Recorded as the manual
+`offline-smoke` step of ROTATE LOCK's plan. The screenshot showed the whole game
+on one screen at 360 by 740, and showed defects 1 and 2 below.
+
+### Defect report, requirement 7.4
+
+ROTATE LOCK was built with zero engine changes. `src/core`, `src/engine`,
+`src/ui`, `src/contract`, `src/shared` and `src/shell` code were not touched;
+the suite level edits were data and configuration: the registry row corrected
+and moved, a build target and a plan row written by the scaffold, two scripts in
+`package.json`, a CI step, and one registry test.
+
+1. **No game renders its own accent.** Wanted: ROTATE LOCK in hue 308. Why:
+   requirement 7.3.8. `applyAccent` sets `--dk-accent-hue` on the game root, but
+   `--dk-accent` is declared on `:root`, where its `var()` resolves against the
+   root hue, 210, and children inherit the computed colour, so every game in the
+   suite draws the same blue. Instead: nothing, the game uses the suite variable
+   like the others. Correction: redeclare `--dk-accent`, `--dk-focus` and their
+   dark and contrast variants on the element `applyAccent` writes to, then
+   rebuild all four games and re-run the smoke. This is a live defect in the
+   three shipped games, not only the new one.
+2. **The header truncates the display name at 360 pixels.** Wanted: ROTATE LOCK
+   in full. Instead: nothing; the name shows as "ROTATE ...". Correction: let the
+   header title wrap to two lines or step down a size past a length, before
+   DIFFERENCE RELAY and ORDER OF OPERATIONS, which are longer.
+3. **No ORDER adapter in the presentation kit.** Wanted: section 21's reusable
+   adapter. Instead: a roving focus, select and swap keyboard model written in
+   `render.ts`, under `custom` input, the second list model after CIPHER's.
+   Correction: `ui/listCursor.ts` with focus, select, swap and a pass through
+   verb, built with the next ORDER game as its second consumer.
+
+Not defects, recorded so they are not rediscovered: the scaffold stub could not
+express a five bucket win and loss game with a jam until option A read those
+from the row, and it now does; the gate cannot make a new game production safe
+without a person's device check, which is the gate working.
+
+**Could this game have been authored from NEW_GAME.md and the scaffold alone?**
+Yes for everything the gate measures, once option A existed: the procedure, the
+stub plan and the contract were enough, and nothing reached the engine. The
+cheapest change that would have made it smoother is the ORDER list cursor of
+defect 3; defects 1 and 2 were invisible to every automated check and only a
+rendered screen at 360 pixels found them.
+
+### Files
+
+| Path | Change |
+|---|---|
+| ROTATE-LOCK.md | New: the design document |
+| tools/new-game.ts, tests/tools/new-game.test.ts | Option A, the row driven stub, the title fix |
+| tests/tools/certify.test.ts | The no plan case names an id that has none |
+| src/games/rotate-lock/* | New: the game |
+| src/shell/entries/rotate-lock.ts, rotate-lock.html | New, from the scaffold |
+| src/shell/registry.ts | ROTATE LOCK's rule, five buckets and win and loss; first among the planned games |
+| vite.config.ts | The rotate-lock target, `productionSafe: false` |
+| tools/certify.ts | The rotate-lock plan: calibration, decomposition, symmetry, leak and offline smoke steps |
+| tools/rotate-lock-generate.ts, rotate-lock-verify.ts, rotate-lock-calibrate.ts | New |
+| data/rotate-lock/manifest.index.json, manifest.1-365.json, study.json | New, generated |
+| tests/games/rotate-lock/* | New: seven test files and fixtures |
+| tests/shell/registry.test.ts | ROTATE LOCK held to its module while planned |
+| package.json | `rotate-lock:generate`, `:verify`, `:calibrate` |
+| .github/workflows/ci.yml | `rotate-lock:verify` before build |
+| .github/instructions/tools-and-build.instructions.md | The scaffold adopts a planned row |
+| NEW_GAME.md | Step 2 and section 12 for adoption; ROTATE LOCK as a reference |
+| ARCHITECTURE.md | Status, phase log, manifest rows, template decision 10 |
+| BACKLOG.md | The three defects, the rotation verb, the registry loop, the manual check |
+
+### Next
+
+**DIFFERENCE RELAY is game five**, decided 2026-09-17, which restores
+PHASE-13-PLAN.md section 1.1's order for the four that remain. Its conversation
+begins with the three corrections above, because requirement 7.4 puts them after
+the report and before the next game, and because the list cursor of defect 3 must
+exist before an ORDER game consumes it. HANDOFF.md carries the detail.
