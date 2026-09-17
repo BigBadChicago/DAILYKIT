@@ -7,7 +7,8 @@
  * page is interactive and the lookahead prefetch waits for idle, so they are
  * not part of a cold load.
  *
- * Run after a release build. It reads dist/ and nothing else.
+ * Run after a release build. It reads dist/, or the directory given as its one
+ * argument, and nothing else.
  */
 
 import { gzipSync } from "node:zlib";
@@ -16,7 +17,9 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const dist = resolve(root, "dist");
+/* dist/ by default. The certify job budgets its own build in dist-certify, which
+   contains every live game whatever its committed record says. */
+const dist = resolve(root, process.argv[2] ?? "dist");
 
 /** Constraint 2.7, excluding fonts, of which there are none. */
 const BUDGET_BYTES = 150 * 1024;

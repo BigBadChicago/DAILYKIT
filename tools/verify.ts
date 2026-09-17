@@ -105,15 +105,34 @@ export function verifyChunk(chunk: ManifestChunk, options: VerifyOptions = {}): 
   return boards.length;
 }
 
+/**
+ * Gate step duplicate-check. Two days with the same 35 cards in the same cells
+ * would be one puzzle shared twice, which a player comparing archives would see.
+ * Compared on decoded cells, because the codec is keyed by day and the same
+ * board encodes differently on two dates.
+ */
+export function assertNoRepeatedBoard(chunk: ManifestChunk, seen: Map<string, number>): void {
+  for (const entry of entriesOf(chunk)) {
+    const cells = decodeBoard(entry.number, entry.board);
+    if (cells === null) throw new Error(`puzzle ${entry.number}: board does not decode`);
+    const key = cells.join(",");
+    const twin = seen.get(key);
+    if (twin !== undefined) throw new Error(`puzzle ${entry.number}: same board as puzzle ${twin}`);
+    seen.set(key, entry.number);
+  }
+}
+
 export function verifyDirectory(directory = OUTPUT_DIR, options: VerifyOptions = {}): number {
   const files = readdirSync(directory).filter((name) => /^manifest\.\d{4}-\d{2}\.json$/.test(name)).sort();
   let checked = 0;
   let expected = 1;
+  const seenBoards = new Map<string, number>();
   for (const file of files) {
     const chunk = JSON.parse(readFileSync(`${directory}/${file}`, "utf8")) as ManifestChunk;
     if (chunk.from !== expected) throw new Error(`${file}: expected to start at ${expected}, starts at ${chunk.from}`);
     expected = chunk.to + 1;
     checked += verifyChunk(chunk, options);
+    assertNoRepeatedBoard(chunk, seenBoards);
   }
   if (checked === 0) throw new Error(`no manifest chunks found in ${directory}`);
 

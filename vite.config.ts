@@ -2,9 +2,11 @@
  * Build configuration. Contract decision 12 and the Build model in
  * ARCHITECTURE.md.
  *
- * The allow list below is the single place a game becomes shippable. It both
- * excludes toy-v3 and the share harness from production and names every entry
- * a release build contains.
+ * The allow list below names every entry a release build may contain. A page
+ * with no game ships or not by its hand set flag. A game ships only when its
+ * committed data/<game>/certification.json is production safe today, per
+ * ARCHITECTURE2 section 45; a game target may not carry a hand set true, and
+ * toy-v3, which has no record, never ships.
  *
  * ## Why the release build assembles the whole suite in one pass
  *
@@ -40,6 +42,14 @@ import {
   cacheNameFor,
   precacheAssets,
 } from "./tools/sw-manifest.js";
+import {
+  CERTIFY_BUILD_ENV,
+  CERTIFY_DIST,
+  liveGameIds,
+  localDate,
+  nodeFilesystem,
+  productionSafeFromDisk,
+} from "./tools/certify.js";
 
 const root = dirname(fileURLToPath(import.meta.url));
 
@@ -59,25 +69,28 @@ interface Target {
   /** Directory under dist/. The empty string is the site root. */
   readonly outPath: string;
   readonly html: string;
-  /** Names the data directory to deploy, and is absent for pages with none. */
+  /** Names the data directory to deploy, and is absent for pages with none. A
+   *  target with a gameId is gated by that game's certification record. */
   readonly gameId?: string;
+  /** Pages without a game only. For a game this may only be false. */
   readonly productionSafe: boolean;
 }
 
-/** The allow list. A game ships by being added here and in no other way. */
+/** The allow list. A game ships by being added here and by certification, and in
+ *  no other way. */
 const TARGETS: Readonly<Record<string, Target>> = {
   hub: { outPath: "", html: "src/hub/index.html", productionSafe: true },
   "poker-grid": {
     outPath: "poker-grid",
     html: "src/shell/entries/poker-grid.html",
     gameId: "poker-grid",
-    productionSafe: true,
+    productionSafe: false,
   },
   cipher: {
     outPath: "cipher",
     html: "src/shell/entries/cipher.html",
     gameId: "cipher",
-    productionSafe: true,
+    productionSafe: false,
   },
   "toy-v3": {
     outPath: "toy-v3",
@@ -91,7 +104,7 @@ const TARGETS: Readonly<Record<string, Target>> = {
     outPath: "vector",
     html: "src/shell/entries/vector.html",
     gameId: "vector",
-    productionSafe: true,
+    productionSafe: false,
   },
   /* NEW_GAME_INSERTION: TARGETS */
 };
@@ -104,18 +117,46 @@ const ENGINE_DIRS = ["/src/core/", "/src/engine/", "/src/ui/", "/src/contract/",
 
 const ENGINE_CHUNK = "engine";
 
-function selectTargets(name: string | undefined, isProduction: boolean): [string, Target][] {
+/**
+ * Whether a target may enter a production build. A game's answer comes from its
+ * record and nothing else; a certification build admits every live game so the
+ * gate can measure a game before its first record exists.
+ */
+function releasable(target: Target, certifyBuild: boolean): boolean {
+  if (target.gameId === undefined) return target.productionSafe;
+  if (target.productionSafe) {
+    throw new Error(`${target.gameId} sets productionSafe by hand; a game ships only by certification`);
+  }
+  if (certifyBuild) return liveGameIds().includes(target.gameId);
+  return productionSafeFromDisk(target.gameId, localDate(), nodeFilesystem);
+}
+
+function selectTargets(
+  name: string | undefined,
+  isProduction: boolean,
+  certifyBuild: boolean,
+): [string, Target][] {
   if (name === undefined || name === "all") {
-    return Object.entries(TARGETS).filter(
-      ([, target]) => target.productionSafe || !isProduction,
+    const selected = Object.entries(TARGETS).filter(
+      ([, target]) => !isProduction || releasable(target, certifyBuild),
     );
+    if (isProduction) {
+      for (const [id, target] of Object.entries(TARGETS)) {
+        if (target.gameId !== undefined && liveGameIds().includes(target.gameId) && !selected.some(([key]) => key === id)) {
+          /* Loud, not fatal: the certify job is what fails CI. A release that
+             drops a live game still builds, and says so. */
+          console.warn(`dailykit: ${id} is live but not production safe today and is left out of this build`);
+        }
+      }
+    }
+    return selected;
   }
   const target = TARGETS[name];
   if (target === undefined) {
     throw new Error(`GAME must be one of all, ${Object.keys(TARGETS).join(", ")}, got ${name}`);
   }
-  if (isProduction && !target.productionSafe) {
-    throw new Error(`${name} is excluded from production builds by the allow list`);
+  if (isProduction && !releasable(target, certifyBuild)) {
+    throw new Error(`${name} is excluded from production builds: not certified production safe`);
   }
   return [[name, target]];
 }
@@ -252,12 +293,17 @@ function swManifestPlugin(): Plugin {
 export default defineConfig(({ mode }) => {
   const isProduction = mode === "production";
   const selected = process.env["GAME"];
-  const targets = selectTargets(selected, isProduction);
+  const certifyBuild = process.env[CERTIFY_BUILD_ENV] === "1";
+  const targets = selectTargets(selected, isProduction, certifyBuild);
   /* A single target build reaches only part of the engine, so its engine chunk
      is a subset and must never be written over a release tree's. It goes to its
      own directory, which is also why it is a development convenience and not a
      deploy path. */
-  const outDir = selected === undefined || selected === "all" ? "dist" : "dist-dev";
+  const outDir = certifyBuild
+    ? CERTIFY_DIST
+    : selected === undefined || selected === "all"
+      ? "dist"
+      : "dist-dev";
   const input = Object.fromEntries(
     targets.map(([name, target]) => [name, resolve(root, target.html)]),
   );

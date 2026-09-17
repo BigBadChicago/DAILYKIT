@@ -223,6 +223,29 @@ the result, which is a human pass across real devices.
   so, as engine decision 21 always did. The fault reaches only the no operation
   analytics seam, so in version 1 nobody learns of it outside a test.
 
+## Logged in the v3 migration, phase 5 part B
+
+- **Decomposition and symmetry checkers for the three live games.** Recorded
+  `n/a` with a reason. Writing them means designing a section 12 check for a
+  concept that shipped before section 12, which is a design task per game rather
+  than a gate task.
+- **Offline smoke in CI.** A recorded manual result for now. Automating it needs
+  Playwright and a browser in CI, which is a build time dependency change and
+  goes through constraint 2.3 first.
+- **Run MANUAL-CHECKS.md once.** The exemption for the manual mobile check
+  expires 2026-12-15. After that date `certify --check` fails and a release build
+  leaves out all three live games, by design.
+- **The POKER GRID and CIPHER horizons end with 2026.** Both start at puzzle 1
+  on a 2026 epoch and hold 365 days, so from early January 2027 every day is
+  generated and unrated. The gate checks at least 365 days exist, not that they
+  still cover today. A horizon extension and a gate step for remaining days
+  belong together.
+- **`certifiedCommit` names the parent commit.** A record cannot name the commit
+  that contains it, so it names HEAD when the outcomes were produced. Accepted.
+- **A release build that drops a live game still deploys a hub linking to it.**
+  The warning and the failing certify step are the defence. Making the hub read
+  release status would couple the registry to the build.
+
 ## Logged in Phase 12
 
 - **A shared non grid keyboard cursor.** The scaffold keeps custom keyboard

@@ -164,14 +164,19 @@ function fail(puzzleNumber: number, why: string): never {
 
 function main(): void {
   const dir = flag("dir", "data/vector");
+  /* The shell's index shape, shell/boot.ts parseIndex. The url is site
+     absolute, so the file is found by its name inside --dir. */
   const index = JSON.parse(readFileSync(`${dir}/manifest.index.json`, "utf8")) as {
-    horizon: { first: number; last: number };
-    chunks: { first: number; last: number; url: string }[];
+    horizon: number;
+    chunks: { from: number; to: number; url: string }[];
   };
+  if (!Number.isInteger(index.horizon) || index.horizon < 1) fail(0, "index horizon is not a positive integer");
 
   const entries = new Map<number, Entry>();
   for (const chunk of index.chunks) {
-    const body = JSON.parse(readFileSync(`${dir}/${chunk.url}`, "utf8")) as {
+    if (!chunk.url.startsWith("/")) fail(chunk.from, `chunk url ${chunk.url} is not site absolute`);
+    const name = chunk.url.split("/").pop() as string;
+    const body = JSON.parse(readFileSync(`${dir}/${name}`, "utf8")) as {
       entries: Record<string, Entry>;
     };
     for (const [key, entry] of Object.entries(body.entries)) entries.set(Number(key), entry);
@@ -180,7 +185,7 @@ function main(): void {
   const seenLayouts = new Map<string, number>();
   let checked = 0;
 
-  for (let puzzleNumber = index.horizon.first; puzzleNumber <= index.horizon.last; puzzleNumber += 1) {
+  for (let puzzleNumber = 1; puzzleNumber <= index.horizon; puzzleNumber += 1) {
     const entry = entries.get(puzzleNumber);
     if (entry === undefined) fail(puzzleNumber, "missing from every chunk");
 

@@ -13,7 +13,7 @@ A game is a module that satisfies `GameModule`. The shell loads it through a sin
 3. Build the generator, its two separate tools, and the verified manifest. Exit condition: 365 days are generated and a separate process verifies every day before a browser sees it.
 4. Write the module and its state shape. Exit condition: parsing, fallback generation, snapshot round trip, outcome grading, distribution buckets, and share rows pass module tests.
 5. Build the renderer and style. Exit condition: keyboard and declared pointer input work, announcements and visible focus work, and the layout passes at 360 pixels with reduced motion.
-6. Add the entry file and the two configuration lines. Exit condition: the entry imports the module and calls `mountShell`, the registry entry is `planned`, and the allow list entry is `productionSafe: false` until the game is ready.
+6. Add the entry file and the two configuration lines. Exit condition: the entry imports the module and calls `mountShell`, the registry entry is `planned`, and the allow list entry is `productionSafe: false` permanently. A game reaches a release only through a production safe `data/<id>/certification.json` from `npm run certify`, which needs a plan for the game in `GAME_PLANS` in `tools/certify.ts`; setting `productionSafe: true` on a game target makes the build throw. ARCHITECTURE2.md section 45.
 7. Write the defect report. Exit condition: every wanted engine change is logged as a defect, the report is appended before corrections, and no engine source was changed during the build.
 
 This order is not a preference. A game must be playable through a Node script before a browser sees it, because a renderer written against unproven rules debugs two things at once.

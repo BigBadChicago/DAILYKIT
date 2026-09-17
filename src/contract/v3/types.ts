@@ -4,7 +4,7 @@
  * legacy games keep compiling against contract/types.ts unchanged.
  */
 
-import type { CertificationRecord } from "../../engine/certification.js";
+import type { PuzzleCertification } from "../../engine/certification.js";
 import type { ShareGrammar } from "../../engine/share-grammar.js";
 import type { TelemetryPattern } from "../../core/types.js";
 
@@ -29,6 +29,6 @@ export interface ManifestEntryV3 {
   readonly puzzlePayload: unknown;
   readonly difficulty: number;
   readonly band: number;
-  readonly certification: CertificationRecord | null;
+  readonly certification: PuzzleCertification | null;
   readonly shareCapabilities: ShareCapabilities;
 }

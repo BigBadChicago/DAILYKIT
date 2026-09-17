@@ -18,6 +18,7 @@ resume work in a fresh conversation with no chat history.
 | Current phase | Phase 13 in progress. VECTOR, game three, is built, integrated, and green across the suite. TALLY DROP and RECALL remain. Phase 8's manual checklist is still unrun |
 | Games playable | POKER GRID, VECTOR, and CIPHER, end to end in a browser, inside the suite shell |
 | Engine contract version | The shell reads v3 only as of v3 migration phase 5, part A, 2026-09-16. The v2 contract still exists because the three live games and the scaffold implement it, and nothing in the shell or hub renders a v2 share block any more. It is retired in v3 migration phase 6. ARCHITECTURE2.md section 56 |
+| Release gate | Since v3 migration phase 5 part B a game enters a release only through a production safe `data/<game>/certification.json`, produced by `npm run certify` and checked in CI. The manual mobile check is pending for the three live games under an exemption that expires 2026-12-15. ARCHITECTURE2.md sections 45 and 56 |
 | Manifest horizon | POKER GRID 365 days from epoch 2026-01-01, verified with a solver replay. CIPHER and VECTOR 365 days from epoch 2026-01-05, the first Monday. CIPHER verified against the fixed opening, VECTOR by re-derivation and an independent uniqueness search |
 
 ## Phase log
@@ -111,7 +112,7 @@ Table columns are fixed as follows and every future entry uses them.
 | vitest.config.ts | n/a | Test runner configuration | none |
 | tools/rngvectors.ts | tools | Regenerates the committed determinism vector table | core/rng, core/seed |
 | tools/generate.ts | tools | Screens, bands, and regenerates candidate boards, then writes monthly chunks and the index | core/date, core/seed, games/poker-grid/generator, games/poker-grid/greedy, games/poker-grid/manifest-codec, games/poker-grid/solver |
-| tools/verify.ts | tools | Re-derives every claim a manifest entry makes, including its seed, band, greedy median, and score bounds | core/seed, games/poker-grid/generator, games/poker-grid/greedy, games/poker-grid/manifest-codec, games/poker-grid/rules, games/poker-grid/scoring, games/poker-grid/solver, tools/generate |
+| tools/verify.ts | tools | Re-derives every claim a manifest entry makes, including its seed, band, greedy median, and score bounds, and refuses a board repeated across the horizon | core/seed, games/poker-grid/generator, games/poker-grid/greedy, games/poker-grid/manifest-codec, games/poker-grid/rules, games/poker-grid/scoring, games/poker-grid/solver, tools/generate |
 | tools/depcheck.ts | tools | Enforces the layer rule and prevents cross-game imports in CI | none |
 | tools/calibrate.ts | tools | The Locked decision 5 availability study over whole boards, emitting the derived point table | core/seed, games/poker-grid/generator, games/poker-grid/rules, games/poker-grid/evaluator, games/poker-grid/scoring, shared/poker-hands |
 | tests/core/rng.vectors.ts | n/a | Committed determinism vectors, data not a spec | none |
@@ -161,10 +162,10 @@ Table columns are fixed as follows and every future entry uses them.
 | src/games/poker-grid/greedy.ts | 4 | Legal move listing and the naive reference player difficulty is measured against | core/rng, games/poker-grid/evaluator, games/poker-grid/rules, games/poker-grid/scoring |
 | src/games/poker-grid/manifest-codec.ts | 4 | Board sized wrapper over the engine codec: 35 cells drawn from 52 cards | engine/manifest-codec, games/poker-grid/rules |
 | data/poker-grid/calibration.json | n/a | The checked in availability study behind the scoring table | none |
-| .github/workflows/ci.yml | n/a | Typecheck, tests, and manifest verification on every change | none |
+| .github/workflows/ci.yml | n/a | Typecheck, dependency check, tests, all three verifiers, build, budget, and the certification check on every change | none |
 | .github/workflows/generate.yml | n/a | The job that regenerates and verifies the horizon | none |
 | .gitignore | n/a | Keeps dependencies, build output, and runner scratch out of the repo | none |
-| vite.config.ts | n/a | The GAME allow list, the entry set, the pinned engine chunk, static root file emission, and manifest data deployment | none |
+| vite.config.ts | n/a | The allow list with game release status read from certification records, the entry set, the certification build, the pinned engine chunk, static root file emission, and manifest data deployment | tools/sw-manifest, tools/certify |
 | src/engine/dailycard.ts | 1 | The suite's combined share text, one glyph per game in registry order, composed through the v3 grammar | core/types, engine/share-grammar, engine/tiers, shared/share-vocabulary |
 | src/shell/registry.ts | 5 | The five suite games as data, readable without loading a game | none |
 | src/shell/share-context.ts | 5 | What a share is told about the session, so a replay carries no streak, and composeResultShare, the one path from a finished session to its share string | contract/v3/game-module, core/types, engine/artifact, engine/telemetry |
@@ -177,7 +178,13 @@ Table columns are fixed as follows and every future entry uses them.
 | src/shell/register-sw.ts | 5 | Service worker registration, production builds only, deferred to the load event | none |
 | src/sw/sw.ts | n/a | The service worker. Cache first app shell, stale while revalidate manifest chunks, network only for everything else | none |
 | tools/sw-manifest.ts | tools | The precache list and the cache name, as pure functions shared by the build and its test | none |
-| tools/budget.ts | tools | Constraint 2.7's byte budget, asserted against a built dist/ in CI | none |
+| tools/budget.ts | tools | Constraint 2.7's byte budget, asserted against a built dist/ in CI or the directory named as its argument | none |
+| src/engine/certification.ts | 1 | Gate steps, outcomes, exemptions, the per game record and the per puzzle record, and the rule that makes a record production safe on a date | none |
+| tools/certify.ts | tools | The section 45 gate: per game plans of probes, checks, record hashing, parsing and reconciliation as pure functions, and a runner that writes or checks data/<game>/certification.json | core/canonical-json, engine/certification, shell/registry |
+| data/poker-grid/certification.json, data/cipher/certification.json, data/vector/certification.json | n/a | The committed gate record per live game, read by the build to decide release | none |
+| tests/tools/certify.test.ts | n/a | Plans against the repository, package.json and ci.yml, derived probes, checks, hashing, tamper refusal, reconciliation, and release status from disk | engine/certification, tools/certify |
+| tests/engine/certification.test.ts | n/a | Every refusal: fail, skip, unreasoned n/a, unknown, foreign, expired or not yet issued exemption, missing step, foreign schema | engine/certification |
+| tests/games/vector/render.test.ts | n/a | VECTOR's accessibility contract: grid roles, one focus stop, labels, keyboard play, live status, submit, read only replay, teardown | games/vector/render, games/vector/rules, games/vector/propagate |
 | src/shell/changelog.ts | 5 | The entry list, the app version, and what a returning player is shown | none |
 | src/games/poker-grid/tutorial.ts | 4 | The fixed first session board and how it was chosen | games/poker-grid/generator |
 | PHASE-12-PLAN.md | n/a | The Phase 12 specification, acceptance criteria, and the self check before handover | none |
@@ -211,7 +218,7 @@ Table columns are fixed as follows and every future entry uses them.
 | static/site.webmanifest | n/a | Web app manifest, deployed at the site root | none |
 | tests/engine/dailycard.test.ts | n/a | Row shape, the ungraded case, the grammar, the ninth game decision point, and the text equivalent | engine/dailycard, engine/share-grammar, engine/tiers |
 | tests/shell/registry.test.ts | n/a | Registry uniqueness, agreement with built modules, and cross promotion | shell/registry, engine/stats, games/poker-grid/module |
-| tests/shell/boot.test.ts | n/a | Chunk lookup by puzzle number, the format and missing day messages, the horizon fallback, and chunk caching | shell/boot |
+| tests/shell/boot.test.ts | n/a | Chunk lookup by puzzle number, the format and missing day messages, the horizon fallback, chunk caching, and every live game's committed manifest loaded through the real module | shell/boot, games/cipher/module, games/poker-grid/module, games/vector/module |
 | tests/shell/suite.test.ts | n/a | Today status per game, read only guarantees, daily card input, theme port | shell/suite, shell/registry, engine/* |
 | tests/hub/hub.test.ts | n/a | Card listing, links, the daily card, tier badges, and accessible names | hub/hub, shell/* |
 | tests/games/poker-grid/generator.test.ts | n/a | Determinism, deck legality, weekday levers, and the guarantees each lever makes | games/poker-grid/generator, games/poker-grid/evaluator, core/seed |
@@ -253,7 +260,7 @@ Table columns are fixed as follows and every future entry uses them.
 | tools/vector-verify.ts | tools | Re-derives every entry and proves uniqueness with an independent pruned search that never reads the propagator's answer | core/rng, core/seed, engine/manifest-codec, games/vector/generator, games/vector/propagate, tools/vector-generate |
 | tools/vector-calibrate.ts | tools | Measures the screened intensity distribution over the engine stream and prints the septile band edges | core/rng, core/seed, games/vector/generator |
 | tools/vector-play.ts | tools | Plays VECTOR in a terminal, the step two proof that the rules work before a browser sees them | games/vector/propagate, games/vector/rules |
-| data/vector/manifest.index.json | n/a | Horizon, codec, and the single chunk pointer | none |
+| data/vector/manifest.index.json | n/a | Integer horizon, codec, and the single site absolute chunk pointer, in the shape shell/boot reads | none |
 | data/vector/manifest.1-365.json | n/a | The 365 day VECTOR horizon as entries keyed by puzzle number, obfuscated, with the intensity, depth, opening, lever, and attempt | none |
 | data/vector/study.json | n/a | The checked in study behind VECTOR's carve decision and its band edges | none |
 | tests/games/vector/propagate.test.ts | n/a | Geometry, candidates and suppliers, the deduction rounds, stall and contradiction, and uniqueness by an independent search | games/vector/propagate |
@@ -388,6 +395,16 @@ That file plus its sibling HTML is the whole of a game's build surface, it is
 what makes each game its own chunk, and it is why `src/shell/main.ts` names no
 game. The allow list in `vite.config.ts` decides which of those entries a
 production build contains, which is contract decision 12 unchanged.
+
+**Certification decides a game's place on the allow list.** Since v3 migration
+phase 5 part B a target with a `gameId` ships only when
+`data/<gameId>/certification.json` is production safe on the build's local date,
+and a game target that sets `productionSafe: true` by hand makes the build throw.
+Pages with no game, the hub and the about page, keep their hand set flag. A
+release that leaves out a live game warns and still builds, because the certify
+step is what fails CI. `DAILYKIT_CERTIFY_BUILD=1` makes a build that admits every
+live game and writes to `dist-certify/`, which `npm run certify` budgets and
+nothing deploys. The gate itself is ARCHITECTURE2.md section 45.
 
 Measured against constraint 2.7. Bytes are asserted in CI by
 `npm run budget`, which sums the gzipped size of each page's own HTML plus

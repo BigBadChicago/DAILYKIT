@@ -31,6 +31,11 @@ jobs:
       # that writes a bad day and a bug that fails to notice one must not be
       # able to be the same bug.
       - run: npm run cipher:verify
+      # Game three. VECTOR's verifier existed from its first phase and CI never
+      # ran it, so a change could invalidate its horizon without failing a
+      # build. The uniqueness search makes this the slowest step, about 100
+      # seconds, and it stays in CI anyway.
+      - run: npm run vector:verify
       # Phase 10. The release build is the only build that produces the shared
       # engine chunk, so a change that breaks bundling must fail here rather
       # than at deploy time.
@@ -38,3 +43,9 @@ jobs:
       # Constraint 2.7's byte half. The build has to have run first, because
       # this reads dist/ and sums what each page actually references.
       - run: npm run budget
+      # ARCHITECTURE2 section 45. Last on purpose: --from-ci records the npm
+      # steps above as passed, which is only true because a failing step stops
+      # the job before reaching this one. It still checks every file itself,
+      # refuses any live game that is not production safe today, and fails if a
+      # committed data/<game>/certification.json no longer matches the gate.
+      - run: npm run certify -- --check --from-ci

@@ -11,7 +11,7 @@ import {
   MIN_OPENING_MOVES,
   saltFor,
 } from "../../tools/generate.js";
-import { verifyChunk, verifyEntry, type GeneratedEntry, type ManifestChunk } from "../../tools/verify.js";
+import { assertNoRepeatedBoard, verifyChunk, verifyEntry, type GeneratedEntry, type ManifestChunk } from "../../tools/verify.js";
 import { calibrate } from "../../tools/calibrate.js";
 import { MANIFEST_CODEC } from "../../src/games/poker-grid/manifest-codec.js";
 import { weekdayFor } from "../../src/games/poker-grid/generator.js";
@@ -22,7 +22,7 @@ import {
   difficultyFrom,
   greedyTotalFor,
 } from "../../src/games/poker-grid/difficulty.js";
-import { decodeBoard } from "../../src/games/poker-grid/manifest-codec.js";
+import { decodeBoard, encodeBoard } from "../../src/games/poker-grid/manifest-codec.js";
 
 /* Phase 11 correction, defect 7. A chunk keys its entries by puzzle number, so
    the test builds one the same way the tool does. */
@@ -168,5 +168,28 @@ describe("POKER GRID manifest difficulty, sampled", () => {
     expect(difficultyFrom(entry.best.score + 500, entry.greedyTotal)).not.toBe(honest);
     expect(difficultyFrom(entry.best.score, entry.greedyTotal + 500)).not.toBe(honest);
     expect(() => verifyEntry({ ...entry, greedyTotal: entry.greedyTotal + 500 })).toThrow();
+  });
+});
+
+describe("POKER GRID duplicate check", () => {
+  it("refuses a board that repeats an earlier day, compared on decoded cells", () => {
+    const first = generateEntry(1).entry;
+    const seen = new Map<string, number>();
+    assertNoRepeatedBoard(chunkOf([first]), seen);
+    const cells = decodeBoard(first.number, first.board);
+    expect(cells).not.toBeNull();
+    /* The same board again under a later number, which the codec encodes
+       differently, so only a decoded comparison can see it. */
+    const again = generateEntry(2).entry;
+    const twin: GeneratedEntry = { ...again, board: encodeBoard(again.number, cells!) };
+    expect(() => assertNoRepeatedBoard(chunkFrom("2026-01", [twin]), seen)).toThrow(/same board as puzzle 1/);
+  });
+
+  it("accepts the committed horizon", () => {
+    const seen = new Map<string, number>();
+    for (const name of readdirSync(OUTPUT_DIR).filter((file) => /^manifest\.\d{4}-\d{2}\.json$/.test(file)).sort()) {
+      assertNoRepeatedBoard(JSON.parse(readFileSync(`${OUTPUT_DIR}/${name}`, "utf8")) as ManifestChunk, seen);
+    }
+    expect(seen.size).toBe(365);
   });
 });

@@ -466,7 +466,7 @@ describe("difficulty against the shipped horizon", () => {
       chunks: readonly { url: string }[];
     };
     const url = (index.chunks[0] as { url: string }).url;
-    const chunk = JSON.parse(readFileSync(`data/vector/${url}`, "utf8")) as {
+    const chunk = JSON.parse(readFileSync(url.replace(/^\//, ""), "utf8")) as {
       entries: Record<string, { best: { difficulty: number } }>;
     };
 

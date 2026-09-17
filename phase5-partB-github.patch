@@ -1,0 +1,65 @@
+diff --git a/.github/instructions/tools-and-build.instructions.md b/.github/instructions/tools-and-build.instructions.md
+index 3b8193b..098d828 100644
+--- a/.github/instructions/tools-and-build.instructions.md
++++ b/.github/instructions/tools-and-build.instructions.md
+@@ -18,10 +18,13 @@ configuration is the single place a game becomes shippable.
+    hour and rewrites verified data.
+ 3. **A month is written the moment it closes**, so a failure late in a run does
+    not throw away the boards already earned.
+-4. **The allow list in `vite.config.ts` is how a game ships.** Adding an entry
+-   there and its `src/shell/entries/<id>.ts` file is the whole build surface of a
+-   game. `toy-v3` and the share harness are excluded from production
+-   deliberately and permanently.
++4. **The allow list in `vite.config.ts` names what may ship; certification
++   decides.** Adding an entry there and its `src/shell/entries/<id>.ts` file is
++   the whole build surface of a game, and a game target's `productionSafe` is
++   always false. A game ships only when `data/<id>/certification.json` is
++   production safe, produced by `npm run certify`. Never hand edit a record: its
++   hash is checked and an edited record reads as none. `toy-v3` and the share
++   harness are excluded from production deliberately and permanently.
+ 5. **A release is one build.** All entries in one pass, because that is the only
+    construction that computes a shared engine chunk across them. `GAME=<id> vite
+    build` writes to `dist-dev/` and is a development convenience, never a deploy.
+@@ -32,10 +35,11 @@ configuration is the single place a game becomes shippable.
+    tree produce identical file names and an identical `sw-manifest.json`. The
+    service worker cache name depends on it.
+ 8. **CI order is the gate order.** typecheck, typecheck:tools, typecheck:sw,
+-   depcheck, test, the verify scripts, build, budget. A new check goes into
+-   `.github/workflows/ci.yml` in the position where its failure is most
+-   informative.
+-9. **`npm run budget` reads `dist/`.** It must run after a build, and it fails
+-   over 150 KB gzipped for any page.
++   depcheck, test, the three verify scripts, build, budget, and last
++   `certify --check --from-ci`, which trusts the steps before it only because a
++   failing step stops the job. A new check goes into `.github/workflows/ci.yml`
++   before the certify step, and a script a gate plan names must appear there.
++9. **`npm run budget` reads `dist/`** unless given a directory. It must run after
++   a build, and it fails over 150 KB gzipped for any page.
+ 10. **Adding a dependency is a constraint change**, not a commit. Propose it with
+     the reason and wait.
+diff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml
+index bbd07ce..91a0f34 100644
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -31,6 +31,11 @@ jobs:
+       # that writes a bad day and a bug that fails to notice one must not be
+       # able to be the same bug.
+       - run: npm run cipher:verify
++      # Game three. VECTOR's verifier existed from its first phase and CI never
++      # ran it, so a change could invalidate its horizon without failing a
++      # build. The uniqueness search makes this the slowest step, about 100
++      # seconds, and it stays in CI anyway.
++      - run: npm run vector:verify
+       # Phase 10. The release build is the only build that produces the shared
+       # engine chunk, so a change that breaks bundling must fail here rather
+       # than at deploy time.
+@@ -38,3 +43,9 @@ jobs:
+       # Constraint 2.7's byte half. The build has to have run first, because
+       # this reads dist/ and sums what each page actually references.
+       - run: npm run budget
++      # ARCHITECTURE2 section 45. Last on purpose: --from-ci records the npm
++      # steps above as passed, which is only true because a failing step stops
++      # the job before reaching this one. It still checks every file itself,
++      # refuses any live game that is not production safe today, and fails if a
++      # committed data/<game>/certification.json no longer matches the gate.
++      - run: npm run certify -- --check --from-ci

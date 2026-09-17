@@ -1,0 +1,84 @@
+{
+  "schema": 1,
+  "gameId": "poker-grid",
+  "certifiedCommit": "6d9a238464d2",
+  "outcomesHash": "a765d10d334b711aad93f67c38999b5e9bb360d7734f399b0edc4c8905432122",
+  "checks": {
+    "typecheck": {
+      "outcome": "pass",
+      "evidence": "npm:typecheck, npm:typecheck:tools, npm:typecheck:sw"
+    },
+    "tests": {
+      "outcome": "pass",
+      "evidence": "npm:test"
+    },
+    "dependency-check": {
+      "outcome": "pass",
+      "evidence": "npm:depcheck"
+    },
+    "determinism-vectors": {
+      "outcome": "pass",
+      "evidence": "test:tests/core/rng.test.ts"
+    },
+    "generation-pipeline": {
+      "outcome": "pass",
+      "evidence": "test:tests/tools/poker-grid-pipeline.test.ts"
+    },
+    "independent-verification": {
+      "outcome": "pass",
+      "evidence": "npm:poker-grid:verify"
+    },
+    "difficulty-calibration": {
+      "outcome": "pass",
+      "evidence": "file:data/poker-grid/calibration.json, test:tests/games/poker-grid/difficulty.test.ts"
+    },
+    "yearly-horizon": {
+      "outcome": "pass",
+      "evidence": "npm:poker-grid:verify, horizon:poker-grid"
+    },
+    "duplicate-check": {
+      "outcome": "pass",
+      "evidence": "npm:poker-grid:verify"
+    },
+    "decomposition-check": {
+      "outcome": "n/a",
+      "reason": "Built before ARCHITECTURE2 section 12.1; no decomposition checker exists for this concept. Retrofit logged in BACKLOG.md."
+    },
+    "symmetry-check": {
+      "outcome": "n/a",
+      "reason": "Built before ARCHITECTURE2 section 12.2; no symmetry checker exists for this concept. Retrofit logged in BACKLOG.md."
+    },
+    "share-leak-check": {
+      "outcome": "pass",
+      "evidence": "test:tests/games/poker-grid/telemetry.test.ts"
+    },
+    "glyph-check": {
+      "outcome": "pass",
+      "evidence": "test:tests/engine/share-grammar.test.ts"
+    },
+    "accessibility-contract": {
+      "outcome": "pass",
+      "evidence": "test:tests/games/poker-grid/render.test.ts, test:tests/ui/a11y.test.ts"
+    },
+    "state-round-trip": {
+      "outcome": "pass",
+      "evidence": "test:tests/games/poker-grid/module.test.ts"
+    },
+    "manifest-round-trip": {
+      "outcome": "pass",
+      "evidence": "test:tests/games/poker-grid/manifest-codec.test.ts, test:tests/shell/boot.test.ts"
+    },
+    "offline-smoke": {
+      "outcome": "pass",
+      "evidence": "manual 2026-09-16: Headless Chromium against vite preview of the release build, engine-v2: service worker installed, server stopped, context offline; hub and POKER GRID, CIPHER and VECTOR rendered their boards from cache. Offline decision 12 requires a rerun after any change to the worker or to asset naming."
+    },
+    "byte-budget": {
+      "outcome": "pass",
+      "evidence": "npm:build, npm:budget, page:poker-grid"
+    },
+    "manual-mobile-check": {
+      "outcome": "pending",
+      "exemption": "manual-mobile-2026-09-16"
+    }
+  }
+}

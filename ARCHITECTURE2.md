@@ -36,7 +36,7 @@ pipeline, theme/chrome, offline behavior, and certification gate.
 | Network policy | No network dependency for puzzle identity, gameplay, result, telemetry mapping, or share generation |
 | Storage policy | Small JSON snapshot for in-progress state; telemetry retained only when required for the local result artifact |
 | Deployment | Cloudflare Pages at `dailykit.providentia.games` |
-| Migration status | Phases 1 to 4 are done: the contract and engine seams, then VECTOR, CIPHER and POKER GRID, each implementing v2 and v3 at once. Phase 5 part A is done: the shell, the hub and the daily card read v3 only and there is one share composer. Part B, the certification gate as a CI job, is next, then phase 6 retires the v2 contract (section 56) |
+| Migration status | Phases 1 to 4 are done: the contract and engine seams, then VECTOR, CIPHER and POKER GRID, each implementing v2 and v3 at once. Phase 5 is done: part A moved the shell, the hub and the daily card to v3 with one share composer, and part B made the section 45 gate a CI job whose committed records decide which games a release contains. Phase 6, retiring the v2 contract, is next (section 56) |
 | Chosen lineup | Approved 2026-09-13: the five recommended concepts become the new build slate, DIFFERENCE RELAY, TURN TABLE, RING BALANCE, ORDER OF OPERATIONS, ROTATE LOCK. This supersedes SLATE.md's five for new work; the three legacy games stay live. Composition A approved the same day: the suite is eight games, not five, and TALLY DROP and RECALL are cancelled. ROTATE LOCK was named VECTOR LOCK until the rename that removed the collision with the shipped VECTOR. Carried into `src/shell/registry.ts`, section 56 |
 | This document | The active architecture target. ARCHITECTURE.md is the v2 record the legacy games still satisfy and is retained until migration completes |
 
@@ -2018,6 +2018,16 @@ MANUAL MOBILE CHECK
 The production allow list must be a consequence of certification, never a consequence
 of directory existence.
 
+**As built, v3 migration phase 5 part B.** `tools/certify.ts` evaluates every step
+for every live registry game and commits `data/<game>/certification.json`.
+`vite.config.ts` admits a game target only when that record is production safe on
+the build's local date, and refuses a game target that sets `productionSafe` by hand.
+A step's outcome is `pass`, `fail`, `skip`, `n/a` or `pending`. A skip always
+refuses. `n/a` passes only with a written reason stored in the record. `pending`
+passes only under an exemption in `GATE_EXEMPTIONS` that names the step and the game
+and has not expired. The record carries no timestamp; it carries the commit it was
+produced at and a hash of its outcomes, and is rewritten only when an outcome changes.
+
 That preserves the previous template decision that new entries begin planned and
 production-disabled until their rules, manifest, accessibility, and verification are
 actually ready. fileciteturn1file0L683-L700
@@ -2342,6 +2352,11 @@ certification fixtures
 ↓
 byte budget
 ```
+
+As built after v3 migration phase 5 part B, `ci.yml` runs typecheck, typecheck:tools,
+typecheck:sw, depcheck, the full test suite (which contains the property, share and
+certification fixture tests), the three verifiers, build, budget, and last
+`certify --check --from-ci`.
 
 `.github/workflows/generate.yml` must run:
 
@@ -2890,7 +2905,7 @@ to draw thresholds from; the graphic card, still unbuilt for every game; and the
 shared effort record, which phase 2 said phase 4 was the last chance to make a
 pattern.
 
-## Phase 5, the shell on v3. Part A done 2026-09-16, part B next.
+## Phase 5, the shell on v3 and the gate. Done 2026-09-16.
 
 Part A moved the shell, the hub and the daily card onto v3 and left one share
 composer in the codebase. Green after the change: 59 files, 762 tests, three
@@ -2993,14 +3008,129 @@ imports the v3 composer. The chunk grew from 10.67 to 11.10 KB gzipped.
 | tests/games/cipher, poker-grid, vector module tests | `bucketOf` held equal to the outcome; `SHARE_MAX_ROWS` from the grammar |
 | NEW_GAME.md, .github/copilot-instructions.md, .github/instructions/contract and tools-and-build | Fixture and share path references |
 
-### Part B, next
+### Part B, the certification gate as a CI job. Done 2026-09-16.
 
-The section 45 gate as a CI job, as approved: `tools/certify.ts` writes
-`data/<game>/certification.json`; an `n/a` outcome requires a written reason; any
-failing automated step fails CI; the manual mobile check is `pending` under a
-dated exemption for the three live games until MANUAL-CHECKS.md is run once;
-`vite.config.ts` reads `productionSafe` from the record; `ci.yml` gains
-`vector:verify`, which it has never run, and the certify job.
+Green after the change: 62 files, 818 tests, three typechecks, the dependency
+check, all three verifiers, the production build and the byte budget (VECTOR
+28.1 KB gzipped, the rest unchanged), `npm run certify` writing a production safe
+record for all three games, `certify --check --from-ci` passing against a release
+build, and the offline smoke below.
+
+#### Decisions, approved 2026-09-16
+
+1. `tools/certify.ts` runs every gate step that exists for each live game and
+   writes `data/<game>/certification.json`.
+2. `n/a` is admitted only with a written reason stored in the record.
+   `decomposition-check` and `symmetry-check` are `n/a` for all three live games,
+   because they were built before section 12 and no checker exists.
+   `difficulty-calibration` is a pass on the committed legacy studies.
+3. Any automated step that fails fails CI.
+4. `manual-mobile-check` is `pending` under exemption `manual-mobile-2026-09-16`,
+   covering POKER GRID, CIPHER and VECTOR only, issued 2026-09-16 and holding to
+   2026-12-15 inclusive.
+5. `vite.config.ts` reads each game's release status from its record.
+6. `ci.yml` gains `vector:verify` and the certify step.
+7. `offline-smoke` is a recorded manual result, not a CI browser step.
+8. The certify step in CI trusts the npm steps before it through `--from-ci`,
+   rather than rerunning them, and refuses that flag outside CI.
+9. The record has no `generatedAt`. It has `certifiedCommit` and `outcomesHash`.
+
+#### What changed
+
+**The gate is data.** `engine/certification.ts` holds `GateCheck`, a
+discriminated union that makes a reason mandatory for `n/a` and an exemption id
+mandatory for `pending`, the `GATE_EXEMPTIONS` table, and `refusalsFor`, which
+lists every reason a record is not safe on a given local date. `isProductionSafe`
+is that list being empty. Adding an exemption is an edit to engine source.
+
+**Two records, not one.** The type part A left in place mixed a per game gate
+result with a per puzzle `VerificationResult`. The gate record is now
+`CertificationRecord`; the section 25 per puzzle record a manifest entry may carry
+is `PuzzleCertification`, and `ManifestEntryV3.certification` names it.
+
+**Probes, shared by key.** Each step is a list of probes: an npm script, a spec
+file that must exist under a passing `npm test`, a committed file, a manifest
+index declaring at least 365 days, or a game page present in the budgeted build.
+Steps that name the same probe share one run, so a local certification runs each
+command once, about three minutes. A certification build sets
+`DAILYKIT_CERTIFY_BUILD` and writes to `dist-certify/`, which admits every live
+game whatever its record says, so a game can be measured before its first record
+exists and nothing that directory holds is ever deployed.
+
+**The record changes only when the gate does.** `outcomesHash` is sha256 over the
+canonical JSON of the game id and its checks. `certify` keeps the committed record
+when the hash is unchanged, and `--check` fails when it would not. `parseRecord`
+recomputes the hash, so a hand edited outcome reads as no record at all.
+
+**No deadlock on a failed record.** The first design had a test asserting every
+committed record passed. Because the tests are evidence inside the records, one
+failure would have held the records failed forever: the next run would see that
+test fail and write the failure again. It happened once in this phase and is why
+the test now asserts only that a present record parses in canonical form. Whether
+a record is safe and current is `certify --check`'s question.
+
+**The build reads the gate.** A game target's `productionSafe` may only be false;
+its release status comes from `productionSafeFromDisk`. A production build that
+leaves out a live game warns rather than fails, because the certify step is what
+fails CI, and a `GAME=<id>` production build of an uncertified game throws.
+
+#### Defects the gate found in live games
+
+1. **VECTOR could not load a real day.** `tools/vector-generate.ts` wrote the
+   index as `horizon: { first, last }` with chunks carrying `first`, `last` and a
+   relative url. `PuzzleSource` reads an integer horizon and chunks with `from`,
+   `to` and a site absolute url, refused the index, and showed "The puzzle list
+   could not be loaded." to every player past the practice board. Every earlier
+   check stopped at the practice board, and every `PuzzleSource` test used a
+   stub. Found by the offline smoke. The generator now writes the shell's shape
+   and requires `--first 1`, the verifier reads it, the committed index was
+   rewritten with the chunk bytes untouched, and `tests/shell/boot.test.ts` loads
+   days 1 and 365 of every live game from the committed files through the real
+   module. That test is now evidence for `manifest-round-trip`, and the horizon
+   probe refuses the old shape.
+2. **VECTOR had no renderer test.** `accessibility-contract` had no evidence for
+   game three. `tests/games/vector/render.test.ts` covers the grid roles, one
+   focus stop, labels for clues, blanks and placed arrows, arrow key movement,
+   keyboard play, the live status, submit, read only replay and teardown.
+3. **POKER GRID had no duplicate check across its horizon.** Its verifier checked
+   35 distinct cards within a board, not distinct boards across days.
+   `assertNoRepeatedBoard` compares decoded cells, since the codec is keyed by day.
+
+#### Offline smoke, recorded 2026-09-16
+
+Headless Chromium at 360 pixels against `vite preview` of the release build with
+`engine-v2.js`: each page visited online, the worker activated and controlling,
+the server stopped, the context set offline, then every page revisited. The hub
+rendered its eight cards, POKER GRID 35 cards, CIPHER its six keys and VECTOR its
+36 cells, with no console error. Before the VECTOR index fix the same run failed on
+VECTOR, which is the defect above. The evidence string is in each record and the
+run is owed again after any change to the worker or to asset naming, per offline
+decision 12.
+
+#### Files
+
+| Path | Change |
+|---|---|
+| src/engine/certification.ts | `GateCheck`, `GATE_EXEMPTIONS`, `CERTIFICATION_SCHEMA`, `refusalsFor`, `isProductionSafe` by date; `PuzzleCertification` split out |
+| src/contract/v3/types.ts | `ManifestEntryV3.certification` is `PuzzleCertification` |
+| tools/certify.ts | New: plans, probes, records, and the runner |
+| tools/budget.ts | Takes the directory to budget as an argument |
+| tools/verify.ts | `assertNoRepeatedBoard` |
+| tools/vector-generate.ts, tools/vector-verify.ts | The shell's index shape |
+| data/vector/manifest.index.json | Rewritten in the shell's shape; chunk unchanged |
+| data/poker-grid, cipher, vector/certification.json | New: the committed records |
+| vite.config.ts | Game release status from the record; certification build |
+| package.json | `certify`; `clean` removes `dist-certify` |
+| .gitignore | `dist-certify` |
+| .github/workflows/ci.yml | `vector:verify` and the certify step, applied by the owner from a patch |
+| .github/instructions/tools-and-build.instructions.md | The gate in the build rules, same patch |
+| NEW_GAME.md | Step 6 names certification as how a game ships |
+| tests/engine/certification.test.ts | New: every refusal |
+| tests/tools/certify.test.ts | New: plans against the repository and ci.yml, probes, checks, records |
+| tests/games/vector/render.test.ts | New: VECTOR's accessibility contract |
+| tests/shell/boot.test.ts | Committed manifests through the real source and modules |
+| tests/tools/poker-grid-pipeline.test.ts | The duplicate check, both directions |
+| tests/games/vector/module.test.ts | Reads the site absolute chunk url |
 
 ## Phase 6, retire the v2 contract. After part B, before any new game.
 
@@ -3009,3 +3139,8 @@ Delete the v2 `GameModule`, `defineGame`, `ShareBlock`, and each game's
 default; rewrite `tools/new-game.ts` and NEW_GAME.md to scaffold v3; rewrite the
 byte identity tests in `tests/shell/share-context.test.ts` against fixed strings,
 since the v2 block they compare against will be gone.
+
+Phase 6 also owns the gate's side of authoring: the scaffold must add a
+`GAME_PLANS` row in `tools/certify.ts` for a new game, since a live game with no
+plan fails `certify`, and NEW_GAME.md must say that a new game reaches the release
+only through its own record. `manual-mobile-2026-09-16` does not cover a new game.

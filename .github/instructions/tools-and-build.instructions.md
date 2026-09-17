@@ -18,10 +18,13 @@ configuration is the single place a game becomes shippable.
    hour and rewrites verified data.
 3. **A month is written the moment it closes**, so a failure late in a run does
    not throw away the boards already earned.
-4. **The allow list in `vite.config.ts` is how a game ships.** Adding an entry
-   there and its `src/shell/entries/<id>.ts` file is the whole build surface of a
-   game. `toy-v3` and the share harness are excluded from production
-   deliberately and permanently.
+4. **The allow list in `vite.config.ts` names what may ship; certification
+   decides.** Adding an entry there and its `src/shell/entries/<id>.ts` file is
+   the whole build surface of a game, and a game target's `productionSafe` is
+   always false. A game ships only when `data/<id>/certification.json` is
+   production safe, produced by `npm run certify`. Never hand edit a record: its
+   hash is checked and an edited record reads as none. `toy-v3` and the share
+   harness are excluded from production deliberately and permanently.
 5. **A release is one build.** All entries in one pass, because that is the only
    construction that computes a shared engine chunk across them. `GAME=<id> vite
    build` writes to `dist-dev/` and is a development convenience, never a deploy.
@@ -32,10 +35,11 @@ configuration is the single place a game becomes shippable.
    tree produce identical file names and an identical `sw-manifest.json`. The
    service worker cache name depends on it.
 8. **CI order is the gate order.** typecheck, typecheck:tools, typecheck:sw,
-   depcheck, test, the verify scripts, build, budget. A new check goes into
-   `.github/workflows/ci.yml` in the position where its failure is most
-   informative.
-9. **`npm run budget` reads `dist/`.** It must run after a build, and it fails
-   over 150 KB gzipped for any page.
+   depcheck, test, the three verify scripts, build, budget, and last
+   `certify --check --from-ci`, which trusts the steps before it only because a
+   failing step stops the job. A new check goes into `.github/workflows/ci.yml`
+   before the certify step, and a script a gate plan names must appear there.
+9. **`npm run budget` reads `dist/`** unless given a directory. It must run after
+   a build, and it fails over 150 KB gzipped for any page.
 10. **Adding a dependency is a constraint change**, not a commit. Propose it with
     the reason and wait.

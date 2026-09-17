@@ -91,7 +91,9 @@ function main(): void {
   const first = Number(flag("first", "1"));
   const count = Number(flag("count", "365"));
   const outDir = flag("out", "data/vector");
-  if (!Number.isInteger(first) || first < 1 || !Number.isInteger(count) || count < 1) {
+  /* An integer horizon means every day from 1 to it is published, so a run
+     that starts later cannot write an index on its own. */
+  if (first !== 1 || !Number.isInteger(count) || count < 1) {
     stdout.write("usage: vector-generate --first <n> --count <n> --out <dir>\n");
     exit(1);
   }
@@ -139,11 +141,17 @@ function main(): void {
   );
   writeFileSync(
     `${outDir}/manifest.index.json`,
+    /* The shape PuzzleSource in shell/boot.ts reads, which is the shape the
+       other games write: an integer horizon counted from puzzle 1, chunks with
+       from and to, and a site absolute url. VECTOR shipped with first and last
+       and a relative url, which the shell refused, so every real day read as
+       "could not be loaded". Found by the offline smoke in v3 migration phase 5
+       part B. */
     `${JSON.stringify(
       {
         codec: MANIFEST_CODEC,
-        horizon: { first, last },
-        chunks: [{ first, last, url: chunkName }],
+        horizon: last,
+        chunks: [{ from: first, to: last, url: `/${outDir}/${chunkName}` }],
       },
       null,
       2,

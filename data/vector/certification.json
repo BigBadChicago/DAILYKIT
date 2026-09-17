@@ -1,0 +1,84 @@
+{
+  "schema": 1,
+  "gameId": "vector",
+  "certifiedCommit": "6d9a238464d2",
+  "outcomesHash": "dcecaad07970351c868a3a17df730c97750c4148cf933d891b4cef64ec8fded8",
+  "checks": {
+    "typecheck": {
+      "outcome": "pass",
+      "evidence": "npm:typecheck, npm:typecheck:tools, npm:typecheck:sw"
+    },
+    "tests": {
+      "outcome": "pass",
+      "evidence": "npm:test"
+    },
+    "dependency-check": {
+      "outcome": "pass",
+      "evidence": "npm:depcheck"
+    },
+    "determinism-vectors": {
+      "outcome": "pass",
+      "evidence": "test:tests/core/rng.test.ts"
+    },
+    "generation-pipeline": {
+      "outcome": "pass",
+      "evidence": "test:tests/games/vector/generator.test.ts"
+    },
+    "independent-verification": {
+      "outcome": "pass",
+      "evidence": "npm:vector:verify"
+    },
+    "difficulty-calibration": {
+      "outcome": "pass",
+      "evidence": "file:data/vector/study.json, test:tests/games/vector/generator.test.ts"
+    },
+    "yearly-horizon": {
+      "outcome": "pass",
+      "evidence": "npm:vector:verify, horizon:vector"
+    },
+    "duplicate-check": {
+      "outcome": "pass",
+      "evidence": "npm:vector:verify"
+    },
+    "decomposition-check": {
+      "outcome": "n/a",
+      "reason": "Built before ARCHITECTURE2 section 12.1; no decomposition checker exists for this concept. Retrofit logged in BACKLOG.md."
+    },
+    "symmetry-check": {
+      "outcome": "n/a",
+      "reason": "Built before ARCHITECTURE2 section 12.2; no symmetry checker exists for this concept. Retrofit logged in BACKLOG.md."
+    },
+    "share-leak-check": {
+      "outcome": "pass",
+      "evidence": "test:tests/games/vector/telemetry.test.ts"
+    },
+    "glyph-check": {
+      "outcome": "pass",
+      "evidence": "test:tests/engine/share-grammar.test.ts"
+    },
+    "accessibility-contract": {
+      "outcome": "pass",
+      "evidence": "test:tests/games/vector/render.test.ts, test:tests/ui/a11y.test.ts"
+    },
+    "state-round-trip": {
+      "outcome": "pass",
+      "evidence": "test:tests/games/vector/module.test.ts"
+    },
+    "manifest-round-trip": {
+      "outcome": "pass",
+      "evidence": "test:tests/games/vector/module.test.ts, test:tests/shell/boot.test.ts"
+    },
+    "offline-smoke": {
+      "outcome": "pass",
+      "evidence": "manual 2026-09-16: Headless Chromium against vite preview of the release build, engine-v2: service worker installed, server stopped, context offline; hub and POKER GRID, CIPHER and VECTOR rendered their boards from cache. Offline decision 12 requires a rerun after any change to the worker or to asset naming."
+    },
+    "byte-budget": {
+      "outcome": "pass",
+      "evidence": "npm:build, npm:budget, page:vector"
+    },
+    "manual-mobile-check": {
+      "outcome": "pending",
+      "exemption": "manual-mobile-2026-09-16"
+    }
+  }
+}
