@@ -3402,3 +3402,11 @@ rendered screen at 360 pixels found them.
 | NEW_GAME.md | Step 2 and section 12 for adoption; ROTATE LOCK as a reference |
 | ARCHITECTURE.md | Status, phase log, manifest rows, template decision 10 |
 | BACKLOG.md | The three defects, the rotation verb, the registry loop, the manual check |
+
+### Next
+
+**DIFFERENCE RELAY is game five**, decided 2026-09-17, which restores
+PHASE-13-PLAN.md section 1.1's order for the four that remain. Its conversation
+begins with the three corrections above, because requirement 7.4 puts them after
+the report and before the next game, and because the list cursor of defect 3 must
+exist before an ORDER game consumes it. HANDOFF.md carries the detail.
