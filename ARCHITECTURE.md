@@ -17,7 +17,7 @@ resume work in a fresh conversation with no chat history.
 |---|---|
 | Current phase | Phase 13 in progress. VECTOR, game three, is built, integrated, and green across the suite. TALLY DROP and RECALL remain. Phase 8's manual checklist is still unrun |
 | Games playable | POKER GRID, VECTOR, and CIPHER, end to end in a browser, inside the suite shell |
-| Engine contract version | 2, corrected by the Phase 11 defect report. Chunks are keyed entries, granularity is gone, tiers belong to the module |
+| Engine contract version | 2, corrected by the Phase 11 defect report. Chunks are keyed entries, granularity is gone, tiers belong to the module. All three live games additionally satisfy v3 as of the v3 migration's phase 4; the engine and shell are still v2 |
 | Manifest horizon | POKER GRID 365 days from epoch 2026-01-01, verified with a solver replay. CIPHER and VECTOR 365 days from epoch 2026-01-05, the first Monday. CIPHER verified against the fixed opening, VECTOR by re-derivation and an independent uniqueness search |
 
 ## Phase log
@@ -86,10 +86,12 @@ Table columns are fixed as follows and every future entry uses them.
 | src/games/toy-tap/module.ts | 4 | Contract regression fixture, never shipped | core/result, core/types, contract/* |
 | src/games/poker-grid/evaluator.ts | 4 | Five card hand classification and card decoding | shared/poker-hands |
 | src/games/poker-grid/scoring.ts | 4 | Empirically calibrated hand point table, the clearing dominance constants, and tier calculation | shared/poker-hands, games/poker-grid/evaluator |
-| src/games/poker-grid/rules.ts | 4 | Pure selection, gravity, commit, terminal, and connected move rules with lazy enumeration | core/result, core/types, shared/poker-hands, games/poker-grid/evaluator, games/poker-grid/scoring, games/poker-grid/generator |
+| src/games/poker-grid/rules.ts | 4 | Pure selection, gravity, commit, terminal, and connected move rules with lazy enumeration, plus the per hand effort record and the board facts the outcome is built from | core/result, core/types, shared/poker-hands, games/poker-grid/evaluator, games/poker-grid/scoring, games/poker-grid/generator |
 | src/games/poker-grid/generator.ts | 4 | Seeded board construction, the weekday lever schedule, and puzzle shape validation | core/rng, core/seed, core/types, games/poker-grid/rules, games/poker-grid/evaluator |
 | src/games/poker-grid/solver.ts | 4 | Exact memoized search under a node ceiling, falling back to a width carrying beam | games/poker-grid/evaluator, games/poker-grid/rules, games/poker-grid/scoring |
-| src/games/poker-grid/module.ts | 4 | POKER GRID GameModule implementation, puzzle parsing, state snapshots, and share data | core/result, core/types, engine/tiers, shared/poker-hands, contract/*, games/poker-grid/evaluator, games/poker-grid/generator, games/poker-grid/rules, games/poker-grid/scoring |
+| src/games/poker-grid/module.ts | 4 | POKER GRID GameModule on v2 and v3 at once, puzzle parsing, state snapshots, outcome, and share data | core/result, core/types, contract/*, contract/v3/*, engine/telemetry, shared/poker-hands, games/poker-grid/difficulty, games/poker-grid/evaluator, games/poker-grid/generator, games/poker-grid/help, games/poker-grid/manifest-codec, games/poker-grid/render, games/poker-grid/rules, games/poker-grid/scoring, games/poker-grid/telemetry, games/poker-grid/tutorial |
+| src/games/poker-grid/difficulty.ts | 4 | The emergent integer difficulty in basis points, the nine seeded greedy runs behind it, the greedy salt, and the unrated sentinel | core/seed, core/types, games/poker-grid/generator, games/poker-grid/greedy |
+| src/games/poker-grid/telemetry.ts | 4 | POKER GRID run log, rework bands, fingerprint, artifact rows and title, the v3 outcome, and the four leak probes | core/types, engine/share-leak, engine/telemetry, engine/tiers, shared/poker-hands, shared/share-vocabulary, games/poker-grid/difficulty, games/poker-grid/evaluator, games/poker-grid/rules, games/poker-grid/scoring |
 | src/games/poker-grid/render.ts | 4 | POKER GRID board renderer with card faces, pointer gestures, keyboard activation, and state repaint | ui/dom, ui/gridCursor, contract/types, games/poker-grid/evaluator, games/poker-grid/rules, games/poker-grid/generator |
 | src/games/poker-grid/style.css | 4 | POKER GRID board layout, card styling, suit shapes, responsive sizing, and motion layers | none |
 | src/games/poker-grid/help.ts | 4 | POKER GRID structured help content and worked example | core/types |
@@ -150,7 +152,9 @@ Table columns are fixed as follows and every future entry uses them.
 | tests/tools/share-harness.test.ts | n/a | Grapheme width measurement and case coverage | share-harness/main, share-harness/cases |
 | tests/games/poker-grid/evaluator.test.ts | n/a | Poker category, ordinal, wheel, and wrapped straight coverage | games/poker-grid/evaluator |
 | tests/games/poker-grid/rules.test.ts | n/a | Gravity, selection rejection, commit, move uniqueness, and terminal coverage | games/poker-grid/evaluator, games/poker-grid/rules |
-| tests/games/poker-grid/module.test.ts | n/a | Deterministic generation, snapshot recovery, mismatch rejection, and unrated share coverage | games/poker-grid/generator, games/poker-grid/module, games/poker-grid/rules |
+| tests/games/poker-grid/module.test.ts | n/a | Deterministic generation, snapshot recovery, mismatch rejection, unrated share coverage, the state version 2 refusal, and the v3 seam | games/poker-grid/difficulty, games/poker-grid/generator, games/poker-grid/module, games/poker-grid/rules |
+| tests/games/poker-grid/difficulty.test.ts | n/a | Basis point arithmetic, the unrated cases, greedy replay, memo behaviour, and that the measure moves with its inputs | games/poker-grid/difficulty, games/poker-grid/generator, games/poker-grid/tutorial |
+| tests/games/poker-grid/telemetry.test.ts | n/a | Run log shape, rework bands, fingerprint separation, the nine line cap at seven hands, and a positive control per leak probe | games/poker-grid/telemetry, games/poker-grid/rules, engine/artifact, engine/share-grammar, engine/share-leak |
 | tests/games/poker-grid/scoring.test.ts | n/a | Hand count dominance, quality floor, and deficit tier properties | games/poker-grid/scoring |
 | tests/games/poker-grid/solver.test.ts | n/a | Exact search coverage on a compact legal board | games/poker-grid/solver, games/poker-grid/rules |
 | tests/games/poker-grid/render.test.ts | n/a | Accessible board creation, keyboard activation, repaint, empty cells, and teardown | games/poker-grid/render, games/poker-grid/generator, games/poker-grid/rules |

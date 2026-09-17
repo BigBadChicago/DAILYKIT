@@ -36,7 +36,7 @@ pipeline, theme/chrome, offline behavior, and certification gate.
 | Network policy | No network dependency for puzzle identity, gameplay, result, telemetry mapping, or share generation |
 | Storage policy | Small JSON snapshot for in-progress state; telemetry retained only when required for the local result artifact |
 | Deployment | Cloudflare Pages at `dailykit.providentia.games` |
-| Migration status | v3 adoption in progress. Phase 1, the v3 contract and engine seams, is in design. POKER GRID, CIPHER and VECTOR are live on the v2 contract and treated as legacy modules to migrate, not rewrite (section 47) |
+| Migration status | v3 adoption complete for the three legacy games. Phases 1 to 4 are done: the contract and engine seams, then VECTOR, CIPHER and POKER GRID, each implementing v2 and v3 at once with no engine change. The shell is still v2 and leads nothing (section 56) |
 | Chosen lineup | Approved 2026-09-13: the five recommended concepts become the new build slate, DIFFERENCE RELAY, TURN TABLE, RING BALANCE, ORDER OF OPERATIONS, ROTATE LOCK. This supersedes SLATE.md's five for new work; the three legacy games stay live. Composition A approved the same day: the suite is eight games, not five, and TALLY DROP and RECALL are cancelled. ROTATE LOCK was named VECTOR LOCK until the rename that removed the collision with the shipped VECTOR. Carried into `src/shell/registry.ts`, section 56 |
 | This document | The active architecture target. ARCHITECTURE.md is the v2 record the legacy games still satisfy and is retained until migration completes |
 
@@ -2781,12 +2781,120 @@ Deferred, in BACKLOG.md: the section 19 archetype, which now has two run shapes
 to draw thresholds from and is therefore buildable for the first time, and the
 graphic card, still unbuilt for every game.
 
-## Phase 4, migrate POKER GRID to v3. Next.
+## Phase 4, POKER GRID on v3. Done 2026-09-16.
 
-The last and the hardest of the three, for the two reasons phase 2 named. Its
-tier is graded against a stored optimum rather than derived from play, so
-`difficulty` recomputed rather than read is a real question there and not a
-formality, and its share block is the only one whose rows are not one per
-attempt, so the artifact mapping has a summary bar to carry. Its state holds a
-board and a hand list, so whether a run log is derivable without a state change
-is open, and it is the question to answer first.
+POKER GRID implements v2 and v3 at once, in the shape phases 2 and 3
+established, with no engine change and one suite level data correction, and the
+suite is green: 58 files, 723 tests, three typechecks, the dependency check, all
+three game verifiers including a full 365 day POKER GRID horizon, the production
+build and the byte budget.
+
+**A correction to this document before anything else.** The phase 4 note above
+said POKER GRID's share block has a summary bar to carry. It does not. Recorded
+conflict resolution 9 and POKER-GRID.md 14.1 dropped the bar in charter Phase 2,
+and the shipped `shareBlock` has always emitted one single glyph row per hand.
+Rows are one per attempt after all, so the mapping is the same shape as the other
+two. The consequence is not nothing: seven hands plus a title plus a URL is nine
+lines exactly, so POKER GRID is the first game in the suite to sit **on** section
+49's cap rather than under it. `maxRows` is 7 and the test that renders a perfect
+clear through the grammar, and then adds an eighth row and requires it to fail,
+is load bearing rather than a formality.
+
+**The prediction did not hold: a state change was needed.** `PokerState` held a
+board and a result and nothing about how the player reached either. The one run
+shaped field was `hands`, and `hands` is exactly what the share block renders, so
+a fingerprint built from it would have been the rows restyled and section 18
+would have been false. This game follows VECTOR and not CIPHER, and the rule that
+separates them is now visible: a state that holds a **history** gets its run log
+free, a state that holds a **position** does not.
+
+`rules.ts` gained `PokerEffort`, one `{ taps, backs }` record per committed hand
+plus a `pending` record for the hand being built. `taps` counts accepted `add`
+actions and `backs` accepted `truncate` actions since the previous commit. Only
+accepted actions, because a refusal returns `err` and never reaches a new state,
+which keeps `applyPokerAction` pure and keeps the section 34 property that a
+refused action leaves the state byte identical literally true. `stateVersion` is
+therefore 2 and `migrateState` from 1 still refuses, for phase 2's reason
+unchanged.
+
+The two axes are rework depth, `taps` above the five a hand costs, and correction
+count, `backs`. They are correlated and neither determines the other: one
+truncation back three cells and three truncations of one cell each produce the
+same rework and a different shape. Neither reads a card or a cell, so neither can
+be inverted into anything about the board. Two runs that share every row and
+every hand are asserted to produce different fingerprints.
+
+**The leak question for this game is different, and it is worth stating.** Locked
+decision 3 gives POKER GRID perfect information: the board is fully visible from
+the first tap and there is no hidden answer to spoil. What is hidden is best
+play, and that reaches a reader as exactly one ordinal out of five in the title,
+which requirement 6.5.4 puts there deliberately. So the four probes hold the
+artifact to the player's run plus that one grade: one glyph per row so no cell
+index can ride along, a title pattern that no score or lever name can pass, a row
+count agreeing with the outcome's own card count, and a silhouette whose only
+free dimension is its height. Each probe has a test that feeds it a deliberately
+leaking artifact and requires it to fire.
+
+**Difficulty is half measured and half read, and that is the phase's one real
+deviation.** Generation decision 7's measure is the mean greedy shortfall over
+nine seeded runs as a fraction of best known score. The greedy half is cheap and
+the module replays it. The denominator is a width 400 beam over seven plies,
+which takes the generation job over an hour for a year, and no extraction makes
+it browser work. That is the difference from CIPHER, where the expensive thing
+was a 1.7 megabyte table sitting on a measure that was cheap underneath.
+
+`src/games/poker-grid/difficulty.ts` holds the measure as basis points from
+integer inputs, so Node and the browser agree exactly rather than within a
+tolerance chosen to hide a drift. Section 52 risk 2 is closed in two places
+rather than one: `PokerPuzzle` carries no difficulty field at all, so
+`parsePuzzle` cannot read the stored number even by accident, and
+`tools/verify.ts` now recomputes the v3 integer for every entry beside its
+existing solver replay, which a full horizon run confirms. A sampled check in
+`tests/tools/poker-grid-pipeline.test.ts` covers every weekday and every chunk
+in the unit suite, because replaying the whole horizon there would roughly
+double it.
+
+One field had to be carried to make that work. `parsePuzzle` now reads the
+`attempt` generation decision 10 has recorded since charter Phase 7, because the
+greedy salt is keyed by it. This is a parse change and not a manifest
+regeneration; the field was already on disk. Past the horizon there is no
+denominator, so `UNRATED_DIFFICULTY` is -1, the numeric sibling of a null tier,
+asserted never to appear on a manifest entry.
+
+**The share output did not change.** `shareArtifact` and the v2 `shareBlock` are
+built from the same `artifactTitle` and `artifactRows`, so the block is byte
+identical to what shipped, including the space before the streak that differs
+from CIPHER's comma and was left alone.
+
+**Two defects found, both in the module's own house.**
+
+1. `PokerState.exceededStoredBest` was written by nobody and read by nobody:
+   initialised false, serialised, deserialised, set nowhere. Contract decision
+   17's finding happening inside a game's state. Removed inside the same version
+   bump, so it cost no extra migration. The case it was for is real, since a beam
+   result can be beaten by a human, and it is logged rather than lost.
+2. **`src/shell/registry.ts` said POKER GRID was state version 1.** Caught by the
+   agreement loop, which is the third time that loop has earned its place and the
+   second time on this exact field. `suite.ts` builds the hub's `GameStore` from
+   the registry value, so a part finished board would have read as not started on
+   the hub card. Corrected to 2.
+
+Declared: grammar A, patterns `emergent-fingerprint` and `comparative-friction`,
+`maxRows` 7.
+
+POKER GRID grew from 24.9 KB to 27.4 KB gzipped, which is `greedy.ts` plus the
+two new files, against a 150 KB ceiling.
+
+Deferred, in BACKLOG.md: the section 19 archetype, which now has three run shapes
+to draw thresholds from; the graphic card, still unbuilt for every game; and the
+shared effort record, which phase 2 said phase 4 was the last chance to make a
+pattern.
+
+## Phase 5, the shell on v3. Next.
+
+All three legacy games now satisfy both contracts and nothing imports the v3
+seam, because a game cannot lead the shell. The remaining work is the engine and
+shell side: `main.ts` reading `OutcomeV3`, the artifact path replacing the v2
+share path, the daily card moving onto the v3 grammar, which is the live conflict
+the slate reconciliation recorded, and the certification gate of section 45
+becoming a CI job rather than a set of types.

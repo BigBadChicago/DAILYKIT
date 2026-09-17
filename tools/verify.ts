@@ -1,9 +1,10 @@
 /** Node only. Replays a manifest and asserts every claim it makes. */
 
 import { readFileSync, readdirSync } from "node:fs";
-import { rngFromSeed, seedFor } from "../src/core/seed.js";
+import { seedFor } from "../src/core/seed.js";
 import { generatePuzzle, isValidBoard, leversFor, weekdayFor } from "../src/games/poker-grid/generator.js";
-import { legalMoves, playGreedy } from "../src/games/poker-grid/greedy.js";
+import { legalMoves } from "../src/games/poker-grid/greedy.js";
+import { DIFFICULTY_SCALE, difficultyFrom, greedyScores } from "../src/games/poker-grid/difficulty.js";
 import { decodeBoard, MANIFEST_CODEC } from "../src/games/poker-grid/manifest-codec.js";
 import { BOARD_CELLS } from "../src/games/poker-grid/rules.js";
 import { CLEAR_VALUE_PER_HAND, HAND_POINTS_CEILING, HAND_POINTS_FLOOR } from "../src/games/poker-grid/scoring.js";
@@ -62,10 +63,23 @@ export function verifyEntry(entry: GeneratedEntry, options: VerifyOptions = {}):
   const claimed = (entry.best.score - entry.greedyTotal / GREEDY_TRIALS) / entry.best.score;
   if (Math.abs(claimed - entry.difficulty) > 1e-6) throw new Error(`${where}: difficulty does not follow from the stored scores`);
 
-  const trials = Array.from({ length: GREEDY_TRIALS }, (_, trial) =>
-    playGreedy(cells, rngFromSeed(seedFor("poker-grid", entry.number, `greedy-${entry.attempt}-${trial}`))).score);
+  const trials = greedyScores(entry.number, cells, entry.attempt);
   if (trials.reduce((sum, score) => sum + score, 0) !== entry.greedyTotal) throw new Error(`${where}: greedy runs do not reproduce`);
   if (median(trials) !== entry.greedyMedian) throw new Error(`${where}: greedy median does not reproduce`);
+
+  /* ARCHITECTURE2 section 9. The v3 integer the module measures on device, held
+     here against the fraction the pipeline stored, over the whole horizon. The
+     module replays the greedy runs above and reads only best.score, so this is
+     the line that would catch a generator drifting away from the measure the
+     band claim rests on. */
+  const measured = difficultyFrom(entry.best.score, entry.greedyTotal);
+  if (measured < 0) throw new Error(`${where}: the v3 difficulty is unrated on a manifest entry`);
+  /* The stored fraction was rounded to six places before it was written, so
+     scaling it can land one basis point from scaling the unrounded value. A
+     real drift is tens of points, not one. */
+  if (Math.abs(measured - entry.difficulty * DIFFICULTY_SCALE) > 1) {
+    throw new Error(`${where}: v3 difficulty ${measured} does not follow from the stored fraction ${entry.difficulty}`);
+  }
 
   if (options.replaySolver === true) {
     const replay = solve(cells, { exactCeiling: 1, beamWidth: entry.best.width ?? DEFAULT_BEAM_WIDTH });

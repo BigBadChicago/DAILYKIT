@@ -146,7 +146,8 @@ the result, which is a human pass across real devices.
   on v3 and there are two run shapes to compare. **Unblocked 2026-09-13** by
   phase 3, which gave CIPHER a discipline grade and a churn count. Two shapes
   now exist, so the table is buildable for the first time; it is still not
-  built, because it is a feature rather than a migration step.
+  built, because it is a feature rather than a migration step. Phase 4 made it
+  three, adding POKER GRID's rework depth and correction count.
 - **The graphic card renderer.** ARCHITECTURE2 section 17.1 specifies a 1200 by
   900 card from the same ArtifactModel. Phase 1 built the text renderer only and
   no game has a card, so this is suite work rather than VECTOR work.
@@ -158,7 +159,11 @@ the result, which is a human pass across real devices.
   2026-09-13:** it counts nothing in its state. Its run is derived from a guess
   history it already had, so the two games do not share a shape and the record
   stays a game concern. POKER GRID in phase 4 is the last chance for this to
-  become a pattern.
+  become a pattern. **Answered 2026-09-16, and the answer is no.** POKER GRID
+  counts accepted taps and takebacks per hand, VECTOR counts accepted edits and
+  overwrites per submission, and CIPHER counts nothing at all. Two of the three
+  count two things each and the two pairs are not the same pair, so the record
+  stays a game concern and the engine gains nothing. Closed.
 
 ## Logged in the v3 migration, phase 3
 
@@ -172,6 +177,34 @@ the result, which is a human pass across real devices.
   Node only module that the module must remember not to import. A lint rule
   naming Node only game files would enforce what a comment currently asks for.
   Logged rather than built, because one file in three games is not a pattern.
+
+## Logged in the v3 migration, phase 4
+
+- **`exceededStoredBest` is gone and the fact behind it is not.** The field was
+  written by nobody and read by nobody, so it was removed inside the state
+  version 2 bump. What it was evidently for is real: `best.method` can be `beam`
+  and a bounded search can be beaten by a human, which `tierFor` already handles
+  by clamping quality at 1 and returning tier 0. Telling the player they beat the
+  best known line is a product decision and it is not version 1's. Re-adding it
+  is another state version bump.
+- **The greedy replay costs tens of milliseconds and is memoized on one entry.**
+  `inspect` short circuits on a board that is not terminal, so the replay only
+  runs at the end of a game, but the end screen, the share and the stats panel
+  each ask again. One entry keyed on the puzzle object is enough while only one
+  board is ever open. If archive replay ever runs two boards at once, this
+  becomes a small cache rather than a slot.
+- **POKER GRID's difficulty is the only one that reads anything.** The greedy
+  numerator is measured on device and the `best.score` denominator is read from
+  the manifest, because a width 400 beam is not phone work. A measure that needs
+  no solver exists in principle and would invalidate every stored band and mean
+  regenerating the horizon, which is a rewrite rather than a migration and is
+  refused under section 47. Revisit only if the horizon is being regenerated for
+  another reason.
+- **`data/poker-grid` stores `difficulty` as a six place fraction.** The v3
+  integer is basis points, so the verifier compares them with a tolerance of one
+  basis point, which is the rounding and not a drift. Storing the integer instead
+  would remove the tolerance and it is a manifest regeneration, so it waits for
+  one.
 
 ## Logged in Phase 12
 

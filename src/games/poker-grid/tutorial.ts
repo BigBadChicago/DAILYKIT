@@ -46,5 +46,9 @@ export function tutorialPuzzle(): PokerPuzzle {
     cells: TUTORIAL_CELLS.slice(),
     best: null,
     levers: ["none"],
+    /* No retry produced this board, it was chosen by hand. The field is carried
+       for shape only: with `best` null the difficulty measure returns unrated
+       before it ever reaches a seed, which is what a tutorial wants. */
+    attempt: 0,
   };
 }

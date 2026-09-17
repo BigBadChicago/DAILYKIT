@@ -3,10 +3,10 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { seedFor } from "../src/core/seed.js";
-import { rngFromSeed } from "../src/core/seed.js";
 import { dateForPuzzleNumber, type CivilDate } from "../src/core/date.js";
 import { generatePuzzle, isValidBoard, leversFor, weekdayFor, type Lever } from "../src/games/poker-grid/generator.js";
-import { legalMoves, playGreedy } from "../src/games/poker-grid/greedy.js";
+import { legalMoves } from "../src/games/poker-grid/greedy.js";
+import { GREEDY_TRIALS, greedyScores } from "../src/games/poker-grid/difficulty.js";
 import { encodeBoard, MANIFEST_CODEC } from "../src/games/poker-grid/manifest-codec.js";
 import { solve, DEFAULT_BEAM_WIDTH, DEFAULT_EXACT_CEILING } from "../src/games/poker-grid/solver.js";
 
@@ -30,7 +30,11 @@ const OUTPUT_DIR = "data/poker-grid";
    Monday is the gentlest day and Saturday the hardest. Sunday sits between
    Thursday and Friday, matching the long Sunday convention rather than the
    ramp. Each band is set to admit roughly a fifth of candidate boards. */
-export const GREEDY_TRIALS = 9;
+/* The constant and the salt both live in the game now, because phase 4 made the
+   module measure the same nine runs and a second copy here is the drift phase 2
+   removed from VECTOR's intensity. Re-exported so verify.ts and the pipeline
+   test keep importing it from where they always have. */
+export { GREEDY_TRIALS };
 /* Candidates are screened with a narrow beam and only the survivor pays for
    the wide one, because most of a generation run is boards being thrown away
    and a rejected board never has its score stored. */
@@ -141,7 +145,7 @@ export interface Candidate {
 export function evaluateCandidate(number: number, attempt: number): Candidate {
   const salt = saltFor(attempt);
   const seed = salt === undefined ? seedFor("poker-grid", number) : seedFor("poker-grid", number, salt);
-  const puzzle = generatePuzzle(number, seed);
+  const puzzle = generatePuzzle(number, seed, attempt);
   if (!isValidBoard(puzzle.cells)) throw new Error(`puzzle ${number} attempt ${attempt} produced an invalid board`);
 
   const openings = legalMoves(puzzle.cells).length;
@@ -150,8 +154,7 @@ export function evaluateCandidate(number: number, attempt: number): Candidate {
 
   const weekday = weekdayFor(number);
   const band = DIFFICULTY_BANDS[weekday] as { min: number; max: number };
-  const trials = Array.from({ length: GREEDY_TRIALS }, (_, trial) =>
-    playGreedy(puzzle.cells, rngFromSeed(seedFor("poker-grid", number, `greedy-${attempt}-${trial}`))).score);
+  const trials = greedyScores(number, puzzle.cells, attempt);
   const greedyTotal = trials.reduce((sum, score) => sum + score, 0);
   const greedyMean = greedyTotal / GREEDY_TRIALS;
   const greedyMedian = median(trials);

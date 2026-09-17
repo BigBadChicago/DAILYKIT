@@ -68,7 +68,12 @@ export const SUITE_GAMES: readonly SuiteGameEntry[] = [
     epoch: { year: 2026, month: 1, day: 1 },
     bucketCount: 8,
     hasWinLoss: false,
-    stateVersion: 1,
+    /* 2 since the v3 migration's phase 4 added the effort record. The hub reads
+       this to open the game's store, so a stale number here makes a part
+       finished board read as not started on the hub card. That is the VECTOR
+       defect of the slate reconciliation, caught this time by the agreement
+       loop it was added to. */
+    stateVersion: 2,
     status: "live",
   },
   {

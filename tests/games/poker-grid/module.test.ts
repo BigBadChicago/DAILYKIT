@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
-import module from "../../../src/games/poker-grid/module.js";
+import module, { internals, pokerGridV3 } from "../../../src/games/poker-grid/module.js";
 import type { GameModule } from "../../../src/contract/game-module.js";
 import { generatePuzzle } from "../../../src/games/poker-grid/generator.js";
-import { BOARD_CELLS, type PokerAction, type PokerState } from "../../../src/games/poker-grid/rules.js";
+import { BOARD_CELLS, EMPTY_EFFORT, MAX_HANDS, type PokerAction, type PokerState } from "../../../src/games/poker-grid/rules.js";
 import type { PokerPuzzle } from "../../../src/games/poker-grid/generator.js";
 import { encodeBoard } from "../../../src/games/poker-grid/manifest-codec.js";
+import { UNRATED_DIFFICULTY, resetDifficultyMemo } from "../../../src/games/poker-grid/difficulty.js";
 
 const game = module as unknown as GameModule<PokerState, PokerAction, PokerPuzzle>;
 
@@ -54,6 +55,7 @@ describe("POKER GRID module", () => {
       board: encodeBoard(1, cells),
       best: { score: 5670, hands: 7, method: "beam" as const, width: 400 },
       levers: ["sparse-pairs"],
+      attempt: 3,
     };
     const parsed = game.parsePuzzle(1, entry);
     expect(parsed.ok).toBe(true);
@@ -61,6 +63,20 @@ describe("POKER GRID module", () => {
     expect(parsed.value.cells).toEqual(cells);
     expect(parsed.value.best).toEqual(entry.best);
     expect(parsed.value.levers).toEqual(["sparse-pairs"]);
+    /* Phase 4. The greedy salt is keyed by the attempt, so a board only the
+       manifest knows still reproduces the nine runs its difficulty measures. */
+    expect(parsed.value.attempt).toBe(3);
+  });
+
+  it("reads a missing attempt as the board a past horizon client regenerates", () => {
+    const cells = puzzle().cells;
+    const entry = { number: 1, board: encodeBoard(1, cells), best: null, levers: [] };
+    const parsed = game.parsePuzzle(1, entry);
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+    expect(parsed.value.attempt).toBe(0);
+    expect(game.parsePuzzle(1, { ...entry, attempt: -1 }).ok).toBe(false);
+    expect(game.parsePuzzle(1, { ...entry, attempt: 1.5 }).ok).toBe(false);
   });
 
   it("refuses a manifest entry it cannot trust rather than guessing", () => {
@@ -84,5 +100,65 @@ describe("POKER GRID module", () => {
     const share = game.shareBlock(state, { puzzleNumber: 1, currentStreak: 12, rated: false });
     expect(share.title).toBe("POKER GRID #1 unrated");
     expect(share.rows).toEqual([]);
+  });
+
+  /* Phase 4. The effort record is new state and there is no honest migration
+     into it, so a v1 save is refused rather than filled with zeros. Engine
+     decision 10 prices that at one unfinished board and never a streak. */
+  it("carries state version 2 and refuses every path into it", () => {
+    expect(internals.STATE_VERSION).toBe(2);
+    expect(module.stateVersion).toBe(2);
+    const board = puzzle();
+    const v1 = { v: 1, data: { g: ".".repeat(BOARD_CELLS), s: [], h: [], x: false } };
+    expect(game.deserialize(board, v1).ok).toBe(false);
+    expect(game.migrateState(1, v1).ok).toBe(false);
+  });
+
+  it("round trips the effort record and refuses one that could not have happened", () => {
+    const board = puzzle();
+    const started = game.initialState(board);
+    const raw = game.serialize(started);
+    expect(game.deserialize(board, raw).ok).toBe(true);
+
+    const data = raw.data as Record<string, unknown>;
+    /* A committed hand cost at least the five taps it took. */
+    expect(game.deserialize(board, { v: 2, data: { ...data, e: [[2, 0]] } }).ok).toBe(false);
+    /* One record per hand, no more and no fewer. */
+    expect(game.deserialize(board, { v: 2, data: { ...data, e: [[5, 0]] } }).ok).toBe(false);
+    expect(game.deserialize(board, { v: 2, data: { ...data, p: [-1, 0] } }).ok).toBe(false);
+    expect(game.deserialize(board, { v: 2, data: { ...data, p: "no" } }).ok).toBe(false);
+  });
+
+  /* ARCHITECTURE2 sections 47 and 56. One object, two seams: the default export
+     is what the shell still uses and the v3 view is the same implementation. */
+  it("exposes the same implementation through the v3 seam", () => {
+    resetDifficultyMemo();
+    expect(pokerGridV3.identity).toEqual(module.identity);
+    expect(pokerGridV3.stateVersion).toBe(module.stateVersion);
+    expect(pokerGridV3.shareCapabilities.grammar).toBe("A");
+    expect(pokerGridV3.shareCapabilities.maxRows).toBe(MAX_HANDS);
+    expect(pokerGridV3.shareCapabilities.patterns.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("measures a difficulty on a graded board and stays unrated without one", () => {
+    resetDifficultyMemo();
+    const ungraded = puzzle();
+    expect(internals.difficulty(ungraded)).toBe(UNRATED_DIFFICULTY);
+    const graded: PokerPuzzle = { ...ungraded, best: { score: 5670, hands: 7, method: "beam", width: 400 } };
+    expect(internals.difficulty(graded)).not.toBe(UNRATED_DIFFICULTY);
+    expect(Number.isInteger(internals.difficulty(graded))).toBe(true);
+  });
+
+  /* The v2 block and the v3 artifact are built from the same two functions, so
+     a change to one that did not reach the other would fail here. */
+  it("keeps the v2 block and the v3 artifact agreed", () => {
+    resetDifficultyMemo();
+    const board: PokerPuzzle = { ...puzzle(), best: { score: 5670, hands: 7, method: "beam", width: 400 } };
+    const state: PokerState = { ...game.initialState(board), terminal: true, effort: [], pending: EMPTY_EFFORT };
+    const context = { puzzleNumber: 1, currentStreak: 3, rated: true };
+    const block = game.shareBlock(state, context);
+    const artifact = internals.shareArtifact(board, state, internals.telemetry(state), context);
+    expect(artifact.title).toBe(block.title);
+    expect(artifact.rows).toEqual(block.rows);
   });
 });

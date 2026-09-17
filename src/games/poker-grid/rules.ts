@@ -3,7 +3,7 @@ import type { Rejection } from "../../core/types.js";
 import { HAND_ORDINAL, type HandCategory } from "../../shared/poker-hands.js";
 import { classifyHand, handOrdinal, HAND_SIZE } from "./evaluator.js";
 import { CARD_CLEAR_POINTS, pointsFor } from "./scoring.js";
-import type { PokerBest } from "./generator.js";
+import type { PokerPuzzle } from "./generator.js";
 
 export const BOARD_COLS = 5;
 export const BOARD_ROWS = 7;
@@ -16,14 +16,59 @@ export type HandRecord = {
   readonly points: number;
 };
 
+/** Locked decision 1 and invariant 6.2.1.1. Thirty five cells cleared five at
+ *  a time, so seven hands is the ceiling and a perfect clear. */
+export const MAX_HANDS = BOARD_CELLS / HAND_SIZE;
+
+/** Histogram buckets: a perfect clear, then cards remaining in fives. */
+export const BUCKET_COUNT = 8;
+
+/**
+ * What one hand cost the player to build. Added for the v3 run log, phase 4.
+ *
+ * `taps` is accepted `add` actions and `backs` is accepted `truncate` actions,
+ * both counted since the previous commit. Only accepted actions, because a
+ * refusal returns `err` and never reaches a new state, which is what keeps
+ * `applyPokerAction` pure and keeps the v3 property that a refused action
+ * leaves the state byte identical literally true.
+ *
+ * `taps` has a floor of five, since a hand is five cards. Anything above it is
+ * a cell re-added after backing up, so `taps - HAND_SIZE` is rework depth and
+ * `backs` is how many separate times the player changed their mind. They are
+ * correlated and neither determines the other: one truncation back three cells
+ * and three truncations of one cell each produce the same rework and different
+ * correction counts. Neither reads a card, so neither can encode the board.
+ */
+export interface PokerEffort {
+  readonly taps: number;
+  readonly backs: number;
+}
+
+export const EMPTY_EFFORT: PokerEffort = Object.freeze({ taps: 0, backs: 0 });
+
 export interface PokerState {
   readonly grid: Grid;
-  readonly best: PokerBest | null;
+  /**
+   * The puzzle this session is playing.
+   *
+   * Not serialized. Both entry points take it from the puzzle the engine handed
+   * them, which is exactly how `best` was carried before phase 4 folded it into
+   * this one field. Carrying the puzzle rather than only its stored optimum is
+   * what lets `inspect` measure a difficulty: the measure replays the greedy
+   * player over the board as dealt, and `grid` is what is left of it, so the
+   * board has to come from somewhere that does not shrink. The alternative was
+   * a module scope note of which puzzle is open, which contract decision 6
+   * forbids for exactly the reason it looks wrong here.
+   */
+  readonly puzzle: PokerPuzzle;
   readonly selection: readonly number[];
   readonly hands: readonly HandRecord[];
   readonly score: number;
   readonly terminal: boolean;
-  readonly exceededStoredBest: boolean;
+  /** One record per committed hand, in play order. See PokerEffort. */
+  readonly effort: readonly PokerEffort[];
+  /** The hand currently being built. Committed into `effort` and reset. */
+  readonly pending: PokerEffort;
 }
 
 export type PokerAction =
@@ -155,12 +200,20 @@ export function applyPokerAction(state: PokerState, action: PokerAction): Result
     if (state.selection.length > 0 && !adjacentToSelection(state.selection, action.cell)) {
       return err({ code: "not-adjacent", announce: "Cards must touch edge to edge." });
     }
-    return ok({ ...state, selection: [...state.selection, action.cell] });
+    return ok({
+      ...state,
+      selection: [...state.selection, action.cell],
+      pending: { taps: state.pending.taps + 1, backs: state.pending.backs },
+    });
   }
 
   if (action.kind === "truncate") {
     if (action.index < 0 || action.index >= state.selection.length) return err({ code: "bad-index", announce: "" });
-    return ok({ ...state, selection: state.selection.slice(0, action.index) });
+    return ok({
+      ...state,
+      selection: state.selection.slice(0, action.index),
+      pending: { taps: state.pending.taps, backs: state.pending.backs + 1 },
+    });
   }
 
   if (state.selection.length !== HAND_SIZE) return err({ code: "incomplete", announce: "Choose five cards." });
@@ -177,6 +230,23 @@ export function applyPokerAction(state: PokerState, action: PokerAction): Result
     hands,
     score: state.score + hand.points + CARD_CLEAR_POINTS * HAND_SIZE,
     terminal: !hasLegalMove(nextGrid),
+    effort: [...state.effort, state.pending],
+    pending: EMPTY_EFFORT,
   };
   return ok(next);
+}
+
+/* Board facts the outcome is built from. They live here rather than beside the
+   outcome because they are statements about a board and nothing else. */
+
+export function remainingCards(grid: Grid): number {
+  let count = 0;
+  for (const card of grid) if (card !== null) count += 1;
+  return count;
+}
+
+/** Locked decision 4. Cards remaining in steps of five, with a perfect clear as
+ *  bucket zero and its own distinguished label. */
+export function bucketFor(grid: Grid): number {
+  return Math.min(BUCKET_COUNT - 1, Math.floor(remainingCards(grid) / 5));
 }

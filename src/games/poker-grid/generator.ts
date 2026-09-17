@@ -25,6 +25,15 @@ export interface PokerPuzzle {
   readonly cells: readonly number[];
   readonly best: PokerBest | null;
   readonly levers: readonly Lever[];
+  /**
+   * Which regeneration attempt produced this board. Generation decision 10
+   * already recorded it in the manifest; it is carried onto the puzzle in phase
+   * 4 because the greedy salt is keyed by it, so without it the module cannot
+   * reproduce the nine runs its difficulty is measured from. Attempt 0 is the
+   * board an offline client reproduces past the horizon, which is why it is the
+   * default rather than a required argument.
+   */
+  readonly attempt: number;
 }
 
 const DECK = Array.from({ length: 52 }, (_, card) => card);
@@ -135,13 +144,18 @@ export function generateBoard(rng: Rng, levers: readonly Lever[]): readonly numb
   return cells;
 }
 
-export function generatePuzzle(puzzleNumber: PuzzleNumber, seed: Seed): PokerPuzzle {
+/* `attempt` is not derivable from the seed, so the caller that chose the salt
+   states it. The contract's two argument signature therefore reaches attempt 0,
+   which is exactly the board a past horizon client regenerates, and only the
+   generation tool passes anything else. */
+export function generatePuzzle(puzzleNumber: PuzzleNumber, seed: Seed, attempt = 0): PokerPuzzle {
   const levers = leversFor(puzzleNumber);
   return {
     number: puzzleNumber,
     cells: generateBoard(rngFromSeed(seed), levers),
     best: null,
     levers,
+    attempt,
   };
 }
 

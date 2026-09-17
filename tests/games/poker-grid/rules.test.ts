@@ -3,25 +3,41 @@ import { isErr, isOk } from "../../../src/core/result.js";
 import { classifyHand } from "../../../src/games/poker-grid/evaluator.js";
 import {
   BOARD_CELLS,
+  EMPTY_EFFORT,
+  MAX_HANDS,
   applyPokerAction,
+  bucketFor,
   enumerateSelections,
   hasLegalMove,
   neighbours,
+  remainingCards,
   visitSelections,
   settle,
   type PokerState,
 } from "../../../src/games/poker-grid/rules.js";
+import type { PokerPuzzle } from "../../../src/games/poker-grid/generator.js";
 
 const card = (rank: number, suit: number): number => (rank - 2) * 4 + suit;
 const fullGrid = (): number[] => Array.from({ length: BOARD_CELLS }, (_, index) => index);
+/* Ungraded on purpose. These tests are about the rules, and a null best keeps
+   the difficulty measure out of them entirely. */
+const puzzleOf = (cells: readonly number[]): PokerPuzzle => ({
+  number: 1,
+  cells,
+  best: null,
+  levers: ["none"],
+  attempt: 0,
+});
+
 const state = (grid: readonly (number | null)[]): PokerState => ({
   grid,
-  best: null,
+  puzzle: puzzleOf(grid.filter((card): card is number => card !== null)),
   selection: [],
   hands: [],
   score: 0,
   terminal: false,
-  exceededStoredBest: false,
+  effort: [],
+  pending: EMPTY_EFFORT,
 });
 
 describe("poker grid rules", () => {
@@ -120,6 +136,57 @@ describe("poker grid rules", () => {
     expect(result.value.selection).toEqual([]);
     expect(result.value.score).toBeGreaterThan(0);
     expect(result.value.grid.filter((card) => card !== null)).toHaveLength(30);
+  });
+
+  /* The v3 run log, phase 4. Only accepted actions are counted, because a
+     refusal returns err and never produces a state to count into, which is what
+     keeps applyPokerAction pure and keeps a refused action byte identical. */
+  it("counts accepted taps and takebacks into the hand being built", () => {
+    const grid = fullGrid();
+    let current = state(grid);
+    for (const cell of [0, 1, 2]) {
+      const next = applyPokerAction(current, { kind: "add", cell });
+      expect(next.ok).toBe(true);
+      if (!next.ok) return;
+      current = next.value;
+    }
+    expect(current.pending).toEqual({ taps: 3, backs: 0 });
+
+    const back = applyPokerAction(current, { kind: "truncate", index: 1 });
+    expect(isOk(back) && back.value.pending).toEqual({ taps: 3, backs: 1 });
+  });
+
+  it("leaves the run untouched when an action is refused", () => {
+    const grid = fullGrid();
+    const current = { ...state(grid), selection: [0], pending: { taps: 1, backs: 0 } };
+    const refused = applyPokerAction(current, { kind: "add", cell: 2 });
+    expect(isErr(refused)).toBe(true);
+    /* The state the caller still holds is the one it had, unchanged. */
+    expect(current.pending).toEqual({ taps: 1, backs: 0 });
+  });
+
+  it("files the pending effort against the hand it built and starts the next one clean", () => {
+    const grid = fullGrid();
+    grid[0] = card(9, 0);
+    grid[1] = card(9, 1);
+    grid[2] = card(2, 2);
+    grid[5] = card(5, 0);
+    grid[6] = card(13, 3);
+    const selected = { ...state(grid), selection: [0, 1, 2, 5, 6], pending: { taps: 8, backs: 2 } };
+    const result = applyPokerAction(selected, { kind: "commit" });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.effort).toEqual([{ taps: 8, backs: 2 }]);
+    expect(result.value.pending).toEqual(EMPTY_EFFORT);
+    expect(result.value.effort).toHaveLength(result.value.hands.length);
+  });
+
+  it("states the board facts the outcome is built from", () => {
+    expect(remainingCards(fullGrid())).toBe(BOARD_CELLS);
+    expect(bucketFor(fullGrid())).toBe(7);
+    expect(remainingCards(Array<number | null>(BOARD_CELLS).fill(null))).toBe(0);
+    expect(bucketFor(Array<number | null>(BOARD_CELLS).fill(null))).toBe(0);
+    expect(MAX_HANDS).toBe(7);
   });
 
   it("rejects high card commits and detects a terminal board", () => {

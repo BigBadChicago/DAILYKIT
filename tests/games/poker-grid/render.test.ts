@@ -3,19 +3,20 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type { MountContext } from "../../../src/contract/types.js";
 import { mountPokerGrid } from "../../../src/games/poker-grid/render.js";
 import { generatePuzzle } from "../../../src/games/poker-grid/generator.js";
-import type { PokerAction, PokerState } from "../../../src/games/poker-grid/rules.js";
+import { EMPTY_EFFORT, type PokerAction, type PokerState } from "../../../src/games/poker-grid/rules.js";
 
 const puzzle = generatePuzzle(1, 1234);
 
 function state(overrides: Partial<PokerState> = {}): PokerState {
   return {
     grid: puzzle.cells,
-    best: puzzle.best,
+    puzzle,
     selection: [],
     hands: [],
     score: 0,
     terminal: false,
-    exceededStoredBest: false,
+    effort: [],
+    pending: EMPTY_EFFORT,
     ...overrides,
   };
 }
