@@ -187,7 +187,7 @@ Seven buckets, matching the registry's `bucketCount: 7`:
 distinguishedIndex: 0
 ```
 
-`bucketOf` returns `guesses - 1` on a win and 6 on a loss.
+The finished outcome's `bucket` is `guesses - 1` on a win and 6 on a loss. It was a separate `bucketOf` until v3 migration phase 6 deleted the v2 contract.
 
 ## 7. Generation
 
@@ -488,14 +488,15 @@ zero changes rule.
 ## 14. The v3 contract
 
 Added in the v3 migration, phase 3, recorded in `ARCHITECTURE2.md` section 56.
-The module implements v2 and v3 at once and the default export is still the v2
-one, so nothing in the shell moved.
+The module implemented v2 and v3 at once until v3 migration phase 6 deleted the
+v2 contract; its default export is now the v3 module.
 
 **Nothing in sections 1 through 12 changed.** The rules, the tier, the
 distribution, the generation, the verification, the manifest, the serialization
 and the share block are all as written. In particular the share block is byte
 identical, built from the same two functions the artifact uses, so section 10 is
-not reopened. Six rows plus a title and a URL is eight lines, inside the nine
+not reopened. Since phase 6 the v2 block is gone and fixed strings recorded from
+it hold the artifact to those bytes. Six rows plus a title and a URL is eight lines, inside the nine
 line cap the v3 grammar enforces.
 
 **Difficulty is measured, not read.** Assertion 3's integer, the count of codes

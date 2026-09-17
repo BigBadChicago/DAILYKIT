@@ -7,11 +7,11 @@ and it describes exactly one conversation: the next one.
 
 | Field | Value |
 |---|---|
-| Written | 2026-09-16, at the end of v3 migration phase 5 part B |
-| For the conversation | **v3 migration phase 6: retire the v2 contract and move the scaffold to v3** |
-| Phase scheme | v3 migration phases, ARCHITECTURE2.md section 56. Not a charter phase |
-| Charter phase in parallel | Charter Phase 13 is still open and untouched by this work |
-| Next after this | The first new game on v3, in its own conversation, after the owner names it |
+| Written | 2026-09-17, at the end of v3 migration phase 6 |
+| For the conversation | **The first new game on v3**, charter Phase 13 work under the v3 contract, after the owner names the game |
+| Phase scheme | Charter phases, Section 9 of the project instructions, with PHASE-13-PLAN.md as amended by ARCHITECTURE2.md. The v3 migration phases are complete |
+| Before any work | The owner names the game and answers section 4's open questions |
+| Next after this | The second new game, in its own conversation |
 
 ---
 
@@ -22,14 +22,18 @@ section below names it for this phase.
 
 1. **HANDOFF.md**, this file. Where things stand and what to do.
 2. **ARCHITECTURE2.md**. The active architecture. For this phase read section 3
-   (core contracts), section 44 (new game authoring contract), section 45 (the
-   gate, including its as built note), section 54 (definition of done for a new
-   game), and all of section 56, whose phase 5 entry records parts A and B and
-   whose phase 6 entry is the scope of this conversation.
-3. **ARCHITECTURE.md**. The v2 record. For this phase the Contract decisions,
-   the Template decisions, the Build model and the File manifest matter most.
+   (core contracts), sections 9 to 18 (difficulty, verification, decomposition
+   and symmetry, telemetry, share grammar, leak checks, artifact, fingerprint),
+   section 44 (authoring contract), section 45 (the gate), section 46 (the named
+   game's concept note), section 54 (definition of done), and section 56's
+   phase 6 entry.
+3. **ARCHITECTURE.md**. The v2 record and the settled decisions. For this phase
+   the Contract decisions, the Template decisions (7 to 9 are new), the Build
+   model, the Suite decisions and the File manifest matter most.
 4. **BACKLOG.md**. Everything deliberately not built. Check it before proposing
    anything that sounds new.
+
+Then **NEW_GAME.md**, which is the procedure this conversation follows.
 
 Precedence when they disagree: the working tree outranks every document, then
 ARCHITECTURE2.md, then ARCHITECTURE.md, then the project instructions. If this
@@ -46,7 +50,7 @@ State in one line which phase this conversation is and wait for confirmation.
 CIPHER, VECTOR. Five planned and unbuilt: DIFFERENCE RELAY, TURN TABLE, RING
 BALANCE, ORDER OF OPERATIONS, ROTATE LOCK.
 
-**v3 migration log, section 56.**
+**v3 migration log, ARCHITECTURE2.md section 56. Complete.**
 
 | Phase | What | Status |
 |---|---|---|
@@ -57,107 +61,103 @@ BALANCE, ORDER OF OPERATIONS, ROTATE LOCK.
 | 4 | POKER GRID on v2 and v3 at once | Done 2026-09-16 |
 | 5 part A | Shell, hub and daily card read v3 only; one share composer | Done 2026-09-16 |
 | 5 part B | Certification gate as a CI job | Done 2026-09-16 |
-| **6** | **Retire the v2 contract and move the scaffold to v3** | **This conversation** |
+| 6 | v2 contract deleted, scaffold on v3 with a plan row | Done 2026-09-17 |
 
-**What part B left in place.**
+**What phase 6 left in place.**
 
-- `tools/certify.ts` holds a plan per live game in `GAME_PLANS`, and writes or
-  checks `data/<game>/certification.json`. All three records are production safe.
-- `vite.config.ts` admits a game target only through its record. A game target
-  with `productionSafe: true` makes the build throw.
-- `manual-mobile-check` is pending under `manual-mobile-2026-09-16`, which covers
-  the three live games only and expires 2026-12-15.
-- The records hash their outcomes, and each step's evidence names test files by
-  path. **Moving, renaming or deleting a test file a plan names changes a record.**
-  Phase 6 will edit module tests and `tests/shell/share-context.test.ts`; if a
-  path changes, update `GAME_PLANS`, rerun `npm run certify`, and commit the
-  records with the change.
-- VECTOR's index now uses the shell's shape. It was unloadable past the practice
-  board before part B.
+- `GameModuleV3` and `defineGameV3` in `src/contract/v3/game-module.ts` are the
+  only contract. Each game module default exports its v3 module.
+- `npm run new-game -- --id <id> --name "<NAME>" --hue <0-359>` writes a v3 game,
+  four tests, and three rows: registry `planned`, build target
+  `productionSafe: false`, and `"<id>": { ...newGamePlan("<id>") }` in
+  `GAME_PLANS`.
+- `newGamePlan` leaves five steps as empty probe lists, which the gate refuses:
+  `difficulty-calibration`, `decomposition-check`, `symmetry-check`,
+  `offline-smoke`, `manual-mobile-check`. The game ships only when its own
+  record is production safe. No exemption covers it.
+- `certify` runs npm scripts without a shell and must be started as
+  `npm run certify`.
+- `ENGINE_VERSION` is still 2; `engine-v2.js` did not change by a byte.
+- `manual-mobile-2026-09-16` covers the three live games only and expires
+  2026-12-15.
 
-**Green baseline to regress against,** measured at the end of part B:
+**Green baseline to regress against,** measured at the end of phase 6:
 
 | Gate | Result |
 |---|---|
 | Typecheck | `tsc --noEmit` for `tsconfig.json`, `tsconfig.tools.json`, `tsconfig.sw.json` |
 | Dependency check | `tools/depcheck.ts`, layers verified |
-| Tests | 62 files, 818 tests |
-| POKER GRID verifier | 365 boards, about 9 seconds, now including the duplicate check |
-| CIPHER verifier | 365 days, about 2 seconds |
-| VECTOR verifier | 365 puzzles, 91,526 uniqueness nodes, about 100 seconds |
-| Production build | Engine chunk `engine-v2.js` |
-| Byte budget | Hub 17.6, POKER GRID 27.8, CIPHER 25.7, VECTOR 28.1, About 3.4 KB gzipped |
-| Certification | `npm run certify` about three minutes, three games production safe; `certify --check --from-ci` passes |
-| Offline smoke | Hub 8 cards, POKER GRID 35 cards, CIPHER 6 keys, VECTOR 36 cells, all from cache with the server stopped |
+| Tests | 62 files, 833 tests |
+| POKER GRID verifier | 365 boards |
+| CIPHER verifier | 365 days |
+| VECTOR verifier | 365 puzzles, about 100 seconds |
+| Production build | Engine chunk `engine-v2.js`, 30,262 bytes |
+| Byte budget | Hub 17.6, POKER GRID 27.8, CIPHER 25.7, VECTOR 28.0, About 3.4 KB gzipped |
+| Certification | `npm run certify` about three minutes, three games production safe, every committed record unchanged by phase 6 |
+| Offline smoke | Hub, POKER GRID, CIPHER and VECTOR from cache on a second visit past the practice board, no console error, 2026-09-17 |
 
 ---
 
 ## 3. Preconditions to check first
 
-Handed to the owner at the end of part B. Confirm them in the working tree
+Handed to the owner at the end of phase 6. Confirm them in the working tree
 before any work, and stop and ask if any is not done.
 
-1. **Patch applied**: `phase5-partB-github.patch`, which updates
-   `.github/workflows/ci.yml` (adds `vector:verify` and
-   `npm run certify -- --check --from-ci`) and
-   `.github/instructions/tools-and-build.instructions.md`. The bridge refuses to
-   write under `.github`. Without it `tests/tools/certify.test.ts` fails, because
-   it asserts ci.yml runs every script a gate plan names.
-2. **Empty directory removed**: `src/games/toy-tap/`, left empty in part A.
-3. **Committed**: the part B change set, including the three
-   `data/<game>/certification.json` files, and a CI run on it that passed.
+1. **Patch applied**: `phase6-github.patch`, which updates
+   `.github/copilot-instructions.md`, `.github/instructions/contract`, `games`
+   and `tools-and-build`, and `.github/prompts/onboard.prompt.md` to the v3
+   names. The bridge refuses to write under `.github`.
+2. **Deleted**: `src/contract/game-module.ts`. The bridge cannot delete. Until it
+   is gone the typecheck still passes, because nothing imports it, but it is a
+   v2 contract in the tree.
+3. **Committed**: the phase 6 change set, and a CI run on it that passed. Read
+   `.git/refs/heads/main` once at the start to confirm the commit.
 
 ---
 
-## 4. The task: v3 migration phase 6
+## 4. The task: the first new game on v3
 
-**Goal.** One contract. v2 is deleted, every game's default export is its v3
-module, and a new game scaffolds on v3 with a certification plan, so the first
-new game is authored against exactly what the shell reads.
-
-**Scope, from ARCHITECTURE2.md section 56.**
-
-1. Delete the v2 `GameModule`, `defineGame` and `ShareBlock`.
-2. Delete each game's `bucketOf`, `shareBlock` and default v2 export; make each
-   `*V3` export the default, and update the entries.
-3. Rewrite `tools/new-game.ts` and NEW_GAME.md to scaffold v3.
-4. Rewrite the byte identity tests in `tests/shell/share-context.test.ts` against
-   fixed strings, since the v2 block they compare against will be gone.
-5. The gate's side of authoring: the scaffold adds a `GAME_PLANS` row for a new
-   game, and NEW_GAME.md says a game ships only through its own record.
-
-**Size.** Expected over 300 lines. Per the efficiency protocol, state what is
-about to be produced in one line and wait for confirmation before writing it.
+**Goal.** One game from the five planned, built through NEW_GAME.md from the
+design document to a committed production safe record, under the zero engine
+changes rule of requirement 7.4, with a defect report at the end.
 
 **Open questions to resolve with the owner before writing code.** Not answered
 in the documents; ask, do not reconstruct.
 
-1. Whether `src/contract/types.ts` types still used by v3, such as `MountContext`
-   and `GameView`, move into `src/contract/v3/` or stay where they are with the
-   v2 module type removed around them.
-2. Whether the scaffold writes a `GAME_PLANS` row directly, through a new
-   insertion marker in `tools/certify.ts`, or prints the row for the author to
-   paste.
-3. What the scaffold's stub plan marks for steps a stub cannot pass, given that a
-   new game is never covered by the manual mobile exemption and must not ship.
-4. Whether `ENGINE_VERSION` moves to 3, since deleting v2 exports changes the
-   engine chunk's exports again.
+1. **Which game.** DIFFERENCE RELAY, TURN TABLE, RING BALANCE, ORDER OF
+   OPERATIONS or ROTATE LOCK. ARCHITECTURE2.md section 46 has a concept note for
+   each.
+2. **The scaffold refuses every planned id.** `validateGameId` refuses an id
+   already in `SUITE_GAMES`, and all five are there as `planned` rows, so
+   `npm run new-game -- --id rotate-lock` fails. Phase 6 found this and left it
+   for the owner (ARCHITECTURE2.md section 56, "Found and not fixed"). The
+   choice: the scaffold adopts an existing planned row and its provisional
+   `bucketCount`, `hasWinLoss` and `stateVersion`, and skips the registry
+   insertion; or the author deletes the planned row before scaffolding. The first
+   is a change to `tools/new-game.ts`, which is tooling and not engine source.
+3. **How much of the design document comes first.** Section 44 lists 28 items.
+   Whether this conversation writes the whole design document and stops for
+   approval before the scaffold, per the charter's one phase per conversation
+   rule, or carries through the build.
+
+**Size.** Expected well over 300 lines. Per the efficiency protocol, state what
+is about to be produced in one line and wait for confirmation before writing it.
 
 ---
 
-## 5. Phase 6 requirements mapped to what exists
+## 5. The requirements mapped to what exists
 
 | Requirement | Exists today as | Notes |
 |---|---|---|
-| v2 module type | `src/contract/game-module.ts`, `defineGame` | `src/engine/storage.ts` names `bucketOf` in a comment only |
-| v2 share block type | `ShareBlock` in `src/core/types.ts` | Marked for phase 6 in part A |
-| Game v2 surfaces | `bucketOf`, `shareBlock`, default export in `src/games/{poker-grid,cipher,vector}/module.ts` | Held equal to the outcome by each module test |
-| v3 module | `src/contract/v3/game-module.ts`, `defineGameV3`, `pokerGridV3`, `cipherV3`, `vectorV3` | Shell and entries already mount these |
-| Fixture | `src/games/toy-v3/module.ts`, `tests/contract/v3-toy.test.ts` | Already v3 only |
-| Scaffold | `tools/new-game.ts`, `tests/tools/new-game.test.ts`, NEW_GAME.md | Still v2; inserts `productionSafe: false`, which stays correct |
-| Byte identity tests | `tests/shell/share-context.test.ts` | Compare against v2 `shareBlock`, rewrite to fixed strings |
-| v2 references in tests | `tests/games/{cipher,poker-grid,vector}/module.test.ts`, `tests/games/cipher/telemetry.test.ts` | |
-| Gate plans | `GAME_PLANS` in `tools/certify.ts` | Evidence names test paths; see section 2 |
+| Contract | `src/contract/v3/game-module.ts`, `src/contract/types.ts`, `src/contract/v3/types.ts` | `MountContext` and `GameView` stay in `contract/types.ts` |
+| Scaffold | `tools/new-game.ts`, `tests/tools/new-game.test.ts` | See open question 2 |
+| Procedure | NEW_GAME.md | Sections 2, 3, 6 and 12 |
+| Gate plan | `newGamePlan` and `GAME_PLANS` in `tools/certify.ts` | Override a step's key after the spread |
+| Exemptions | `GATE_EXEMPTIONS` in `src/engine/certification.ts` | None covers a new game |
+| Build admission | `vite.config.ts` reads `data/<id>/certification.json` | A target's `productionSafe` is always false |
+| CI | `.github/workflows/ci.yml` | A live game's `<id>:verify` must run before the certify step; the certify test enforces it |
+| Share grammar and leak checks | `src/engine/share-grammar.ts`, `src/engine/artifact.ts`, `src/engine/share-leak.ts` | Nine lines, seven rows, eight tokens, same width |
+| Smallest complete references | the scaffold output, `src/games/toy-v3/module.ts` | Real games in NEW_GAME.md section 10 |
 
 ---
 
@@ -171,25 +171,22 @@ in the documents; ask, do not reconstruct.
 | ARCHITECTURE2.md | Active architecture, v3 contract, gate, migration log |
 | ARCHITECTURE.md | v2 record, file manifest, every settled decision |
 | BACKLOG.md | Everything not built and why |
-| PHASE-13-PLAN.md | Charter Phase 13 specification, not this phase |
-| POKER-GRID.md, CIPHER.md, VECTOR/ | Per game design documents |
-| NEW_GAME.md | Game authoring procedure, still v2, rewritten in this phase |
+| NEW_GAME.md | The authoring procedure, rewritten for v3 in phase 6 |
+| PHASE-13-PLAN.md | Charter Phase 13 specification; its game list predates composition A |
+| POKER-GRID.md, CIPHER.md, VECTOR/ | Per game design documents, the shape a new one follows |
 | MANUAL-CHECKS.md | The Section 10.7 checklist with a results table, never run |
 
 ### Source relevant to this phase
 
 | Path | Why |
 |---|---|
-| src/contract/game-module.ts, src/contract/types.ts | The v2 contract to delete |
-| src/contract/v3/game-module.ts, types.ts | The contract that remains |
-| src/core/types.ts | `ShareBlock` |
-| src/engine/storage.ts | A comment naming `bucketOf` |
-| src/games/<game>/module.ts | v2 surfaces and exports |
-| src/shell/entries/*.ts | Import the `*V3` exports by name |
+| src/contract/v3/game-module.ts | The contract |
+| src/shell/registry.ts | The planned row for the chosen game |
 | tools/new-game.ts | The scaffold |
-| tools/certify.ts | `GAME_PLANS`, evidence paths |
-| vite.config.ts | `ENGINE_VERSION`, `TARGETS` |
-| tests/shell/share-context.test.ts | Byte identity tests |
+| tools/certify.ts | `newGamePlan`, `GAME_PLANS` |
+| src/engine/certification.ts | Gate steps and refusals |
+| vite.config.ts | `TARGETS`, release admission |
+| src/games/vector/ | The most recent full game, generator and verifier tools beside it |
 
 ---
 
@@ -198,7 +195,9 @@ in the documents; ask, do not reconstruct.
 1. **The workspace shell cannot mount the repository.** A Windows update released
    2026-09-08 breaks it: `device_bash` fails with "no Plan9 drive shares
    mounted". Read and write the tree with `device_list_dir`,
-   `device_stage_files` and `device_commit_files`.
+   `device_stage_files` and `device_commit_files`. A recursive listing of the
+   repository root overflows on `node_modules` and `.git`; list `src`, `tests`,
+   `tools` and `data` separately.
 2. **Run the real gates in the cloud container.** Stage `src`, `tests`, `tools`,
    `data`, `static`, the three tsconfigs, `package.json`, `package-lock.json`,
    `vite.config.ts`, `vitest.config.ts` and `.github/workflows`, then `npm ci`
@@ -206,20 +205,26 @@ in the documents; ask, do not reconstruct.
    into context. Commit the tree to git inside the container before editing so
    the final diff is exact, and add `node_modules`, `dist`, `dist-dev` and
    `dist-certify` to its `.gitignore` first.
-3. **`npm run certify` needs git** for `certifiedCommit`. The container's commits
-   are not the owner's, so after certifying set `certifiedCommit` in each record
-   to the owner's HEAD, read from `.git/refs/heads/main` by staging it. The field
-   is outside the hash.
-4. **Committing back.** Pass `expectedMtimeMs` from staging for every modified
+3. **`npm run certify` needs git** for `certifiedCommit`, and must be started
+   through npm. The container's commits are not the owner's, so after
+   certifying set `certifiedCommit` in each new or changed record to the owner's
+   HEAD, read from `.git/refs/heads/main` by staging it. The field is outside the
+   hash.
+4. **Checking the owner's tree for changes without git.** Stage `.git/index`
+   and compare git blob hashes of staged files against it; `.git` holds over a
+   thousand loose objects and is too large to stage whole.
+5. **Committing back.** Pass `expectedMtimeMs` from staging for every modified
    file so a newer edit by the owner is never overwritten.
-5. **The bridge cannot write under `.github` and cannot delete.** Deliver
+6. **The bridge cannot write under `.github` and cannot delete.** Deliver
    `.github` changes as a patch file and list deletions for the owner.
-6. **Headless Chromium** is at `/opt/pw-browsers` and the global Playwright
+7. **Headless Chromium** is at `/opt/pw-browsers` and the global Playwright
    package works against `vite preview`. A smoke check must go past the practice
-   board: visit each game twice, or offline after a first visit, because a first
-   visit never reads the manifest. Stop the preview server with
-   `fuser -k 4173/tcp`, never `pkill -f`, which matches the calling shell.
-7. **Project copies of the documents go stale.** After a phase, write
+   board: visit each game twice, or offline after a first visit. Stop the preview
+   server with `fuser -k 4173/tcp`, never `pkill -f`.
+8. **Recording a fixed expectation.** When a test must pin output that a deleted
+   or changed path produced, run the old path first with a temporary probe test,
+   record the values, then change the code.
+9. **Project copies of the documents go stale.** After a phase, write
    ARCHITECTURE2.md, ARCHITECTURE.md, BACKLOG.md and HANDOFF.md back to the
    project as well as the repo.
 
@@ -239,6 +244,8 @@ in the documents; ask, do not reconstruct.
 7. The locked POKER GRID decisions are not restated, justified or reopened.
 8. Anything outside the phase goes to BACKLOG.md with a one line rationale.
 9. Every file added or repurposed is recorded in the architecture documents.
+10. v3 telemetry is the player's own run log on device. Any proposal that sends
+    it anywhere is refused.
 
 ---
 

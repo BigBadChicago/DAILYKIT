@@ -1,10 +1,11 @@
 /**
  * Layer 3. The v3 game seam. ARCHITECTURE2 section 3.
  *
- * v3 is the v2 GameModule plus three additions and a richer outcome: an emergent
+ * The only game contract since v3 migration phase 6 deleted v2. v3 began as the
+ * v2 GameModule plus three additions and a richer outcome: an emergent
  * `difficulty`, a local `telemetry` run log, and a `shareArtifact` mapper. The
- * proven v2 method names are kept so a legacy game migrates by adding methods
- * rather than being rewritten, which is the migration stance of section 47.
+ * proven v2 method names were kept so each legacy game migrated by adding
+ * methods rather than being rewritten, which is the stance of section 47.
  * Three type parameters are retained; the run log stays opaque rather than
  * becoming a fourth.
  *
@@ -88,7 +89,10 @@ export type OpaquePuzzle = Opaque<"puzzle">;
 
 export type AnyGameModuleV3 = GameModuleV3<OpaqueState, OpaqueAction, OpaquePuzzle>;
 
-/** The single v3 erasure point, mirroring defineGame for the v2 contract. */
+/** The single erasure point. Every game's module file default exports
+ *  defineGameV3(...), so the cast happens once per game and never in engine or
+ *  shell source. The v2 defineGame it mirrored was deleted in v3 migration
+ *  phase 6, which left this the only contract. */
 export function defineGameV3<TState, TAction, TPuzzle>(
   module: GameModuleV3<TState, TAction, TPuzzle>,
 ): AnyGameModuleV3 {

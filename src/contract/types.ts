@@ -1,6 +1,7 @@
 /**
- * Layer 3. The descriptor and handle types that make up the seam, split from
- * game-module.ts so that file holds only the interface itself and its erasure.
+ * Layer 3. The descriptor and handle types that make up the seam. The module
+ * interface and its erasure live in v3/game-module.ts; the v2 module that once
+ * sat beside this file was deleted in v3 migration phase 6.
  */
 
 import type {

@@ -107,7 +107,7 @@ from a game. A game never imports from another game.
 ```
 Layer 5  src/shell, src/hub          the app shell, the hub, per game entries
 Layer 4  src/games/*                 one directory per game
-Layer 3  src/contract                the GameModule seam
+Layer 3  src/contract                the GameModuleV3 seam
 Layer 2  src/ui                      the presentation kit
 Layer 1  src/engine                  storage, stats, share, lifecycle, scheduler
 Layer 0  src/core                    rng, seed, date, result, types
@@ -263,7 +263,7 @@ decision or added a backlog entry, say so at the top, not the bottom.
 | Wrong puzzle number, rollover late or early | `src/core/date.ts` | `src/engine/scheduler.ts` |
 | Streak wrong after a gap, a jump, or a replay | `src/engine/stats.ts` | `src/engine/storage.ts`, then the watermark rules in `ARCHITECTURE.md` |
 | Progress lost, or a banner about saving | `src/engine/storage.ts` | the module's `serialize` and `deserialize` |
-| Stats or histogram wrong | `src/engine/stats.ts` and the module's `bucketOf` | `src/ui/statsPanel.ts` |
+| Stats or histogram wrong | `src/engine/stats.ts` and the `bucket` on the module's finished outcome | `src/ui/statsPanel.ts` |
 | Board renders wrong, input ignored, drag broken | that game's `render.ts` | `src/ui/gridCursor.ts`, then the module's `apply` |
 | Keyboard cannot reach or operate something | `src/ui/a11y.ts` and `src/ui/gridCursor.ts` | the renderer's ARIA wiring |
 | Modal, toast, focus, or scroll lock misbehaves | `src/ui/modal.ts`, `src/ui/toast.ts`, `src/ui/a11y.ts` | the caller |
@@ -311,7 +311,7 @@ is how the next session resumes without chat history.
   `src/core/result.ts`. A rejection carries a machine `code` and a human
   `announce` sentence, and the engine is what puts that sentence in the live
   region.
-- Pure rules. `apply`, `inspect`, `bucketOf`, `shareBlock`, and every generator
+- Pure rules. `apply`, `inspect`, `telemetry`, `shareArtifact`, and every generator
   and solver function are pure: no DOM, no clock, no randomness beyond the
   seeded RNG.
 - Never set HTML from a string. No `innerHTML`, no `insertAdjacentHTML`, no

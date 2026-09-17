@@ -153,7 +153,7 @@ export interface GameRecord {
   readonly maxStreak: number;
   readonly played: number;
   readonly won: number;
-  /** Lifetime counts indexed by the module's bucketOf. Requirement 3.4. */
+  /** Lifetime counts indexed by the finished outcome's bucket. Requirement 3.4. */
   readonly distribution: readonly number[];
   readonly live: LiveSession | null;
   /** Completed live puzzles, oldest first, capped. */

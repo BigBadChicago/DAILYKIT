@@ -300,7 +300,7 @@ Locked decision 4: buckets are cards remaining in steps of five, zero distinguis
 labels: ["Perfect Clear", "5 left", "10 left", "15 left", "20 left",
          "25 left", "30 left", "35 left"]
 distinguishedIndex: 0
-bucketOf: cardsRemaining / 5
+bucket: cardsRemaining / 5
 ```
 
 Eight buckets. Remaining is always a multiple of five, a consequence of locked decisions 1 and 3. The 35 bucket is unreachable on any manifest board because requirement 6.3.5 rejects boards with too few opening moves, but it stays in the list because a runtime generated board past the horizon has no such guarantee.

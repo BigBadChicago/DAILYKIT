@@ -333,3 +333,14 @@ the result, which is a human pass across real devices.
 - **Registry order among the five planned games is arbitrary.** The list is meant
   to run longest session to shortest and no design document states a session
   length for any of them yet. Re sort as each one is written.
+- **Fold `src/contract/v3/` back into `src/contract/`.** Logged in v3 migration
+  phase 6, when v2 was deleted and the folder name stopped distinguishing
+  anything. Cosmetic, and it touches the import line of every game, the shell,
+  the tools and the tests, so it is its own change rather than part of a
+  deletion.
+- **Remove the v2 outcome types and drop the V3 suffix.** Logged in v3 migration
+  phase 6. `Outcome` and `FinishedOutcome` in `src/core/types.ts` are read by
+  nothing in src once the scaffold writes `OutcomeV3`. Renaming `OutcomeV3`,
+  `FinishedOutcomeV3`, `GameModuleV3` and `defineGameV3` to plain names is a
+  mechanical rename across every game and test with no behavior in it, so it
+  waits for a phase with nothing else in flight.

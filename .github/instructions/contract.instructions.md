@@ -14,9 +14,10 @@ and prove it is necessary before making one.
    amount of work. Every addition here is work every future game must do or
    ignore, so an addition needs a reason that survives being asked "would the
    fifth game thank us for this".
-2. **One erasure point.** `defineGame()` in `game-module.ts` performs the
-   codebase's only contract cast, producing the opaque branded types the shell
-   and engine see. Do not add a second cast anywhere, and do not name a concrete
+2. **One contract, one erasure point.** `GameModuleV3` in `v3/game-module.ts`
+   is the only game contract since v3 migration phase 6 deleted v2, and
+   `defineGameV3()` beside it performs the codebase's only contract cast,
+   producing the opaque branded types the shell and engine see. Do not add a second cast anywhere, and do not name a concrete
    game type in shell or engine source.
 3. **Engine types live in Layer 0.** The contract composes `src/core/types.ts`
    into its descriptors. It does not export types downward, because Layer 1 sits

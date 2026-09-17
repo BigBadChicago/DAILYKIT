@@ -136,6 +136,51 @@ function tailSteps(gameId: string): Pick<
 }
 
 /**
+ * The plan `npm run new-game` writes for a new game, v3 migration phase 6.
+ *
+ * Automated steps get the probes a finished game would have, pointed at the
+ * files the scaffold writes or the files the game must add, so their evidence
+ * is real from the first run and a missing verifier or manifest fails rather
+ * than passes. The five steps a stub cannot pass get an empty probe list, which
+ * checksFrom records as a skip and the gate refuses whatever else the record
+ * says. Not n/a, because a reason a tool wrote is not a reason anyone checked,
+ * and not pending, because no exemption covers a new game and an invented one
+ * would refuse for a misleading reason.
+ *
+ * A stub is also `planned` in the registry and liveGameIds certifies only live
+ * games, so this plan is not evaluated until its author marks the game live.
+ */
+export function newGamePlan(gameId: string): GamePlan {
+  const tests = `tests/games/${gameId}`;
+  return {
+    ...suiteSteps(),
+    "generation-pipeline": probes(testFile(`${tests}/generator.test.ts`)),
+    "independent-verification": probes(npm(`${gameId}:verify`)),
+    /* The author replaces this with the game's calibration study and its test. */
+    "difficulty-calibration": probes(),
+    "yearly-horizon": probes(npm(`${gameId}:verify`), {
+      kind: "horizon",
+      key: `horizon:${gameId}`,
+      path: `data/${gameId}/manifest.index.json`,
+    }),
+    "duplicate-check": probes(npm(`${gameId}:verify`)),
+    /* The author replaces this with the game's decomposition checker, ARCHITECTURE2 section 12.1. */
+    "decomposition-check": probes(),
+    /* The author replaces this with the game's symmetry checker, ARCHITECTURE2 section 12.2. */
+    "symmetry-check": probes(),
+    "share-leak-check": probes(testFile(`${tests}/module.test.ts`)),
+    "accessibility-contract": probes(testFile(`${tests}/render.test.ts`), testFile("tests/ui/a11y.test.ts")),
+    "state-round-trip": probes(testFile(`${tests}/module.test.ts`)),
+    "manifest-round-trip": probes(testFile(`${tests}/module.test.ts`), testFile("tests/shell/boot.test.ts")),
+    /* The author replaces this with a manual result once the game renders offline from cache. */
+    "offline-smoke": probes(),
+    "byte-budget": budgetStep(gameId),
+    /* The author replaces this with a manual result from MANUAL-CHECKS.md for this game. */
+    "manual-mobile-check": probes(),
+  };
+}
+
+/**
  * What each gate step means per live game. HANDOFF section 5 is the map this
  * was written from; a step with no evidence for a game is a defect to fix, not
  * a row to leave out, and planFor refuses a game that has no plan.
@@ -223,6 +268,7 @@ export const GAME_PLANS: Readonly<Record<string, GamePlan>> = {
     ),
     ...tailSteps("vector"),
   },
+  /* NEW_GAME_INSERTION: GAME_PLANS */
 };
 
 /** The games the gate certifies: every live registry row. */
@@ -485,6 +531,28 @@ export const nodeFilesystem: Filesystem = {
 export const CERTIFY_BUILD_ENV = "DAILYKIT_CERTIFY_BUILD";
 export const CERTIFY_DIST = "dist-certify";
 
+/**
+ * The npm CLI that launched this process. npm sets npm_execpath for every
+ * script it runs, so certify invokes npm as Node plus that file and needs no
+ * shell on any platform. Windows cannot spawn `npm` without one, and a shell
+ * spawn with an argument list is deprecated there. Started any other way,
+ * certify stops and says so rather than guessing where npm is.
+ */
+export function npmCliPath(env: Readonly<Record<string, string | undefined>>): string {
+  const path = env["npm_execpath"];
+  if (path === undefined || path.trim() === "") {
+    throw new Error("certify runs npm scripts through the npm that started it; run it as npm run certify");
+  }
+  return path;
+}
+
+/** Node's arguments for one probe script. `npmCli` is null only under --from-ci,
+ *  which runs no script. */
+export function npmArguments(npmCli: string | null, script: string, extra: readonly string[]): string[] {
+  if (npmCli === null) throw new Error(`--from-ci runs no npm script, yet ${script} was asked for`);
+  return [npmCli, "run", script, ...extra];
+}
+
 /* ------------------------------------------------------------------------ */
 /* Runner                                                                    */
 /* ------------------------------------------------------------------------ */
@@ -500,6 +568,7 @@ async function run(): Promise<void> {
     throw new Error("--from-ci trusts steps this CI job already ran and is refused outside CI");
   }
 
+  const npmCli = fromCi ? null : npmCliPath(process.env);
   const games = liveGameIds();
   const plans = games.map((gameId) => planFor(gameId));
   const probeList = uniqueProbes(plans);
@@ -518,10 +587,9 @@ async function run(): Promise<void> {
     const extra = probe.script === "budget" ? ["--", CERTIFY_DIST] : [];
     const env = probe.script === "build" ? { ...process.env, [CERTIFY_BUILD_ENV]: "1" } : process.env;
     process.stdout.write(`certify: npm run ${probe.script}\n`);
-    const result = spawnSync("npm", ["run", probe.script, ...extra], {
+    const result = spawnSync(process.execPath, npmArguments(npmCli, probe.script, extra), {
       stdio: "inherit",
       env,
-      shell: process.platform === "win32",
     });
     npmResults.set(
       probe.key,

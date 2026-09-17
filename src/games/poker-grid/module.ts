@@ -1,11 +1,10 @@
 /**
- * Layer 4. The POKER GRID GameModule, implementing v2 and v3 at once.
+ * Layer 4. The POKER GRID GameModule.
  *
- * One implementation object satisfies both contracts, because FinishedOutcomeV3
- * is FinishedOutcome plus two fields and is therefore assignable to it. The
- * default export stays the v2 module so the shell, the entry and the build are
- * untouched; `pokerGridV3` is the same object seen through the v3 seam. This is
- * the shape phases 2 and 3 established. ARCHITECTURE2 sections 47 and 56.
+ * The module is written against the v3 contract only. v3 migration phase 6
+ * deleted the v2 contract, and with it this module's `bucketOf`, `shareBlock`
+ * and v2 default export; the default export is now the v3 module the shell
+ * mounts. ARCHITECTURE2 section 56.
  *
  * Deliberately imports `greedy.ts` and never `solver.ts`. The greedy player is
  * a few dozen lines over modules the board already loads, and it is half of the
@@ -16,16 +15,13 @@
 import { err, ok, type Result } from "../../core/result.js";
 import type {
   DistributionSpec,
-  FinishedOutcome,
   OutcomeV3,
   PuzzleNumber,
   Rejection,
   Seed,
   SerializedState,
-  ShareBlock,
   ShareContext,
 } from "../../core/types.js";
-import { defineGame, type GameModule } from "../../contract/game-module.js";
 import { defineGameV3, type GameModuleV3 } from "../../contract/v3/game-module.js";
 import type { ShareCapabilities } from "../../contract/v3/types.js";
 import type {
@@ -61,12 +57,9 @@ import {
 import { CLEAR_VALUE_PER_HAND, scoreHands } from "./scoring.js";
 import {
   SHARE_ROW_WIDTH,
-  artifactRows,
-  artifactTitle,
   finishedOutcomeFor,
   pokerArtifact,
   pokerRunLog,
-  readEntries,
 } from "./telemetry.js";
 import { tutorialPuzzle } from "./tutorial.js";
 
@@ -318,10 +311,6 @@ function inspect(state: PokerState): OutcomeV3 {
   return finishedOutcomeFor(state);
 }
 
-function bucketOf(_outcome: FinishedOutcome, state: PokerState): number {
-  return bucketFor(state.grid);
-}
-
 /** v3. Measured from the board, never read from a stored field. The stored
  *  optimum is the denominator and that is read; see difficulty.ts. */
 function difficulty(puzzle: PokerPuzzle): number {
@@ -348,18 +337,6 @@ function shareArtifact(
   return pokerArtifact(state, run, context);
 }
 
-/**
- * The v2 block. It is the v3 artifact's title and rows with the fingerprint and
- * the outcome dropped, built from the same two functions, so the two cannot
- * drift apart and POKER-GRID.md section 14.1 is not reopened.
- */
-function shareBlock(state: PokerState, context: ShareContext): ShareBlock {
-  return {
-    title: artifactTitle(state, context),
-    rows: artifactRows(readEntries(pokerRunLog(state))),
-  };
-}
-
 function mount(
   host: HTMLElement,
   context: MountContext<PokerState, PokerAction, PokerPuzzle>,
@@ -371,9 +348,7 @@ function help(): HelpContent {
   return POKER_GRID_HELP;
 }
 
-/* Not annotated, so the two typed views below can each take the members they
-   need without an excess property error on a fresh object literal. */
-const pokerGrid = {
+const pokerGrid: GameModuleV3<PokerState, PokerAction, PokerPuzzle> = {
   identity,
   input,
   manifest,
@@ -394,22 +369,13 @@ const pokerGrid = {
   apply,
   inspect,
   difficulty,
-  bucketOf,
   telemetry,
   shareArtifact,
-  shareBlock,
   mount,
   help,
 };
 
-const asV2: GameModule<PokerState, PokerAction, PokerPuzzle> = pokerGrid;
-const asV3: GameModuleV3<PokerState, PokerAction, PokerPuzzle> = pokerGrid;
-
-export default defineGame(asV2);
-
-/** The same module through the v3 seam. Nothing imports it yet; the shell is
- *  still v2 and a game cannot lead it. ARCHITECTURE2 section 56, phase 4. */
-export const pokerGridV3 = defineGameV3(asV3);
+export default defineGameV3(pokerGrid);
 
 /** Exported for the module tests only. Nothing in the shell reads these. */
 export const internals = {
@@ -421,9 +387,7 @@ export const internals = {
   serialize,
   deserialize,
   migrateState,
-  shareBlock,
   difficulty,
-  bucketOf,
   telemetry,
   shareArtifact,
   SHARE_ROW_WIDTH,

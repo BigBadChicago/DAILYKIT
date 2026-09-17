@@ -1,10 +1,11 @@
 # DAILYKIT ARCHITECTURE
 
 > **Active target is ARCHITECTURE2.md (v3).** As of 2026-09-13 the project is
-> migrating to the v3 engine contract and the v3 concept pool. This document
-> stays authoritative for the v2 engine and the three live legacy games
-> (POKER GRID, CIPHER, VECTOR) until each is certified under v3. New work
-> follows ARCHITECTURE2.md.
+> migrating to the v3 engine contract and the v3 concept pool. Since v3
+> migration phase 6, 2026-09-17, the v2 contract is deleted and the three live
+> games and the scaffold are v3 only. This document stays the record of the
+> settled contract, engine, presentation, generation, suite and offline
+> decisions and of the file manifest. New work follows ARCHITECTURE2.md.
 
 Living manifest. Every file in the repo is listed here with its one sentence
 responsibility and its dependencies. Update on every file added, removed, or
@@ -17,7 +18,7 @@ resume work in a fresh conversation with no chat history.
 |---|---|
 | Current phase | Phase 13 in progress. VECTOR, game three, is built, integrated, and green across the suite. TALLY DROP and RECALL remain. Phase 8's manual checklist is still unrun |
 | Games playable | POKER GRID, VECTOR, and CIPHER, end to end in a browser, inside the suite shell |
-| Engine contract version | The shell reads v3 only as of v3 migration phase 5, part A, 2026-09-16. The v2 contract still exists because the three live games and the scaffold implement it, and nothing in the shell or hub renders a v2 share block any more. It is retired in v3 migration phase 6. ARCHITECTURE2.md section 56 |
+| Engine contract version | v3 only. The shell has read v3 alone since v3 migration phase 5, part A, 2026-09-16, and phase 6, 2026-09-17, deleted the v2 `GameModule`, `defineGame` and `ShareBlock`. Each game's default export is its v3 module and `npm run new-game` scaffolds v3. ARCHITECTURE2.md section 56 |
 | Release gate | Since v3 migration phase 5 part B a game enters a release only through a production safe `data/<game>/certification.json`, produced by `npm run certify` and checked in CI. The manual mobile check is pending for the three live games under an exemption that expires 2026-12-15. ARCHITECTURE2.md sections 45 and 56 |
 | Manifest horizon | POKER GRID 365 days from epoch 2026-01-01, verified with a solver replay. CIPHER and VECTOR 365 days from epoch 2026-01-05, the first Monday. CIPHER verified against the fixed opening, VECTOR by re-derivation and an independent uniqueness search |
 
@@ -37,7 +38,7 @@ resume work in a fresh conversation with no chat history.
 | 9 | Slate approval | done | SLATE.md, second revision. Thirty four pooled candidates, five recommended, approved 2026-09-08. POKER GRID, VECTOR, CIPHER, TALLY DROP, RECALL |
 | 10 | Suite shell | done | Hub, shell, per game entries, one pass release build with a shared engine chunk, suite storage and streak, daily card, cross promotion. One contract change and one renderer defect, both below |
 | 11 | Game two and abstraction test | done | CIPHER ships at 24.0 KB gzipped. Defect report written, eight defects, and the engine corrected for all of them. Both games rebuilt against the corrected contract and the full suite is green: 43 files, 463 tests, 57 seconds |
-| 12 | Template extraction | done | NEW_GAME.md, tools/new-game.ts, its tests, two insertion markers, and the template decisions are shipped for the Phase 13 games |
+| 12 | Template extraction | done | NEW_GAME.md, tools/new-game.ts, its tests, two insertion markers, and the template decisions are shipped for the Phase 13 games. Rewritten for v3 with a third marker in v3 migration phase 6 |
 | 13 | Games three, four, five | in progress | PHASE-13-PLAN.md. VECTOR built and integrated: seven source files, three tools, a verified 365 day horizon, and green across 577 tests. Zero engine changes, the abstraction test passed. TALLY DROP and RECALL remain |
 | 14 | Suite launch readiness | not started | |
 
@@ -81,16 +82,17 @@ Table columns are fixed as follows and every future entry uses them.
 | src/shared/share-vocabulary.ts | shared | Suite wide share tokens, their glyphs, and their shapes | none |
 | src/shared/poker-hands.ts | shared | Poker hand categories, ordinals, and shared result tier mapping | shared/share-vocabulary |
 | src/core/result.ts | 0 | Result type so rule failures are values rather than throws | none |
-| src/core/types.ts | 0 | Structural engine, input, and help types independent of the contract | shared/share-vocabulary |
+| src/core/types.ts | 0 | Structural engine, input, help, outcome, and share row types independent of the contract. `ShareBlock` deleted in v3 migration phase 6 | shared/share-vocabulary |
 | src/contract/types.ts | 3 | Identity, manifest, help, view, and failure descriptors composed from core types | core/types |
-| src/contract/game-module.ts | 3 | The GameModule interface and the single erasure boundary | core/result, core/types, contract/types |
+| src/contract/v3/game-module.ts | 3 | `GameModuleV3`, the only game contract since v3 migration phase 6, and `defineGameV3`, the single erasure boundary. Replaced the deleted `contract/game-module.ts` | core/result, core/types, contract/types, contract/v3/types, engine/telemetry |
+| src/contract/v3/types.ts | 3 | Share capabilities and the neutral v3 manifest entry | core/types, engine/certification, engine/share-grammar |
 | src/games/toy-v3/module.ts | 4 | The contract regression fixture on v3, never shipped. Replaced toy-tap in v3 migration phase 5 | core/result, core/rng, core/seed, core/types, contract/types, contract/v3/*, engine/telemetry, shared/share-vocabulary |
 | src/games/poker-grid/evaluator.ts | 4 | Five card hand classification and card decoding | shared/poker-hands |
 | src/games/poker-grid/scoring.ts | 4 | Empirically calibrated hand point table, the clearing dominance constants, and tier calculation | shared/poker-hands, games/poker-grid/evaluator |
 | src/games/poker-grid/rules.ts | 4 | Pure selection, gravity, commit, terminal, and connected move rules with lazy enumeration, plus the per hand effort record and the board facts the outcome is built from | core/result, core/types, shared/poker-hands, games/poker-grid/evaluator, games/poker-grid/scoring, games/poker-grid/generator |
 | src/games/poker-grid/generator.ts | 4 | Seeded board construction, the weekday lever schedule, and puzzle shape validation | core/rng, core/seed, core/types, games/poker-grid/rules, games/poker-grid/evaluator |
 | src/games/poker-grid/solver.ts | 4 | Exact memoized search under a node ceiling, falling back to a width carrying beam | games/poker-grid/evaluator, games/poker-grid/rules, games/poker-grid/scoring |
-| src/games/poker-grid/module.ts | 4 | POKER GRID GameModule on v2 and v3 at once, puzzle parsing, state snapshots, outcome, and share data | core/result, core/types, contract/*, contract/v3/*, engine/telemetry, shared/poker-hands, games/poker-grid/difficulty, games/poker-grid/evaluator, games/poker-grid/generator, games/poker-grid/help, games/poker-grid/manifest-codec, games/poker-grid/render, games/poker-grid/rules, games/poker-grid/scoring, games/poker-grid/telemetry, games/poker-grid/tutorial |
+| src/games/poker-grid/module.ts | 4 | POKER GRID v3 GameModule, puzzle parsing, state snapshots, outcome, run log, and artifact | core/result, core/types, contract/*, contract/v3/*, engine/telemetry, shared/poker-hands, games/poker-grid/difficulty, games/poker-grid/evaluator, games/poker-grid/generator, games/poker-grid/help, games/poker-grid/manifest-codec, games/poker-grid/render, games/poker-grid/rules, games/poker-grid/scoring, games/poker-grid/telemetry, games/poker-grid/tutorial |
 | src/games/poker-grid/difficulty.ts | 4 | The emergent integer difficulty in basis points, the nine seeded greedy runs behind it, the greedy salt, and the unrated sentinel | core/seed, core/types, games/poker-grid/generator, games/poker-grid/greedy |
 | src/games/poker-grid/telemetry.ts | 4 | POKER GRID run log, rework bands, fingerprint, artifact rows and title, the v3 outcome, and the four leak probes | core/types, engine/share-leak, engine/telemetry, engine/tiers, shared/poker-hands, shared/share-vocabulary, games/poker-grid/difficulty, games/poker-grid/evaluator, games/poker-grid/rules, games/poker-grid/scoring |
 | src/games/poker-grid/render.ts | 4 | POKER GRID board renderer with card faces, pointer gestures, keyboard activation, and state repaint | ui/dom, ui/gridCursor, contract/types, games/poker-grid/evaluator, games/poker-grid/rules, games/poker-grid/generator |
@@ -153,7 +155,7 @@ Table columns are fixed as follows and every future entry uses them.
 | tests/tools/share-harness.test.ts | n/a | Grapheme width measurement and case coverage | share-harness/main, share-harness/cases |
 | tests/games/poker-grid/evaluator.test.ts | n/a | Poker category, ordinal, wheel, and wrapped straight coverage | games/poker-grid/evaluator |
 | tests/games/poker-grid/rules.test.ts | n/a | Gravity, selection rejection, commit, move uniqueness, and terminal coverage | games/poker-grid/evaluator, games/poker-grid/rules |
-| tests/games/poker-grid/module.test.ts | n/a | Deterministic generation, snapshot recovery, mismatch rejection, unrated share coverage, the state version 2 refusal, and the v3 seam | games/poker-grid/difficulty, games/poker-grid/generator, games/poker-grid/module, games/poker-grid/rules |
+| tests/games/poker-grid/module.test.ts | n/a | Deterministic generation, snapshot recovery, mismatch rejection, unrated share coverage, the state version 2 refusal, the v3 default export, and fixed buckets and share strings recorded from the deleted v2 surface | games/poker-grid/difficulty, games/poker-grid/generator, games/poker-grid/module, games/poker-grid/rules |
 | tests/games/poker-grid/difficulty.test.ts | n/a | Basis point arithmetic, the unrated cases, greedy replay, memo behaviour, and that the measure moves with its inputs | games/poker-grid/difficulty, games/poker-grid/generator, games/poker-grid/tutorial |
 | tests/games/poker-grid/telemetry.test.ts | n/a | Run log shape, rework bands, fingerprint separation, the nine line cap at seven hands, and a positive control per leak probe | games/poker-grid/telemetry, games/poker-grid/rules, engine/artifact, engine/share-grammar, engine/share-leak |
 | tests/games/poker-grid/scoring.test.ts | n/a | Hand count dominance, quality floor, and deficit tier properties | games/poker-grid/scoring |
@@ -170,7 +172,7 @@ Table columns are fixed as follows and every future entry uses them.
 | src/shell/registry.ts | 5 | The five suite games as data, readable without loading a game | none |
 | src/shell/share-context.ts | 5 | What a share is told about the session, so a replay carries no streak, and composeResultShare, the one path from a finished session to its share string | contract/v3/game-module, core/types, engine/artifact, engine/telemetry |
 | src/shell/suite.ts | 5 | Suite storage, per game today status, theme port, and daily card assembly | core/date, core/result, core/types, engine/dailycard, engine/scheduler, engine/stats, engine/storage, ui/theme, shell/registry |
-| src/shell/boot.ts | 5 | Manifest index and chunk fetching, prefetch, and the past horizon fallback | contract/game-module, core/result, core/seed, core/types |
+| src/shell/boot.ts | 5 | Manifest index and chunk fetching, prefetch, and the past horizon fallback | contract/v3/game-module, core/result, core/seed, core/types |
 | src/shell/main.ts | 5 | Session lifecycle, chrome, end screen, share, archive, and cross promotion, over the v3 module only | contract/v3/*, contract/types, core/*, engine/*, ui/*, shell/boot, shell/changelog, shell/register-sw, shell/registry, shell/share-context, shell/suite |
 | src/shell/shell.css | 5 | Game page layout, end screen, and archive list styling | none |
 | src/shell/env.d.ts | 5 | Ambient CSS module and import.meta.env declarations for browser builds | none |
@@ -180,9 +182,9 @@ Table columns are fixed as follows and every future entry uses them.
 | tools/sw-manifest.ts | tools | The precache list and the cache name, as pure functions shared by the build and its test | none |
 | tools/budget.ts | tools | Constraint 2.7's byte budget, asserted against a built dist/ in CI or the directory named as its argument | none |
 | src/engine/certification.ts | 1 | Gate steps, outcomes, exemptions, the per game record and the per puzzle record, and the rule that makes a record production safe on a date | none |
-| tools/certify.ts | tools | The section 45 gate: per game plans of probes, checks, record hashing, parsing and reconciliation as pure functions, and a runner that writes or checks data/<game>/certification.json | core/canonical-json, engine/certification, shell/registry |
+| tools/certify.ts | tools | The section 45 gate: per game plans of probes, checks, record hashing, parsing and reconciliation as pure functions, `newGamePlan` for a scaffolded game, and a runner that writes or checks data/<game>/certification.json and starts npm without a shell | core/canonical-json, engine/certification, shell/registry |
 | data/poker-grid/certification.json, data/cipher/certification.json, data/vector/certification.json | n/a | The committed gate record per live game, read by the build to decide release | none |
-| tests/tools/certify.test.ts | n/a | Plans against the repository, package.json and ci.yml, derived probes, checks, hashing, tamper refusal, reconciliation, and release status from disk | engine/certification, tools/certify |
+| tests/tools/certify.test.ts | n/a | Plans against the repository, package.json and ci.yml, the stub plan that stays unsafe with every probe passing, npm launched without a shell, derived probes, checks, hashing, tamper refusal, reconciliation, and release status from disk | engine/certification, tools/certify, tools/new-game |
 | tests/engine/certification.test.ts | n/a | Every refusal: fail, skip, unreasoned n/a, unknown, foreign, expired or not yet issued exemption, missing step, foreign schema | engine/certification |
 | tests/games/vector/render.test.ts | n/a | VECTOR's accessibility contract: grid roles, one focus stop, labels, keyboard play, live status, submit, read only replay, teardown | games/vector/render, games/vector/rules, games/vector/propagate |
 | src/shell/changelog.ts | 5 | The entry list, the app version, and what a returning player is shown | none |
@@ -190,16 +192,16 @@ Table columns are fixed as follows and every future entry uses them.
 | PHASE-12-PLAN.md | n/a | The Phase 12 specification, acceptance criteria, and the self check before handover | none |
 | PHASE-12-FIXES.md | n/a | The Phase 12 review findings and their closure, including what the self check surfaced | none |
 | PHASE-13-PLAN.md | n/a | The Phase 13 specification: the three remaining games, one per chat, with their fixed facts and per game gates | none |
-| NEW_GAME.md | n/a | The procedure for authoring and checking a new game against the contract | none |
-| tools/new-game.ts | tools | Pure scaffold planning and filesystem writer for a complete planned game | node:fs, node:path, node:url, shell/registry |
-| tests/tools/new-game.test.ts | n/a | Pure output, validation, determinism, and insertion tests for the game scaffold | tools/new-game, vitest |
+| NEW_GAME.md | n/a | The procedure for authoring a new game against the v3 contract and shipping it through its own certification record | none |
+| tools/new-game.ts | tools | Pure scaffold planning and filesystem writer for a complete planned v3 game, its four tests, and its registry, build target and GAME_PLANS rows | node:fs, node:path, node:url, shell/registry |
+| tests/tools/new-game.test.ts | n/a | Pure output, v3 only output, plan evidence coverage, validation, determinism, and insertion tests for the game scaffold | tools/certify, tools/new-game, vitest |
 | .github/copilot-instructions.md | n/a | The always loaded instruction set for GitHub Copilot, including the reading order and the phase rules | none |
 | .github/instructions/*.instructions.md | n/a | Path scoped rules that load when a matching file is opened, one per layer | none |
 | .github/prompts/*.prompt.md | n/a | The slash commands: onboard, verify, review-change, manual-check, changelog-entry, phase, phase-12 | none |
 | COPILOT.md | n/a | The short usage page for working this repository with Copilot | none |
 | MANUAL-CHECKS.md | n/a | The Section 10.7 list, with a results table to fill in per run | none |
 | tests/shell/changelog.test.ts | n/a | Version windowing, game scoping, and the two cases that must show nothing | shell/changelog |
-| tests/shell/share-context.test.ts | n/a | The streak rule, and per game that the v3 share string is byte identical to what v2 shipped, carries no streak out of a replay, and survives a defective artifact | shell/share-context, shell/registry, games/cipher/*, games/poker-grid/*, games/vector/*, tests/games/vector/fixtures |
+| tests/shell/share-context.test.ts | n/a | The streak rule, and per game that the v3 share string equals fixed strings recorded from what v2 shipped, carries no streak out of a replay, and survives a defective artifact | shell/share-context, shell/registry, games/cipher/*, games/poker-grid/*, games/vector/*, tests/games/vector/fixtures |
 | tests/games/poker-grid/tutorial.test.ts | n/a | Board legality, that it is graded by nothing, and that it is easier than a scheduled day | games/poker-grid/tutorial |
 | tsconfig.sw.json | n/a | The worker's own program, because the WebWorker lib cannot share a program with DOM | none |
 | tests/tools/sw-manifest.test.ts | n/a | Precache coverage, worker exclusion, and cache name movement | tools/sw-manifest |
@@ -238,18 +240,18 @@ Table columns are fixed as follows and every future entry uses them.
 | tests/games/cipher/generator.test.ts | n/a | Weekday mapping, band ordering, seeded determinism, lever totality, and unrated fallback | games/cipher/generator, games/cipher/solver |
 | tests/games/cipher/manifest-codec.test.ts | n/a | Round trip across a year, stream keying, and malformed input rejection | games/cipher/generator, games/cipher/manifest-codec |
 | tests/tools/cipher-pipeline.test.ts | n/a | Entry determinism, band conformance, rejection accounting, tamper detection, and the committed manifest | tools/cipher-generate, tools/cipher-verify, games/cipher/* |
-| src/games/cipher/module.ts | 4 | CIPHER GameModule implementation, puzzle parsing, snapshot state, outcome, and share data | core/result, core/types, engine/tiers, contract/*, games/cipher/generator, games/cipher/help, games/cipher/manifest-codec, games/cipher/render, games/cipher/rules |
+| src/games/cipher/module.ts | 4 | CIPHER v3 GameModule, puzzle parsing, snapshot state, outcome, run log, and artifact | core/result, core/types, engine/tiers, contract/*, contract/v3/*, games/cipher/generator, games/cipher/help, games/cipher/manifest-codec, games/cipher/render, games/cipher/rules |
 | src/games/cipher/render.ts | 4 | CIPHER play area: shape palette, four slots, guess history, and its own keyboard model | ui/dom, contract/types, games/cipher/generator, games/cipher/rules |
 | src/games/cipher/style.css | 4 | CIPHER slot, palette, and history styling with 44 pixel touch targets | none |
 | src/games/cipher/help.ts | 4 | CIPHER structured help content and worked example | core/types |
 | src/shell/entries/cipher.ts | 5 | The CIPHER bundler entry, the one file that names it | games/cipher/module, shell/main |
 | src/shell/entries/cipher.html | 5 | The CIPHER page | none |
-| tests/games/cipher/module.test.ts | n/a | Identity, manifest resolution, parse rejection, snapshot round trip, outcome grading, and share rows | games/cipher/module, games/cipher/rules |
+| tests/games/cipher/module.test.ts | n/a | Identity, manifest resolution, parse rejection, snapshot round trip, outcome grading with bucket, and artifact rows and titles | games/cipher/module, games/cipher/rules |
 | tests/games/cipher/render.test.ts | n/a | Palette and slot accessibility, tap and keyboard play, announcement, reveal on loss, and teardown | games/cipher/render, games/cipher/rules |
 | src/games/vector/propagate.ts | 4 | VECTOR geometry, candidates and suppliers, the three deduction rules in rounds, the depth, the intensity measure, and the resolved solution | none |
 | src/games/vector/rules.ts | 4 | VECTOR cycle, set and submit, satisfaction check, terminal detection, tier and bucket mapping, the per submission effort record, and the recomputed difficulty | core/result, core/types, games/vector/propagate |
 | src/games/vector/generator.ts | 4 | Seeded carve, the intensity measure, weekday bands, the screens, the unrated fallback, and the first session board | games/vector/propagate |
-| src/games/vector/module.ts | 4 | VECTOR GameModule on v2 and v3 at once, layout parsing, snapshot state, outcome, and share data | core/result, core/rng, core/seed, core/types, engine/manifest-codec, engine/telemetry, contract/*, contract/v3/*, games/vector/generator, games/vector/help, games/vector/propagate, games/vector/render, games/vector/rules, games/vector/telemetry |
+| src/games/vector/module.ts | 4 | VECTOR v3 GameModule, layout parsing, snapshot state, outcome, run log, and artifact | core/result, core/rng, core/seed, core/types, engine/manifest-codec, engine/telemetry, contract/*, contract/v3/*, games/vector/generator, games/vector/help, games/vector/propagate, games/vector/render, games/vector/rules, games/vector/telemetry |
 | src/games/vector/telemetry.ts | 4 | VECTOR run log, effort bands, fingerprint, artifact mapping, share rows and title, and the four leak probes | core/types, engine/share-leak, engine/telemetry, engine/tiers, shared/share-vocabulary, games/vector/rules |
 | src/games/vector/render.ts | 4 | VECTOR play area: the grid, self drawn arrows, the ray highlight, the submission counter, and the reveal on loss | ui/dom, ui/gridCursor, contract/types, games/vector/propagate, games/vector/rules |
 | src/games/vector/style.css | 4 | VECTOR board, cell, arrow and highlight styling with 54 pixel cells above the 44 pixel floor | none |
@@ -266,7 +268,7 @@ Table columns are fixed as follows and every future entry uses them.
 | tests/games/vector/propagate.test.ts | n/a | Geometry, candidates and suppliers, the deduction rounds, stall and contradiction, and uniqueness by an independent search | games/vector/propagate |
 | tests/games/vector/rules.test.ts | n/a | Cycle, set and submit, every rejection path, terminal grading, and a random legal sequence property | games/vector/rules |
 | tests/games/vector/generator.test.ts | n/a | Carve invariants, intensity consistency, the screens, band ordering, the unrated fallback, and the first session board | games/vector/generator, games/vector/propagate |
-| tests/games/vector/module.test.ts | n/a | Identity, parse rejection, snapshot round trip, outcome grading, and share rows | games/vector/module, games/vector/rules |
+| tests/games/vector/module.test.ts | n/a | Identity, parse rejection, snapshot round trip, outcome grading with bucket, and artifact rows and titles held to fixed strings | games/vector/module, games/vector/rules |
 | tests/games/vector/telemetry.test.ts | n/a | Effort bands, run log shape, fingerprint separation, mapper purity, and a positive control per leak probe | games/vector/telemetry, games/vector/rules, engine/artifact, engine/share-leak |
 | tests/games/vector/fixtures.ts | n/a | A measured fixture board and its solution, shared by the VECTOR tests | games/vector/rules, games/vector/propagate |
 
@@ -293,7 +295,7 @@ dailykit/
     ui/              Layer 2. dom.ts modal.ts toast.ts countdown.ts
                      statsPanel.ts helpPanel.ts header.ts theme.ts a11y.ts gridCursor.ts
                      chrome.css
-    contract/        Layer 3. game-module.ts types.ts
+    contract/        Layer 3. types.ts, v3/game-module.ts v3/types.ts
     shell/           Layer 5. main.ts boot.ts index.html
     hub/             Layer 5. hub.ts hub.css index.html
     games/
@@ -449,16 +451,24 @@ Settled in Phase 1. Inputs to every later phase.
 2. **Erasure at one point.** `defineGame()` in `contract/game-module.ts` performs
    the codebase's only contract cast, producing `AnyGameModule` over branded
    opaque types. Shell and engine source contain no casts and name no game type.
+   Amended in v3 migration phase 6: the one erasure point is `defineGameV3()` in
+   `contract/v3/game-module.ts`, producing `AnyGameModuleV3`. `defineGame` and
+   the v2 `GameModule` were deleted once no game, entry or tool used them.
 3. **Engine types live in Layer 0.** `core/types.ts` holds `Outcome`,
    `ShareBlock`, `Rejection`, `SerializedState`, and `DistributionSpec`, because
    the layer rule puts Layer 1 below the contract and the engine must not import
-   `GameModule`. Layer 3 composes those into the contract.
+   `GameModule`. Layer 3 composes those into the contract. Amended in v3
+   migration phase 6: `ShareBlock` is deleted. `Outcome` and `FinishedOutcome`
+   remain as the base the v3 outcome types mirror, and nothing in src reads
+   them; their removal is in BACKLOG.md.
 4. **Semantic share tokens.** Games emit tokens, never codepoints.
    `shared/share-vocabulary.ts` owns the mapping and is closed to games. Row width
    is padded by the engine to the widest row within one block, not to a suite
    constant. Flavor is carried by accent color and board typography only.
 5. **Outcome is a tagged union**, `bucketOf` is a pure function supplied by the
-   module, and `hasWinLoss` gates the win rate row.
+   module, and `hasWinLoss` gates the win rate row. Amended in v3 migration
+   phases 5 and 6: the bucket and the tier are fields of the finished outcome
+   `inspect` returns, and `bucketOf` is deleted from every game.
 6. **`mount` returns a `GameView` handle.** A module is a singleton, so per
    session render state lives in the handle, not in module scope.
 7. **Rejections are values** carrying a machine `code` and a human `announce`
@@ -737,7 +747,10 @@ for later games without changing the engine seam.
 
 1. **Named marker insertion.** The scaffold inserts registry and build entries
    only immediately before `SUITE_GAMES` and `TARGETS` markers, and refuses a
-   missing marker or an existing id. Arbitrary regular expression edits were
+   missing marker or an existing id. Amended in v3 migration phase 6: a third
+   marker, `GAME_PLANS` in `tools/certify.ts`, takes the game's certification
+   plan row, a marker found twice is refused as well as one found never, and
+   every check runs before any write. Arbitrary regular expression edits were
    rejected because they can silently damage configuration when formatting
    changes.
 2. **Complete trivial scaffold.** The tool emits a tiny seeded target game with
@@ -758,11 +771,32 @@ for later games without changing the engine seam.
    found the target and `miss` for the rest, and names the outcome in the
    title. A fixed row was rejected because the scaffold is what game three
    copies, and a block that is the same after a win and a loss teaches the
-   wrong shape of the suite's only distribution mechanism.
+   wrong shape of the suite's only distribution mechanism. Amended in v3
+   migration phase 6: the rows come from `shareArtifact` over the game's run
+   log, with a fingerprint point per tap.
 6. **The dash check reads prose only.** The scaffold test checks generated
    `.md` files whole and, in `.ts` files, comment and string literal text only.
    Checking whole source was rejected because it flags `count - 1`, which is
    arithmetic and not punctuation, and would fail POKER GRID and CIPHER today.
+7. **The scaffold is v3 only and writes the gate's side too.** Settled in v3
+   migration phase 6. The module default exports `defineGameV3` and the tool
+   writes the `generator`, `module` and `render` tests the plan names as
+   evidence, so a new game is authored against exactly what the shell reads and
+   certified against real files. Printing the plan row for the author to paste
+   was rejected: it depends on someone remembering, and the failure would only
+   show when the game is marked live and certify refuses it.
+8. **A stub plan's unpassable steps are empty probe lists.**
+   `difficulty-calibration`, `decomposition-check`, `symmetry-check`,
+   `offline-smoke` and `manual-mobile-check` get no probes, which the gate
+   records as a skip and refuses. `n/a` was rejected because a reason a tool
+   wrote is not a reason anyone checked. `pending` was rejected because no
+   exemption covers a new game and an invented one would refuse for a
+   misleading reason. The row is `...newGamePlan(id)`, so the author replaces a
+   step by overriding its key.
+9. **The scaffold's renderer never draws the target.** Phase 12's renderer
+   marked the untapped target cell with a question mark, which put the day's
+   answer on screen, and never imported its stylesheet. Both are corrected, and
+   a render test asserts the target cell is indistinguishable until found.
 
 ## Settled charter decisions
 

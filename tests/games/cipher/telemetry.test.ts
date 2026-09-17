@@ -159,12 +159,17 @@ describe("the cipher fingerprint", () => {
 });
 
 describe("the cipher artifact", () => {
-  it("is the shipped share block plus an outcome and a fingerprint", () => {
+  /* Fixed strings since v3 migration phase 6 deleted the v2 block this once
+     compared against. The values are the ones that block produced. */
+  it("keeps the title and rows the v2 block shipped", () => {
     const state = play(THREE_GUESS);
-    const block = cipher.shareBlock(state as never, context());
     const artifact = cipherArtifact(state, cipherRunLog(state), context());
-    expect(artifact.title).toBe(block.title);
-    expect(artifact.rows).toEqual(block.rows);
+    expect(artifact.title).toBe("CIPHER #12 Great");
+    expect(artifact.rows).toEqual([
+      ["partial", "miss", "miss", "miss"],
+      ["partial", "miss", "miss", "miss"],
+      ["best", "best", "best", "best"],
+    ]);
   });
 
   it("renders the same rows the design document's worked examples show", () => {

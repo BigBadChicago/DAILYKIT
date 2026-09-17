@@ -4,7 +4,8 @@ description: Rules for Layer 4, one directory per game, the abstraction test rul
 applyTo: "src/games/**"
 ---
 
-Each game is one directory implementing the `GameModule` contract. The engine
+Each game is one directory whose module default exports `defineGameV3(...)`
+over the `GameModuleV3` contract. The engine
 never imports a game and a game never imports another game. The whole point of
 the seam is that a new game is a directory plus one entry file and zero engine
 changes.
@@ -14,8 +15,8 @@ changes.
 1. **Never import from another game.** If two games need the same thing, it
    belongs in the engine, in the presentation kit, or in `src/shared`. Moving it
    there is an engine change and needs the reasoning written down.
-2. **Rules are pure.** `apply`, `inspect`, `bucketOf`, and `shareBlock` take
-   state and return values. No DOM, no clock, no network, no randomness beyond
+2. **Rules are pure.** `apply`, `inspect`, `difficulty`, `telemetry`, and
+   `shareArtifact` take state and return values. No DOM, no clock, no network, no randomness beyond
    the seeded RNG. A rejection is a value carrying a `code` and an `announce`
    sentence, never a thrown error.
 3. **Serialization is a snapshot, not an action log.** A log would freeze apply

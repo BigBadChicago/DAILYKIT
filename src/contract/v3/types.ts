@@ -1,7 +1,8 @@
 /**
- * Layer 3. The v3 descriptor types layered on top of the v2 contract types.
- * ARCHITECTURE2 sections 3, 13 and 23. Kept beside the v2 contract so the live
- * legacy games keep compiling against contract/types.ts unchanged.
+ * Layer 3. The v3 descriptor types layered on top of contract/types.ts.
+ * ARCHITECTURE2 sections 3, 13 and 23. The two folders stay apart after v3
+ * migration phase 6 because folding them would touch every import for a tidier
+ * name; BACKLOG.md records that change.
  */
 
 import type { PuzzleCertification } from "../../engine/certification.js";

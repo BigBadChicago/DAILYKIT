@@ -17,7 +17,7 @@ Then produce:
 1. **The layer map.** Each layer, its files, and what it is responsible for, in
    your own words. Flag any file whose actual imports disagree with its row in
    the `ARCHITECTURE.md` manifest.
-2. **The contract in one page.** What a `GameModule` must supply, what the engine
+2. **The contract in one page.** What a `GameModuleV3` must supply, what the engine
    guarantees in return, and which parts of the contract exist because of a
    specific past defect.
 3. **The day lifecycle.** From page load to a shared result, naming the state

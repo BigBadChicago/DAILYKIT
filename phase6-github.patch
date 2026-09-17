@@ -1,0 +1,104 @@
+diff --git a/.github/copilot-instructions.md b/.github/copilot-instructions.md
+index d8fc7df..5ff96a0 100644
+--- a/.github/copilot-instructions.md
++++ b/.github/copilot-instructions.md
+@@ -107,7 +107,7 @@ from a game. A game never imports from another game.
+ ```
+ Layer 5  src/shell, src/hub          the app shell, the hub, per game entries
+ Layer 4  src/games/*                 one directory per game
+-Layer 3  src/contract                the GameModule seam
++Layer 3  src/contract                the GameModuleV3 seam
+ Layer 2  src/ui                      the presentation kit
+ Layer 1  src/engine                  storage, stats, share, lifecycle, scheduler
+ Layer 0  src/core                    rng, seed, date, result, types
+@@ -263,7 +263,7 @@ decision or added a backlog entry, say so at the top, not the bottom.
+ | Wrong puzzle number, rollover late or early | `src/core/date.ts` | `src/engine/scheduler.ts` |
+ | Streak wrong after a gap, a jump, or a replay | `src/engine/stats.ts` | `src/engine/storage.ts`, then the watermark rules in `ARCHITECTURE.md` |
+ | Progress lost, or a banner about saving | `src/engine/storage.ts` | the module's `serialize` and `deserialize` |
+-| Stats or histogram wrong | `src/engine/stats.ts` and the module's `bucketOf` | `src/ui/statsPanel.ts` |
++| Stats or histogram wrong | `src/engine/stats.ts` and the `bucket` on the module's finished outcome | `src/ui/statsPanel.ts` |
+ | Board renders wrong, input ignored, drag broken | that game's `render.ts` | `src/ui/gridCursor.ts`, then the module's `apply` |
+ | Keyboard cannot reach or operate something | `src/ui/a11y.ts` and `src/ui/gridCursor.ts` | the renderer's ARIA wiring |
+ | Modal, toast, focus, or scroll lock misbehaves | `src/ui/modal.ts`, `src/ui/toast.ts`, `src/ui/a11y.ts` | the caller |
+@@ -311,7 +311,7 @@ is how the next session resumes without chat history.
+   `src/core/result.ts`. A rejection carries a machine `code` and a human
+   `announce` sentence, and the engine is what puts that sentence in the live
+   region.
+-- Pure rules. `apply`, `inspect`, `bucketOf`, `shareBlock`, and every generator
++- Pure rules. `apply`, `inspect`, `telemetry`, `shareArtifact`, and every generator
+   and solver function are pure: no DOM, no clock, no randomness beyond the
+   seeded RNG.
+ - Never set HTML from a string. No `innerHTML`, no `insertAdjacentHTML`, no
+diff --git a/.github/instructions/contract.instructions.md b/.github/instructions/contract.instructions.md
+index 6cf64df..1e132b3 100644
+--- a/.github/instructions/contract.instructions.md
++++ b/.github/instructions/contract.instructions.md
+@@ -14,9 +14,10 @@ and prove it is necessary before making one.
+    amount of work. Every addition here is work every future game must do or
+    ignore, so an addition needs a reason that survives being asked "would the
+    fifth game thank us for this".
+-2. **One erasure point.** `defineGame()` in `game-module.ts` performs the
+-   codebase's only contract cast, producing the opaque branded types the shell
+-   and engine see. Do not add a second cast anywhere, and do not name a concrete
++2. **One contract, one erasure point.** `GameModuleV3` in `v3/game-module.ts`
++   is the only game contract since v3 migration phase 6 deleted v2, and
++   `defineGameV3()` beside it performs the codebase's only contract cast,
++   producing the opaque branded types the shell and engine see. Do not add a second cast anywhere, and do not name a concrete
+    game type in shell or engine source.
+ 3. **Engine types live in Layer 0.** The contract composes `src/core/types.ts`
+    into its descriptors. It does not export types downward, because Layer 1 sits
+diff --git a/.github/instructions/games.instructions.md b/.github/instructions/games.instructions.md
+index 8293e78..a183973 100644
+--- a/.github/instructions/games.instructions.md
++++ b/.github/instructions/games.instructions.md
+@@ -4,7 +4,8 @@ description: Rules for Layer 4, one directory per game, the abstraction test rul
+ applyTo: "src/games/**"
+ ---
+ 
+-Each game is one directory implementing the `GameModule` contract. The engine
++Each game is one directory whose module default exports `defineGameV3(...)`
++over the `GameModuleV3` contract. The engine
+ never imports a game and a game never imports another game. The whole point of
+ the seam is that a new game is a directory plus one entry file and zero engine
+ changes.
+@@ -14,8 +15,8 @@ changes.
+ 1. **Never import from another game.** If two games need the same thing, it
+    belongs in the engine, in the presentation kit, or in `src/shared`. Moving it
+    there is an engine change and needs the reasoning written down.
+-2. **Rules are pure.** `apply`, `inspect`, `bucketOf`, and `shareBlock` take
+-   state and return values. No DOM, no clock, no network, no randomness beyond
++2. **Rules are pure.** `apply`, `inspect`, `difficulty`, `telemetry`, and
++   `shareArtifact` take state and return values. No DOM, no clock, no network, no randomness beyond
+    the seeded RNG. A rejection is a value carrying a `code` and an `announce`
+    sentence, never a thrown error.
+ 3. **Serialization is a snapshot, not an action log.** A log would freeze apply
+diff --git a/.github/instructions/tools-and-build.instructions.md b/.github/instructions/tools-and-build.instructions.md
+index 098d828..b901a75 100644
+--- a/.github/instructions/tools-and-build.instructions.md
++++ b/.github/instructions/tools-and-build.instructions.md
+@@ -23,8 +23,10 @@ configuration is the single place a game becomes shippable.
+    the whole build surface of a game, and a game target's `productionSafe` is
+    always false. A game ships only when `data/<id>/certification.json` is
+    production safe, produced by `npm run certify`. Never hand edit a record: its
+-   hash is checked and an edited record reads as none. `toy-v3` and the share
+-   harness are excluded from production deliberately and permanently.
++   hash is checked and an edited record reads as none. `npm run new-game` writes
++   a new game's `GAME_PLANS` row, whose five empty steps refuse until the author
++   replaces them. `toy-v3` and the share harness are excluded from production
++   deliberately and permanently.
+ 5. **A release is one build.** All entries in one pass, because that is the only
+    construction that computes a shared engine chunk across them. `GAME=<id> vite
+    build` writes to `dist-dev/` and is a development convenience, never a deploy.
+diff --git a/.github/prompts/onboard.prompt.md b/.github/prompts/onboard.prompt.md
+index 9def791..de9fa42 100644
+--- a/.github/prompts/onboard.prompt.md
++++ b/.github/prompts/onboard.prompt.md
+@@ -17,7 +17,7 @@ Then produce:
+ 1. **The layer map.** Each layer, its files, and what it is responsible for, in
+    your own words. Flag any file whose actual imports disagree with its row in
+    the `ARCHITECTURE.md` manifest.
+-2. **The contract in one page.** What a `GameModule` must supply, what the engine
++2. **The contract in one page.** What a `GameModuleV3` must supply, what the engine
+    guarantees in return, and which parts of the contract exist because of a
+    specific past defect.
+ 3. **The day lifecycle.** From page load to a shared result, naming the state

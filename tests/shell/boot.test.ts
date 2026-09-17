@@ -3,9 +3,9 @@ import { describe, expect, it } from "vitest";
 import { ok } from "../../src/core/result.js";
 import type { AnyGameModuleV3 } from "../../src/contract/v3/game-module.js";
 import { PuzzleSource } from "../../src/shell/boot.js";
-import { cipherV3 } from "../../src/games/cipher/module.js";
-import { pokerGridV3 } from "../../src/games/poker-grid/module.js";
-import { vectorV3 } from "../../src/games/vector/module.js";
+import cipherV3 from "../../src/games/cipher/module.js";
+import pokerGridV3 from "../../src/games/poker-grid/module.js";
+import vectorV3 from "../../src/games/vector/module.js";
 
 /** Only the fields PuzzleSource reads. The rest of the contract is irrelevant
  *  here and stubbing it would be noise. */

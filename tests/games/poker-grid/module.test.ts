@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
-import module, { internals, pokerGridV3 } from "../../../src/games/poker-grid/module.js";
-import type { GameModule } from "../../../src/contract/game-module.js";
+import module, { internals } from "../../../src/games/poker-grid/module.js";
+import type { GameModuleV3 } from "../../../src/contract/v3/game-module.js";
 import { generatePuzzle } from "../../../src/games/poker-grid/generator.js";
 import { BOARD_CELLS, EMPTY_EFFORT, MAX_HANDS, type PokerAction, type PokerState } from "../../../src/games/poker-grid/rules.js";
 import type { PokerPuzzle } from "../../../src/games/poker-grid/generator.js";
 import { encodeBoard } from "../../../src/games/poker-grid/manifest-codec.js";
 import { UNRATED_DIFFICULTY, resetDifficultyMemo } from "../../../src/games/poker-grid/difficulty.js";
 
-const game = module as unknown as GameModule<PokerState, PokerAction, PokerPuzzle>;
+const game = module as unknown as GameModuleV3<PokerState, PokerAction, PokerPuzzle>;
 
 function puzzle() {
   return generatePuzzle(1, 1234);
@@ -97,7 +97,8 @@ describe("POKER GRID module", () => {
       terminal: true,
       hands: [],
     };
-    const share = game.shareBlock(state, { puzzleNumber: 1, currentStreak: 12, rated: false });
+    const context = { puzzleNumber: 1, currentStreak: 12, rated: false };
+    const share = game.shareArtifact(state.puzzle, state, game.telemetry(state), context);
     expect(share.title).toBe("POKER GRID #1 unrated");
     expect(share.rows).toEqual([]);
   });
@@ -129,15 +130,14 @@ describe("POKER GRID module", () => {
     expect(game.deserialize(board, { v: 2, data: { ...data, p: "no" } }).ok).toBe(false);
   });
 
-  /* ARCHITECTURE2 sections 47 and 56. One object, two seams: the default export
-     is what the shell still uses and the v3 view is the same implementation. */
-  it("exposes the same implementation through the v3 seam", () => {
-    resetDifficultyMemo();
-    expect(pokerGridV3.identity).toEqual(module.identity);
-    expect(pokerGridV3.stateVersion).toBe(module.stateVersion);
-    expect(pokerGridV3.shareCapabilities.grammar).toBe("A");
-    expect(pokerGridV3.shareCapabilities.maxRows).toBe(MAX_HANDS);
-    expect(pokerGridV3.shareCapabilities.patterns.length).toBeGreaterThanOrEqual(2);
+  /* v3 migration phase 6. The default export is the v3 module and nothing of
+     the v2 surface survives on it. */
+  it("default exports the v3 module", () => {
+    expect(module.shareCapabilities.grammar).toBe("A");
+    expect(module.shareCapabilities.maxRows).toBe(MAX_HANDS);
+    expect(module.shareCapabilities.patterns.length).toBeGreaterThanOrEqual(2);
+    expect("shareBlock" in module).toBe(false);
+    expect("bucketOf" in module).toBe(false);
   });
 
   it("measures a difficulty on a graded board and stays unrated without one", () => {
@@ -149,38 +149,34 @@ describe("POKER GRID module", () => {
     expect(Number.isInteger(internals.difficulty(graded))).toBe(true);
   });
 
-  /* v3 migration phase 5. The shell reads the bucket from the outcome, so the
-     v2 bucketOf that the stats history was written with must agree with it on
-     every board, graded or not. */
-  it("keeps the v2 bucketOf agreed with the outcome the shell now reads", () => {
+  /* Fixed values since v3 migration phase 6 deleted bucketOf, which the stats
+     history was written with. They are the buckets it returned, so a board that
+     changes its bucket here changes every returning player's histogram. */
+  it("buckets cards remaining in steps of five on every board, graded or not", () => {
     resetDifficultyMemo();
     for (const best of [null, { score: 5670, hands: 7, method: "beam" as const, width: 400 }]) {
       const board: PokerPuzzle = { ...puzzle(), best };
-      for (const cleared of [0, 5, 20, 35]) {
+      for (const [cleared, bucket] of [[0, 7], [5, 6], [20, 3], [35, 0]] as const) {
         const start = game.initialState(board);
         const state: PokerState = {
           ...start,
           grid: start.grid.map((card, cell) => (cell < cleared ? null : card)),
           terminal: true,
         };
-        const outcome = pokerGridV3.inspect(state as never);
-        expect(outcome.kind).toBe("finished");
-        if (outcome.kind !== "finished") continue;
-        expect(internals.bucketOf(outcome, state)).toBe(outcome.bucket);
+        expect(game.inspect(state)).toMatchObject({ kind: "finished", bucket });
       }
     }
   });
 
-  /* The v2 block and the v3 artifact are built from the same two functions, so
-     a change to one that did not reach the other would fail here. */
-  it("keeps the v2 block and the v3 artifact agreed", () => {
+  /* Fixed strings since v3 migration phase 6 deleted the v2 block this once
+     compared against. The values are the ones that block produced. */
+  it("keeps the title and rows the v2 block shipped", () => {
     resetDifficultyMemo();
     const board: PokerPuzzle = { ...puzzle(), best: { score: 5670, hands: 7, method: "beam", width: 400 } };
     const state: PokerState = { ...game.initialState(board), terminal: true, effort: [], pending: EMPTY_EFFORT };
     const context = { puzzleNumber: 1, currentStreak: 3, rated: true };
-    const block = game.shareBlock(state, context);
     const artifact = internals.shareArtifact(board, state, internals.telemetry(state), context);
-    expect(artifact.title).toBe(block.title);
-    expect(artifact.rows).toEqual(block.rows);
+    expect(artifact.title).toBe("POKER GRID #1 Rough streak 3");
+    expect(artifact.rows).toEqual([]);
   });
 });

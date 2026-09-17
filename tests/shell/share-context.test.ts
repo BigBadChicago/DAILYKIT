@@ -1,10 +1,10 @@
 /**
  * The shell's share path, per live game. Requirement 3.6.1 for the streak, and
  * v3 migration phase 5 for the rest: the string a player shares now comes from
- * the v3 artifact through the engine's one composer, and these tests pin it to
- * the bytes the v2 path shipped while the v2 block still exists to compare
- * against. They are rewritten against fixed strings when phase 6 removes the
- * v2 block.
+ * the v3 artifact through the engine's one composer. v3 migration phase 6
+ * deleted the v2 block these tests once compared against, so each case now
+ * pins fixed strings: the bytes the v2 path shipped, recorded from it before
+ * the deletion.
  */
 
 import { describe, expect, it, vi } from "vitest";
@@ -12,10 +12,8 @@ import { describe, expect, it, vi } from "vitest";
 import type { AnyGameModuleV3, OpaquePuzzle, OpaqueState } from "../../src/contract/v3/game-module.js";
 import { isOk } from "../../src/core/result.js";
 import { seedFor } from "../../src/core/seed.js";
-import type { ShareBlock } from "../../src/core/types.js";
 import { SHARE_MAX_LINES } from "../../src/engine/share-grammar.js";
 import type { ArtifactModel } from "../../src/engine/telemetry.js";
-import { renderShareRow } from "../../src/shared/share-vocabulary.js";
 import { SUITE_SHARE_URL } from "../../src/shell/registry.js";
 import {
   composeResultShare,
@@ -23,14 +21,14 @@ import {
   type ResultShareSession,
   type ShareSessionMode,
 } from "../../src/shell/share-context.js";
-import { cipherV3 } from "../../src/games/cipher/module.js";
+import cipherV3 from "../../src/games/cipher/module.js";
 import type { CipherPuzzle } from "../../src/games/cipher/generator.js";
 import { CODE_LENGTH, applyCipherAction, type CipherState, type Code } from "../../src/games/cipher/rules.js";
-import { internals as pokerInternals, pokerGridV3 } from "../../src/games/poker-grid/module.js";
+import pokerGridV3 from "../../src/games/poker-grid/module.js";
 import { generatePuzzle, type PokerPuzzle } from "../../src/games/poker-grid/generator.js";
 import { EMPTY_EFFORT, type HandRecord, type PokerState } from "../../src/games/poker-grid/rules.js";
 import { CLEAR_VALUE_PER_HAND, pointsFor } from "../../src/games/poker-grid/scoring.js";
-import { internals as vectorInternals, vectorV3 } from "../../src/games/vector/module.js";
+import vectorV3 from "../../src/games/vector/module.js";
 import { apply as vectorApply, initialState as vectorInitial, type VectorState } from "../../src/games/vector/rules.js";
 import type { Direction } from "../../src/games/vector/propagate.js";
 import { FIXTURE_SOLUTION, fixturePuzzle } from "../games/vector/fixtures.js";
@@ -116,20 +114,83 @@ function pokerFinished(categories: readonly HandRecord["category"][], graded: bo
   return { puzzle, state };
 }
 
+/** Title and rows of one shared string, without the URL line every string
+ *  ends with. */
+type Shipped = readonly string[];
+
+interface Expected {
+  /** A live session with a streak of 9, rated. */
+  readonly live: Shipped;
+  /** The same session past the manifest horizon. */
+  readonly liveUnrated: Shipped;
+  /** An archive replay, which carries no streak. */
+  readonly archive: Shipped;
+}
+
 interface Case {
   readonly name: string;
   readonly game: AnyGameModuleV3;
   readonly puzzle: unknown;
   readonly state: unknown;
-  readonly v2Block: (streak: number, rated: boolean) => ShareBlock;
+  readonly expected: Expected;
 }
 
-const cipherBlock = (state: CipherState) => (streak: number, rated: boolean): ShareBlock =>
-  (cipherV3 as unknown as { shareBlock: (s: unknown, c: unknown) => ShareBlock }).shareBlock(state, {
-    puzzleNumber: 12,
-    currentStreak: streak,
-    rated,
-  });
+/* Recorded from the v2 block before v3 migration phase 6 deleted it. A change
+   here changes what players paste into a group chat, so it is a design change
+   to the game's share section and not a test update. */
+const SHIPPED: Readonly<Record<string, Expected>> = {
+  "CIPHER 0": {
+    live: ["CIPHER #12 Excellent, streak 9", "⭐⭐⭐⭐"],
+    liveUnrated: ["CIPHER #12 Excellent, streak 9", "⭐⭐⭐⭐"],
+    archive: ["CIPHER #12 Excellent", "⭐⭐⭐⭐"],
+  },
+  "CIPHER 1": {
+    live: ["CIPHER #12 Excellent, streak 9", "⭐🟩🟩🟩", "⭐⭐⭐⭐"],
+    liveUnrated: ["CIPHER #12 Excellent, streak 9", "⭐🟩🟩🟩", "⭐⭐⭐⭐"],
+    archive: ["CIPHER #12 Excellent", "⭐🟩🟩🟩", "⭐⭐⭐⭐"],
+  },
+  "CIPHER 2": {
+    live: ["CIPHER #12 Rough, streak 9", "🔻🔻🔻🔻", "🟩🔻🔻🔻", "🔻🔻🔻🔻", "🔻🔻🔻🔻", "🟩🔻🔻🔻", "🟩🔻🔻🔻"],
+    liveUnrated: ["CIPHER #12 Rough, streak 9", "🔻🔻🔻🔻", "🟩🔻🔻🔻", "🔻🔻🔻🔻", "🔻🔻🔻🔻", "🟩🔻🔻🔻", "🟩🔻🔻🔻"],
+    archive: ["CIPHER #12 Rough", "🔻🔻🔻🔻", "🟩🔻🔻🔻", "🔻🔻🔻🔻", "🔻🔻🔻🔻", "🟩🔻🔻🔻", "🟩🔻🔻🔻"],
+  },
+  "VECTOR 0 true": {
+    live: ["VECTOR #12 Excellent, streak 9", "⭐⭐⭐⭐⭐"],
+    liveUnrated: ["VECTOR #12 Excellent, streak 9", "⭐⭐⭐⭐⭐"],
+    archive: ["VECTOR #12 Excellent", "⭐⭐⭐⭐⭐"],
+  },
+  "VECTOR 2 true": {
+    live: ["VECTOR #12 Good, streak 9", "🔻🔻🔻🔻🔻", "🔻🔻🔻🔻🔻", "⭐⭐⭐⭐⭐"],
+    liveUnrated: ["VECTOR #12 Good, streak 9", "🔻🔻🔻🔻🔻", "🔻🔻🔻🔻🔻", "⭐⭐⭐⭐⭐"],
+    archive: ["VECTOR #12 Good", "🔻🔻🔻🔻🔻", "🔻🔻🔻🔻🔻", "⭐⭐⭐⭐⭐"],
+  },
+  "VECTOR 3 false": {
+    live: ["VECTOR #12 Rough, streak 9", "🔻🔻🔻🔻🔻", "🔻🔻🔻🔻🔻", "🔻🔻🔻🔻🔻"],
+    liveUnrated: ["VECTOR #12 Rough, streak 9", "🔻🔻🔻🔻🔻", "🔻🔻🔻🔻🔻", "🔻🔻🔻🔻🔻"],
+    archive: ["VECTOR #12 Rough", "🔻🔻🔻🔻🔻", "🔻🔻🔻🔻🔻", "🔻🔻🔻🔻🔻"],
+  },
+  "POKER GRID 3 true": {
+    live: ["POKER GRID #12 Rough streak 9", "🟠", "🟠", "🔷"],
+    liveUnrated: ["POKER GRID #12 unrated", "🟠", "🟠", "🔷"],
+    archive: ["POKER GRID #12 Rough", "🟠", "🟠", "🔷"],
+  },
+  "POKER GRID 7 true": {
+    live: ["POKER GRID #12 Excellent streak 9", "🟠", "🟠", "🟩", "🔷", "🔷", "🟠", "🟠"],
+    liveUnrated: ["POKER GRID #12 unrated", "🟠", "🟠", "🟩", "🔷", "🔷", "🟠", "🟠"],
+    archive: ["POKER GRID #12 Excellent", "🟠", "🟠", "🟩", "🔷", "🔷", "🟠", "🟠"],
+  },
+  "POKER GRID 2 false": {
+    live: ["POKER GRID #12 unrated streak 9", "🟠", "🟩"],
+    liveUnrated: ["POKER GRID #12 unrated", "🟠", "🟩"],
+    archive: ["POKER GRID #12 unrated", "🟠", "🟩"],
+  },
+};
+
+function expectedFor(name: string): Expected {
+  const expected = SHIPPED[name];
+  if (expected === undefined) throw new Error(`no shipped string recorded for ${name}`);
+  return expected;
+}
 
 const CASES: readonly Case[] = [
   ...[
@@ -138,7 +199,8 @@ const CASES: readonly Case[] = [
     [[0, 0, 0, 0], [0, 0, 0, 1], [0, 0, 0, 2], [0, 0, 0, 3], [0, 0, 0, 4], [0, 0, 1, 0]],
   ].map((guesses, index): Case => {
     const { puzzle, state } = cipherFinished(guesses as Code[]);
-    return { name: `CIPHER ${String(index)}`, game: cipherV3, puzzle, state, v2Block: cipherBlock(state) };
+    const name = `CIPHER ${String(index)}`;
+    return { name, game: cipherV3, puzzle, state, expected: expectedFor(name) };
   }),
   ...[
     [0, true],
@@ -146,13 +208,8 @@ const CASES: readonly Case[] = [
     [3, false],
   ].map(([wrong, solve]): Case => {
     const { puzzle, state } = vectorFinished(wrong as number, solve as boolean);
-    return {
-      name: `VECTOR ${String(wrong)} ${String(solve)}`,
-      game: vectorV3,
-      puzzle,
-      state,
-      v2Block: (streak, rated) => vectorInternals.shareBlock(state, { puzzleNumber: 12, currentStreak: streak, rated }),
-    };
+    const name = `VECTOR ${String(wrong)} ${String(solve)}`;
+    return { name, game: vectorV3, puzzle, state, expected: expectedFor(name) };
   }),
   ...[
     [["one-pair", "two-pair", "flush"], true],
@@ -160,13 +217,8 @@ const CASES: readonly Case[] = [
     [["one-pair", "three-of-a-kind"], false],
   ].map(([categories, graded]): Case => {
     const { puzzle, state } = pokerFinished(categories as HandRecord["category"][], graded as boolean);
-    return {
-      name: `POKER GRID ${(categories as string[]).length} ${String(graded)}`,
-      game: pokerGridV3,
-      puzzle,
-      state,
-      v2Block: (streak, rated) => pokerInternals.shareBlock(state, { puzzleNumber: 12, currentStreak: streak, rated }),
-    };
+    const name = `POKER GRID ${(categories as string[]).length} ${String(graded)}`;
+    return { name, game: pokerGridV3, puzzle, state, expected: expectedFor(name) };
   }),
 ];
 
@@ -180,11 +232,15 @@ function session(sample: Case, mode: ShareSessionMode, rated = true): ResultShar
   };
 }
 
-function v2Text(block: ShareBlock): string {
-  return [block.title, ...block.rows.map(renderShareRow), SUITE_SHARE_URL].join("\n");
+function shippedText(lines: Shipped): string {
+  return [...lines, SUITE_SHARE_URL].join("\n");
 }
 
 describe("composeResultShare", () => {
+  it("records a shipped string for every case and no case it does not run", () => {
+    expect(Object.keys(SHIPPED).sort()).toEqual(CASES.map((sample) => sample.name).sort());
+  });
+
   it("finishes every fixture state, so the cases below test finished games", () => {
     for (const sample of CASES) {
       expect(sample.game.inspect(sample.state as OpaqueState).kind, sample.name).toBe("finished");
@@ -193,12 +249,12 @@ describe("composeResultShare", () => {
 
   for (const sample of CASES) {
     it(`${sample.name}: ships the bytes the v2 path shipped, with no fault`, () => {
-      for (const rated of [true, false]) {
+      for (const [rated, lines] of [[true, sample.expected.live], [false, sample.expected.liveUnrated]] as const) {
         const telemetry = { track: vi.fn(), fault: vi.fn() };
         const out = composeResultShare(sample.game, session(sample, "live", rated), 9, SUITE_SHARE_URL, telemetry);
         expect(out.fault).toBeNull();
         expect(telemetry.fault).not.toHaveBeenCalled();
-        expect(out.text).toBe(v2Text(sample.v2Block(9, rated)));
+        expect(out.text).toBe(shippedText(lines));
         expect(out.lines.length).toBeLessThanOrEqual(SHARE_MAX_LINES);
         expect(out.lines.at(-1)).toBe(SUITE_SHARE_URL);
       }
@@ -207,7 +263,7 @@ describe("composeResultShare", () => {
     it(`${sample.name}: carries no streak out of an archive replay`, () => {
       const live = composeResultShare(sample.game, session(sample, "live"), 9, SUITE_SHARE_URL);
       const replay = composeResultShare(sample.game, session(sample, "archive"), 9, SUITE_SHARE_URL);
-      expect(replay.text).toBe(v2Text(sample.v2Block(0, true)));
+      expect(replay.text).toBe(shippedText(sample.expected.archive));
       expect(replay.lines[0]).not.toContain("9");
       expect(live.lines.slice(1)).toEqual(replay.lines.slice(1));
     });

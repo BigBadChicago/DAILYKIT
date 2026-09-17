@@ -1,11 +1,10 @@
 /**
- * Layer 4. The CIPHER GameModule, implementing v2 and v3 at once.
+ * Layer 4. The CIPHER GameModule.
  *
- * One implementation object satisfies both contracts, because FinishedOutcomeV3
- * is FinishedOutcome plus two fields and is therefore assignable to it. The
- * default export stays the v2 module so the shell, the entry and the build are
- * untouched; `cipherV3` is the same object seen through the v3 seam.
- * ARCHITECTURE2 sections 47 and 56.
+ * The module is written against the v3 contract only. v3 migration phase 6
+ * deleted the v2 contract, and with it this module's `bucketOf`, `shareBlock`
+ * and v2 default export; the default export is now the v3 module the shell
+ * mounts. ARCHITECTURE2 section 56.
  *
  * Deliberately imports the generator and never the solver: the solver's
  * precomputed table is 1.7 megabytes and belongs to Node. The difficulty
@@ -17,16 +16,13 @@
 import { err, ok, type Result } from "../../core/result.js";
 import type {
   DistributionSpec,
-  FinishedOutcome,
   OutcomeV3,
   PuzzleNumber,
   Rejection,
   Seed,
   SerializedState,
-  ShareBlock,
   ShareContext,
 } from "../../core/types.js";
-import { defineGame, type GameModule } from "../../contract/game-module.js";
 import { defineGameV3, type GameModuleV3 } from "../../contract/v3/game-module.js";
 import type { ShareCapabilities } from "../../contract/v3/types.js";
 import type {
@@ -61,12 +57,9 @@ import {
 } from "./rules.js";
 import {
   SHARE_ROW_WIDTH,
-  artifactRows,
-  artifactTitle,
   cipherArtifact,
   cipherRunLog,
   finishedOutcomeFor,
-  readEntries,
 } from "./telemetry.js";
 
 /** No state change was needed for v3: the guess history already carried the
@@ -218,10 +211,6 @@ function inspect(state: CipherState): OutcomeV3 {
   return finishedOutcomeFor(state);
 }
 
-function bucketOf(_outcome: FinishedOutcome, state: CipherState): number {
-  return bucketFor(state.guesses.length, state.solved);
-}
-
 /** v3. Recomputed from the code, never read from `puzzle.best.remaining`.
  *  See difficulty.remainingAfterOpening. */
 function difficulty(puzzle: CipherPuzzle): number {
@@ -244,18 +233,6 @@ function shareArtifact(
   return cipherArtifact(state, run, context);
 }
 
-/**
- * The v2 block. It is the v3 artifact's title and rows with the fingerprint and
- * the outcome dropped, built from the same two functions, so the two cannot
- * drift apart and CIPHER.md section 10 is not reopened.
- */
-function shareBlock(state: CipherState, context: ShareContext): ShareBlock {
-  return {
-    title: artifactTitle(state, context),
-    rows: artifactRows(readEntries(cipherRunLog(state))),
-  };
-}
-
 function mount(
   host: HTMLElement,
   context: MountContext<CipherState, CipherAction, CipherPuzzle>,
@@ -267,9 +244,7 @@ function help(): HelpContent {
   return CIPHER_HELP;
 }
 
-/* Not annotated, so the two typed views below can each take the members they
-   need without an excess property error on a fresh object literal. */
-const cipher = {
+const cipher: GameModuleV3<CipherState, CipherAction, CipherPuzzle> = {
   identity,
   input,
   manifest,
@@ -289,22 +264,13 @@ const cipher = {
   apply,
   inspect,
   difficulty,
-  bucketOf,
   telemetry,
   shareArtifact,
-  shareBlock,
   mount,
   help,
 };
 
-const asV2: GameModule<CipherState, CipherAction, CipherPuzzle> = cipher;
-const asV3: GameModuleV3<CipherState, CipherAction, CipherPuzzle> = cipher;
-
-export default defineGame(asV2);
-
-/** The same module through the v3 seam. Nothing imports it yet; the shell is
- *  still v2 and a game cannot lead it. ARCHITECTURE2 section 56, phase 3. */
-export const cipherV3 = defineGameV3(asV3);
+export default defineGameV3(cipher);
 
 /** Exported for the module tests only. Nothing in the shell reads these. */
 export const internals = {
@@ -316,9 +282,7 @@ export const internals = {
   serialize,
   deserialize,
   migrateState,
-  shareBlock,
   difficulty,
-  bucketOf,
   telemetry,
   shareArtifact,
   SHARE_ROW_WIDTH,

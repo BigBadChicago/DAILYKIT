@@ -23,8 +23,10 @@ configuration is the single place a game becomes shippable.
    the whole build surface of a game, and a game target's `productionSafe` is
    always false. A game ships only when `data/<id>/certification.json` is
    production safe, produced by `npm run certify`. Never hand edit a record: its
-   hash is checked and an edited record reads as none. `toy-v3` and the share
-   harness are excluded from production deliberately and permanently.
+   hash is checked and an edited record reads as none. `npm run new-game` writes
+   a new game's `GAME_PLANS` row, whose five empty steps refuse until the author
+   replaces them. `toy-v3` and the share harness are excluded from production
+   deliberately and permanently.
 5. **A release is one build.** All entries in one pass, because that is the only
    construction that computes a shared engine chunk across them. `GAME=<id> vite
    build` writes to `dist-dev/` and is a development convenience, never a deploy.

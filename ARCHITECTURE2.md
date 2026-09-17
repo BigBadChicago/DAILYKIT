@@ -36,7 +36,7 @@ pipeline, theme/chrome, offline behavior, and certification gate.
 | Network policy | No network dependency for puzzle identity, gameplay, result, telemetry mapping, or share generation |
 | Storage policy | Small JSON snapshot for in-progress state; telemetry retained only when required for the local result artifact |
 | Deployment | Cloudflare Pages at `dailykit.providentia.games` |
-| Migration status | Phases 1 to 4 are done: the contract and engine seams, then VECTOR, CIPHER and POKER GRID, each implementing v2 and v3 at once. Phase 5 is done: part A moved the shell, the hub and the daily card to v3 with one share composer, and part B made the section 45 gate a CI job whose committed records decide which games a release contains. Phase 6, retiring the v2 contract, is next (section 56) |
+| Migration status | Phases 1 to 4 are done: the contract and engine seams, then VECTOR, CIPHER and POKER GRID, each implementing v2 and v3 at once. Phase 5 is done: part A moved the shell, the hub and the daily card to v3 with one share composer, and part B made the section 45 gate a CI job whose committed records decide which games a release contains. Phase 6 is done, 2026-09-17: the v2 contract is deleted, every game's default export is its v3 module, and the scaffold writes v3 and a certification plan row. The first new game on v3 is next (section 56) |
 | Chosen lineup | Approved 2026-09-13: the five recommended concepts become the new build slate, DIFFERENCE RELAY, TURN TABLE, RING BALANCE, ORDER OF OPERATIONS, ROTATE LOCK. This supersedes SLATE.md's five for new work; the three legacy games stay live. Composition A approved the same day: the suite is eight games, not five, and TALLY DROP and RECALL are cancelled. ROTATE LOCK was named VECTOR LOCK until the rename that removed the collision with the shipped VECTOR. Carried into `src/shell/registry.ts`, section 56 |
 | This document | The active architecture target. ARCHITECTURE.md is the v2 record the legacy games still satisfy and is retained until migration completes |
 
@@ -191,6 +191,9 @@ GameModule<TState, TAction, TPuzzle>
 ```
 
 The implementation uses one deliberate erasure boundary through `defineGame()`.
+As built since v3 migration phase 6 that boundary is `defineGameV3()` in
+`src/contract/v3/game-module.ts`, the only contract; section 3.1 is the
+conceptual shape and `GameModuleV3` is the binding one.
 The previous contract deliberately chose three type parameters and a single erasure
 point; retain that decision, but expand the contract to cover the new puzzle and
 telemetry responsibilities. fileciteturn1file0L405-L413
@@ -215,8 +218,8 @@ GameModule<TState, TAction, TPuzzle>
     terminal(puzzle, state)
 
     difficulty(puzzle)
-    bucketOf(outcome)
-    tierOf(outcome)
+    bucketOf(outcome)      removed in phase 5: a field of the finished outcome
+    tierOf(outcome)        removed in phase 5: a field of the finished outcome
 
     telemetry(state)
     shareArtifact(puzzle, state, telemetry)
@@ -3132,15 +3135,136 @@ decision 12.
 | tests/tools/poker-grid-pipeline.test.ts | The duplicate check, both directions |
 | tests/games/vector/module.test.ts | Reads the site absolute chunk url |
 
-## Phase 6, retire the v2 contract. After part B, before any new game.
+## Phase 6, retire the v2 contract. Done 2026-09-17.
 
-Delete the v2 `GameModule`, `defineGame`, `ShareBlock`, and each game's
-`bucketOf`, `shareBlock` and default v2 export; make each `*V3` export the
-default; rewrite `tools/new-game.ts` and NEW_GAME.md to scaffold v3; rewrite the
-byte identity tests in `tests/shell/share-context.test.ts` against fixed strings,
-since the v2 block they compare against will be gone.
+One contract. The v2 `GameModule`, `defineGame` and `ShareBlock` are deleted,
+each game's `bucketOf`, `shareBlock` and v2 default export are gone, each game's
+default export is its v3 module, and `npm run new-game` scaffolds v3 together
+with the game's `GAME_PLANS` row.
 
-Phase 6 also owns the gate's side of authoring: the scaffold must add a
-`GAME_PLANS` row in `tools/certify.ts` for a new game, since a live game with no
-plan fails `certify`, and NEW_GAME.md must say that a new game reaches the release
-only through its own record. `manual-mobile-2026-09-16` does not cover a new game.
+Green after the change, against the part B baseline: three typechecks, the
+dependency check, 62 files and 833 tests (818 before, net of tests deleted with
+the v2 surface), all three verifiers, the production build, the byte budget
+(VECTOR 28.0 KB gzipped, the rest unchanged), `npm run certify` reporting all
+three games production safe with every committed record unchanged, and an
+offline smoke below.
+
+### Decisions, approved 2026-09-17
+
+1. **`MountContext` and `GameView` stay in `src/contract/types.ts`.** Only the
+   v2 module type, `defineGame` and `ShareBlock` were deleted around them.
+   Moving them would change imports in every game, the shell and the tests for
+   a tidier folder name; folding `contract/v3/` into `contract/` is in
+   BACKLOG.md.
+2. **The scaffold writes the plan row directly**, above a new
+   `/* NEW_GAME_INSERTION: GAME_PLANS */` marker in `tools/certify.ts`, as it
+   already did for `TARGETS`. A printed row was rejected because the failure
+   would only show when the game is marked live and certify refuses it.
+3. **A stub's unpassable steps are empty probe lists.**
+   `difficulty-calibration`, `decomposition-check`, `symmetry-check`,
+   `offline-smoke` and `manual-mobile-check` get no probes, which `checksFrom`
+   records as `skip` and the gate refuses. Not `n/a`, because a reason written
+   by a tool is not a reason anyone checked, and not `pending`, because no
+   exemption covers a new game. Automated steps get real probes on the files the
+   scaffold writes or the game must add.
+4. **`ENGINE_VERSION` moves to 3 only if the engine chunk's exports change.**
+   They did not: `engine-v2.js` after the deletion is byte identical to part B's,
+   30,262 bytes with the same 61 exports, because the erasure casts compile to
+   the same function. It stays 2.
+5. **`certify` launches npm without a shell**, as `process.execPath` running
+   `npm_execpath` with `run <script>`. Windows needed a shell to spawn `npm`,
+   and a shell spawn with an argument list is deprecated there. Started other
+   than through npm, certify stops and says so rather than guessing.
+
+### What changed
+
+**Each game module is v3 only.** The one implementation object is now annotated
+`GameModuleV3` directly, and `export default defineGameV3(...)` replaces the v2
+default and the named `cipherV3`, `pokerGridV3` and `vectorV3`. The entries,
+`tests/shell/boot.test.ts` and `tests/shell/share-context.test.ts` import the
+default. `bucketOf` and `shareBlock` are gone from each module and its
+`internals`.
+
+**Byte identity became fixed strings.** Before deleting the v2 block, each test
+that compared the v3 artifact against it was run against the v2 path and its
+output recorded. `tests/shell/share-context.test.ts` now holds a `SHIPPED` table
+per case, live rated, live unrated and archive, and a test that the table and the
+cases name each other exactly. The module and telemetry tests that compared
+title and rows with `shareBlock` compare with the recorded strings, and the
+tests that held `bucketOf` equal to the outcome assert the recorded buckets.
+A change to any of these is a change to what players paste, not a test update.
+
+**`newGamePlan(gameId)` in `tools/certify.ts`** is the stub plan: the suite steps,
+`tests/games/<id>/generator.test.ts`, `module.test.ts` and `render.test.ts` as
+evidence, `npm run <id>:verify` and the manifest horizon for verification,
+horizon and duplicates, the byte budget over the game's page, and the five empty
+steps, each with a comment saying the author replaces it. The scaffold's row is
+`"<id>": { ...newGamePlan("<id>") }`, so a step is replaced by overriding its
+key. `tests/tools/certify.test.ts` asserts that a record built from the stub
+with every probe passing is not production safe and refuses exactly those five
+steps, and that the manual mobile exemption does not cover it. A stub is also
+`planned`, so certify does not evaluate it until its author marks it live.
+
+**The scaffold writes v3.** Its game is unchanged in kind, find one target cell
+on a three by three board in three misses, and is rewritten against
+`GameModuleV3` with a run log, an artifact with a fingerprint, a measured
+difficulty, and share capabilities. It now writes four tests, adding
+`generator.test.ts` and `render.test.ts`, which are the evidence its plan names.
+Every file and marker is checked before anything is written, and a marker found
+twice is refused. Generated in a copy of the tree, its output typechecks, passes
+its own 21 tests and the dependency check, and its plan, evaluated with no
+verifier or manifest yet, refuses on exactly the five skips plus the three
+verifier steps and the byte budget.
+
+**Two scaffold defects from charter Phase 12, corrected.** Its renderer drew a
+question mark on the untapped target cell, which showed the day's answer, and it
+never imported its stylesheet. The render test now asserts the target cell is
+indistinguishable from any other until a tap finds it.
+
+**NEW_GAME.md rewritten.** The contract checklist is `GameModuleV3`'s, the design
+document list is section 44's, and a new certification section says a game ships
+only through its own record, how the stub plan works, and how to replace each of
+its five steps.
+
+### Offline smoke, recorded 2026-09-17
+
+Headless Chromium at 360 pixels against `vite preview` of the release build with
+`engine-v2.js`: the hub and each game visited twice online, the second visit past
+the practice board on a real day, the worker active, then the context set
+offline and every page revisited. The hub rendered its cards, POKER GRID its
+board, CIPHER its keys and VECTOR its 36 cells, with no console error. The worker
+and asset naming did not change, so the committed `offline-smoke` evidence of
+2026-09-16 stands and no record changed.
+
+### Found and not fixed
+
+**The scaffold refuses every planned slate id.** `validateGameId` refuses an id
+already in `SUITE_GAMES`, and the five approved unbuilt games are already there
+as `planned` rows, so `npm run new-game -- --id rotate-lock` is refused. The
+scaffold has only ever been run against a new id. Left for the owner, because the
+choice is whether the scaffold adopts an existing planned row and its provisional
+`bucketCount` and `hasWinLoss`, or the author deletes the row first.
+
+### Files
+
+| Path | Change |
+|---|---|
+| src/contract/game-module.ts | Deleted |
+| src/contract/types.ts, src/contract/v3/game-module.ts, src/contract/v3/types.ts | Comments only; v3 is the only contract |
+| src/core/types.ts | `ShareBlock` deleted |
+| src/engine/storage.ts | A comment naming `bucketOf` |
+| src/games/cipher/module.ts, poker-grid/module.ts, vector/module.ts | v2 surface deleted; default export is the v3 module |
+| src/shell/entries/cipher.ts, poker-grid.ts, vector.ts | Import the default export |
+| tools/certify.ts | `newGamePlan`, the `GAME_PLANS` marker, npm without a shell |
+| tools/new-game.ts | Rewritten: v3 scaffold, four tests, three insertions, checks before writes |
+| tests/shell/share-context.test.ts | Fixed strings recorded from v2 |
+| tests/shell/boot.test.ts | Default imports |
+| tests/games/cipher/module.test.ts, telemetry.test.ts | Artifact in place of the block; recorded buckets and strings |
+| tests/games/poker-grid/module.test.ts, tests/games/vector/module.test.ts | The same |
+| tests/tools/certify.test.ts | The stub plan and npm launch tests |
+| tests/tools/new-game.test.ts | v3 output, plan evidence, the third marker, name validation |
+| NEW_GAME.md | Rewritten for v3 and certification |
+| CIPHER.md, POKER-GRID.md | Bucket named as an outcome field |
+| .github/copilot-instructions.md, .github/instructions/contract, games and tools-and-build, .github/prompts/onboard.prompt.md | v3 contract names, applied by the owner from `phase6-github.patch` |
+| ARCHITECTURE.md | Status, manifest rows, contract decisions 2, 3 and 5 amended, template decisions 1 and 5 amended, 7 to 9 added |
+| BACKLOG.md | The folder fold and the V3 suffix rename |

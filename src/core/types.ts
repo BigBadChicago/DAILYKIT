@@ -111,17 +111,6 @@ export interface DistributionSpec {
 
 export type ShareRow = readonly ShareToken[];
 
-/**
- * What a v2 module returns from shareBlock. Nothing renders it since v3
- * migration phase 5: the shell composes the v3 ArtifactModel instead. It stays
- * only because the v2 GameModule still names it, and it is removed with that
- * contract in v3 migration phase 6.
- */
-export interface ShareBlock {
-  readonly title: string;
-  readonly rows: readonly ShareRow[];
-}
-
 /** Engine supplied facts a module may use when composing its title. */
 export interface ShareContext {
   readonly puzzleNumber: PuzzleNumber;
@@ -149,8 +138,10 @@ export type TelemetryPattern =
 
 /**
  * The v3 terminal result. ARCHITECTURE2 section 8 adds `bucket` and `difficulty`
- * to the finished outcome. Kept separate from FinishedOutcome so the v2 games
- * and engine stay untouched during the migration window.
+ * to the finished outcome. It was kept separate from FinishedOutcome during the
+ * migration window; since v3 migration phase 6 nothing in src reads the v2
+ * outcome types, and their removal is a BACKLOG.md entry rather than part of
+ * that deletion.
  */
 export interface FinishedOutcomeV3 {
   readonly kind: "finished";

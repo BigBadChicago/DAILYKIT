@@ -41,9 +41,7 @@ const {
   serialize,
   deserialize,
   migrateState,
-  shareBlock,
   difficulty,
-  bucketOf,
   telemetry,
   shareArtifact,
   LAYOUT_RADIX,
@@ -125,8 +123,13 @@ function context(overrides: Partial<ShareContext> = {}): ShareContext {
   return { puzzleNumber: 249, currentStreak: 0, rated: true, ...overrides };
 }
 
+/** Title and rows only. The URL line is the engine's, tested in artifact.test.ts. */
+function shareRows(state: VectorState, ctx = context()) {
+  return shareArtifact(puzzle, state, telemetry(state), ctx);
+}
+
 function render(state: VectorState, ctx = context()): string {
-  const block = shareBlock(state, ctx);
+  const block = shareRows(state, ctx);
   return [block.title, ...block.rows.map((row) => renderShareRow(row))].join("\n");
 }
 
@@ -354,17 +357,17 @@ describe("share block", () => {
   });
 
   it("omits a streak of one, because one day is not a streak", () => {
-    expect(shareBlock(solvedAfter(1, true), context({ currentStreak: 1 })).title).toBe(
+    expect(shareRows(solvedAfter(1, true), context({ currentStreak: 1 })).title).toBe(
       "VECTOR #249 Excellent",
     );
   });
 
   it("never uses Fair, because four outcomes cannot fill five bands", () => {
     const titles = [
-      shareBlock(solvedAfter(1, true), context()).title,
-      shareBlock(solvedAfter(2, true), context()).title,
-      shareBlock(solvedAfter(3, true), context()).title,
-      shareBlock(solvedAfter(3, false), context()).title,
+      shareRows(solvedAfter(1, true), context()).title,
+      shareRows(solvedAfter(2, true), context()).title,
+      shareRows(solvedAfter(3, true), context()).title,
+      shareRows(solvedAfter(3, false), context()).title,
     ];
     expect(titles.some((title) => title.includes("Fair"))).toBe(false);
     for (const title of titles) {
@@ -374,20 +377,20 @@ describe("share block", () => {
 
   it("keeps every row the same width and stays inside the row cap", () => {
     for (const state of [solvedAfter(1, true), solvedAfter(3, true), solvedAfter(3, false)]) {
-      const block = shareBlock(state, context());
+      const block = shareRows(state, context());
       expect(block.rows.length).toBeLessThanOrEqual(SHARE_MAX_ROWS);
       for (const row of block.rows) expect(row.length).toBe(SHARE_ROW_WIDTH);
     }
   });
 
   it("reveals nothing about the board", () => {
-    const block = shareBlock(solvedAfter(3, false), context());
+    const block = shareRows(solvedAfter(3, false), context());
     const tokens = new Set(block.rows.flat());
     expect([...tokens]).toEqual(["miss"]);
   });
 
   it("has no rows before a submission", () => {
-    expect(shareBlock(initialState(puzzle), context()).rows).toEqual([]);
+    expect(shareRows(initialState(puzzle), context()).rows).toEqual([]);
   });
 });
 
@@ -404,20 +407,11 @@ describe("outcome and buckets", () => {
       expect(outcome.kind).toBe("finished");
       if (outcome.kind !== "finished") continue;
       expect(outcome.tier).toBe(tier);
-      expect(internalsBucket(outcome, state)).toBe(bucket);
+      expect(outcome.bucket).toBe(bucket);
       expect(bucket).toBeLessThan(distribution.labels.length);
     }
   });
 });
-
-/** bucketOf is on the module rather than in internals, so reach it through the
- *  same path the shell uses. */
-function internalsBucket(
-  outcome: Extract<ReturnType<typeof inspect>, { kind: "finished" }>,
-  state: VectorState,
-): number {
-  return state.solved ? state.submissions - 1 : MAX_SUBMISSIONS;
-}
 
 describe("the board the module hands a first time player", () => {
   it("is a legal puzzle of the same shape", () => {
@@ -445,19 +439,6 @@ describe("v3 contract surface", () => {
     expect(outcome.difficulty).toBe(FIXTURE_INTENSITY);
   });
 
-  it("keeps the v2 bucketOf agreed with the outcome the shell now reads", () => {
-    for (const state of [
-      solvedAfter(1, true),
-      solvedAfter(2, true),
-      solvedAfter(3, true),
-      solvedAfter(3, false),
-    ]) {
-      const outcome = inspect(state);
-      expect(outcome.kind).toBe("finished");
-      if (outcome.kind !== "finished") continue;
-      expect(bucketOf(outcome, state)).toBe(outcome.bucket);
-    }
-  });
 });
 
 describe("difficulty against the shipped horizon", () => {
@@ -495,18 +476,21 @@ describe("the run log and the artifact", () => {
     expect(Object.keys(entry).sort()).toEqual(["blanks", "changes", "cycles", "index", "solved"]);
   });
 
-  it("produces the same title and rows as the v2 block", () => {
-    for (const state of [
-      straight,
-      solvedAfter(1, true),
-      solvedAfter(2, true),
-      solvedAfter(3, false),
-    ]) {
-      const ctx = context({ currentStreak: 4 });
-      const artifact = shareArtifact(puzzle, state, telemetry(state), ctx);
-      const block = shareBlock(state, ctx);
-      expect(artifact.title).toBe(block.title);
-      expect(artifact.rows).toEqual(block.rows);
+  /* Fixed strings since v3 migration phase 6 deleted the v2 block this once
+     compared against. The values are the ones that block produced. */
+  it("keeps the title and rows the v2 block shipped", () => {
+    const best = ["best", "best", "best", "best", "best"];
+    const miss = ["miss", "miss", "miss", "miss", "miss"];
+    const cases: readonly [VectorState, string, readonly (readonly string[])[]][] = [
+      [straight, "VECTOR #249 Excellent, streak 4", [best]],
+      [solvedAfter(1, true), "VECTOR #249 Excellent, streak 4", [best]],
+      [solvedAfter(2, true), "VECTOR #249 Great, streak 4", [miss, best]],
+      [solvedAfter(3, false), "VECTOR #249 Rough, streak 4", [miss, miss, miss]],
+    ];
+    for (const [state, title, rows] of cases) {
+      const artifact = shareArtifact(puzzle, state, telemetry(state), context({ currentStreak: 4 }));
+      expect(artifact.title).toBe(title);
+      expect(artifact.rows).toEqual(rows);
     }
   });
 

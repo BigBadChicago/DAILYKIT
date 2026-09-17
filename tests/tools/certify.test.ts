@@ -4,6 +4,7 @@ import {
   CERTIFICATION_SCHEMA,
   GATE_STEPS,
   isProductionSafe,
+  refusalsFor,
   type GateCheck,
   type GateStep,
 } from "../../src/engine/certification.js";
@@ -18,6 +19,9 @@ import {
   horizonDays,
   liveGameIds,
   localDate,
+  newGamePlan,
+  npmArguments,
+  npmCliPath,
   npmScripts,
   outcomesHash,
   parseRecord,
@@ -33,6 +37,7 @@ import {
   type Probe,
   type ProbeResult,
 } from "../../tools/certify.js";
+import { GAME_PLANS_MARKER } from "../../tools/new-game.js";
 
 const fakeFs = (files: Record<string, string>): Filesystem => ({
   exists: (path) => path in files,
@@ -105,6 +110,79 @@ describe("the plans", () => {
       expect(match, `ci.yml runs ${script}`).not.toBeNull();
       expect(match!.index, `${script} runs before certify`).toBeLessThan(certifyAt);
     }
+  });
+});
+
+describe("newGamePlan", () => {
+  const stub = newGamePlan("sample-game");
+  const unpassable = ["difficulty-calibration", "decomposition-check", "symmetry-check", "offline-smoke", "manual-mobile-check"];
+
+  it("plans every gate step, so planFor accepts it once the game is live", () => {
+    expect(() => planFor("sample-game", { "sample-game": stub })).not.toThrow();
+  });
+
+  it("leaves exactly the five steps a stub cannot pass without probes, and uses no n/a, pending or manual", () => {
+    for (const step of GATE_STEPS) {
+      const stepPlan = stub[step];
+      expect(stepPlan.kind, step).toBe("probes");
+      if (stepPlan.kind !== "probes") continue;
+      if (unpassable.includes(step)) expect(stepPlan.probes, step).toEqual([]);
+      else expect(stepPlan.probes.length, step).toBeGreaterThan(0);
+    }
+  });
+
+  it("points its test probes at the scaffold's own test files or suite tests that exist", () => {
+    for (const probe of uniqueProbes([stub])) {
+      if (probe.kind !== "test-file") continue;
+      expect(probe.path).toMatch(/^tests\/(games\/sample-game\/[a-z]+|ui\/a11y|shell\/boot|core\/rng|engine\/share-grammar)\.test\.ts$/);
+    }
+  });
+
+  /* The phase 6 guard. Every probe passing is the best a stub can do, and the
+     record it yields must still refuse, naming only the five skipped steps. */
+  it("is not production safe even when every probe passes", () => {
+    const record = buildRecord("sample-game", checksFrom(stub, allOk(uniqueProbes([stub]))), "c");
+    expect(isProductionSafe(record, "2026-10-01")).toBe(false);
+    const refused = refusalsFor(record, "2026-10-01").map((refusal) => refusal.step);
+    expect([...refused].sort()).toEqual([...unpassable].sort());
+    for (const step of unpassable) expect(record.checks[step as GateStep]).toEqual({ outcome: "skip" });
+  });
+
+  it("is not covered by the manual mobile exemption", () => {
+    const record = buildRecord("sample-game", checksFrom(stub, allOk(uniqueProbes([stub]))), "c");
+    const pendingUnderExemption = { ...record.checks, "manual-mobile-check": { outcome: "pending", exemption: MANUAL_MOBILE_EXEMPTION } as GateCheck };
+    const refused = refusalsFor(buildRecord("sample-game", pendingUnderExemption, "c"), "2026-10-01");
+    expect(refused.find((refusal) => refusal.step === "manual-mobile-check")?.why).toMatch(/does not cover sample-game/);
+  });
+
+  it("keeps the insertion marker in GAME_PLANS exactly once", () => {
+    const source = readFileSync("tools/certify.ts", "utf8");
+    expect(source.split(GAME_PLANS_MARKER)).toHaveLength(2);
+    expect(source.indexOf(GAME_PLANS_MARKER)).toBeGreaterThan(source.indexOf("export const GAME_PLANS"));
+  });
+});
+
+describe("launching npm without a shell", () => {
+  it("runs a script as Node plus the npm CLI that started certify", () => {
+    const cli = npmCliPath({ npm_execpath: "/usr/lib/node_modules/npm/bin/npm-cli.js" });
+    expect(npmArguments(cli, "budget", ["--", "dist-certify"])).toEqual([
+      "/usr/lib/node_modules/npm/bin/npm-cli.js",
+      "run",
+      "budget",
+      "--",
+      "dist-certify",
+    ]);
+  });
+
+  it("refuses to guess when certify was not started by npm", () => {
+    expect(() => npmCliPath({})).toThrow(/npm run certify/);
+    expect(() => npmCliPath({ npm_execpath: " " })).toThrow(/npm run certify/);
+    expect(() => npmArguments(null, "test", [])).toThrow(/--from-ci/);
+  });
+
+  it("never asks for a shell", () => {
+    const source = readFileSync("tools/certify.ts", "utf8");
+    expect(source).not.toMatch(/shell:/);
   });
 });
 

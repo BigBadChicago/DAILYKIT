@@ -6,7 +6,7 @@ import { SHARE_MAX_ROWS } from "../../../src/engine/share-grammar.js";
 import { SHARE_GLYPHS } from "../../../src/shared/share-vocabulary.js";
 import { validateArtifact } from "../../../src/engine/artifact.js";
 import { validateRunLog } from "../../../src/engine/telemetry.js";
-import cipher, { cipherV3, internals } from "../../../src/games/cipher/module.js";
+import cipher, { internals } from "../../../src/games/cipher/module.js";
 import { encodeCode } from "../../../src/games/cipher/manifest-codec.js";
 import {
   CODE_LENGTH,
@@ -180,7 +180,7 @@ describe("serialize and deserialize", () => {
   });
 });
 
-describe("inspect and bucketOf", () => {
+describe("inspect", () => {
   it("reports ongoing until the code is broken or the guesses run out", () => {
     const puzzle = puzzleOf(12);
     expect(cipher.inspect(state(puzzle) as never).kind).toBe("ongoing");
@@ -193,7 +193,7 @@ describe("inspect and bucketOf", () => {
     const solved = play(state(puzzle), [[0, 1, 2, 3], [3, 2, 1, 0], CODE]);
     const outcome = cipher.inspect(solved as never);
     expect(outcome).toMatchObject({ kind: "finished", won: true, score: 3, tier: 1, detail: "Solved in 3" });
-    expect(cipher.bucketOf(outcome as never, solved as never)).toBe(2);
+    expect(outcome).toMatchObject({ bucket: 2 });
   });
 
   it("grades a loss as Rough and the last bucket", () => {
@@ -203,17 +203,19 @@ describe("inspect and bucketOf", () => {
     ]);
     const outcome = cipher.inspect(lost as never);
     expect(outcome).toMatchObject({ kind: "finished", won: false, score: 0, tier: 4, detail: "Not solved" });
-    expect(cipher.bucketOf(outcome as never, lost as never)).toBe(6);
+    expect(outcome).toMatchObject({ bucket: 6 });
     expect(lost.guesses).toHaveLength(MAX_GUESSES);
   });
 });
 
-describe("shareBlock", () => {
+describe("shareArtifact", () => {
   const puzzle = puzzleOf(12);
+  const artifactOf = (played: CipherState, overrides: Partial<ShareContext> = {}) =>
+    internals.shareArtifact(puzzle, played, internals.telemetry(played), context(overrides));
 
   it("emits one four cell row per guess, sorted so no slot leaks", () => {
     const solved = play(state(puzzle), [[1, 4, 5, 1], CODE]);
-    const block = cipher.shareBlock(solved as never, context());
+    const block = artifactOf(solved);
     expect(block.rows).toHaveLength(2);
     for (const row of block.rows) expect(row).toHaveLength(CODE_LENGTH);
     expect(block.rows[0]).toEqual(["best", "partial", "partial", "partial"]);
@@ -224,26 +226,26 @@ describe("shareBlock", () => {
     const lost = play(state(puzzle), [
       [0, 0, 0, 0], [0, 0, 0, 1], [0, 0, 0, 2], [0, 0, 0, 3], [0, 0, 0, 4], [0, 0, 1, 0],
     ]);
-    const block = cipher.shareBlock(lost as never, context());
+    const block = artifactOf(lost);
     expect(block.rows.length).toBeLessThanOrEqual(SHARE_MAX_ROWS);
     expect(block.rows).toHaveLength(MAX_GUESSES);
   });
 
   it("carries the tier in the title even when the shell calls the day unrated", () => {
     const solved = play(state(puzzle), [CODE]);
-    expect(cipher.shareBlock(solved as never, context()).title).toBe("CIPHER #12 Excellent");
-    expect(cipher.shareBlock(solved as never, context({ rated: false })).title).toBe("CIPHER #12 Excellent");
+    expect(artifactOf(solved).title).toBe("CIPHER #12 Excellent");
+    expect(artifactOf(solved, { rated: false }).title).toBe("CIPHER #12 Excellent");
   });
 
   it("adds a streak only once it is worth reading", () => {
     const solved = play(state(puzzle), [CODE]);
-    expect(cipher.shareBlock(solved as never, context({ currentStreak: 1 })).title).not.toContain("streak");
-    expect(cipher.shareBlock(solved as never, context({ currentStreak: 9 })).title).toContain("streak 9");
+    expect(artifactOf(solved, { currentStreak: 1 }).title).not.toContain("streak");
+    expect(artifactOf(solved, { currentStreak: 9 }).title).toContain("streak 9");
   });
 
   it("uses only tier vocabulary tokens, never a codepoint", () => {
     const played = play(state(puzzle), [[1, 4, 5, 1], CODE]);
-    const block = cipher.shareBlock(played as never, context());
+    const block = artifactOf(played);
     for (const row of block.rows) {
       for (const token of row) {
         expect(["best", "partial", "miss"]).toContain(token);
@@ -256,9 +258,11 @@ describe("shareBlock", () => {
 describe("v3 contract surface", () => {
   const puzzle = puzzleOf(12);
 
-  it("exposes one object through both seams", () => {
-    expect(cipherV3).toBe(cipher);
-    expect(cipherV3.identity.id).toBe("cipher");
+  it("default exports the v3 module", () => {
+    expect(cipher.identity.id).toBe("cipher");
+    expect(typeof cipher.shareArtifact).toBe("function");
+    expect("shareBlock" in cipher).toBe(false);
+    expect("bucketOf" in cipher).toBe(false);
   });
 
   it("declares a grammar, at least two telemetry patterns, and a row cap that fits", () => {
@@ -281,9 +285,7 @@ describe("v3 contract surface", () => {
 
   it("carries the bucket and the difficulty on the finished outcome", () => {
     const solved = play(state(puzzle), [[1, 4, 5, 1], CODE]);
-    /* Read through the v3 seam, which is where the two extra fields are
-       visible. The v2 seam sees the same object as a FinishedOutcome. */
-    const outcome = cipherV3.inspect(solved as never);
+    const outcome = cipher.inspect(solved as never);
     expect(outcome.kind).toBe("finished");
     if (outcome.kind !== "finished") return;
     expect(outcome.bucket).toBe(1);
@@ -293,32 +295,13 @@ describe("v3 contract surface", () => {
     expect(outcome.difficulty).not.toBe(puzzle.best?.remaining);
   });
 
-  it("keeps the v2 bucketOf agreed with the outcome the shell now reads", () => {
-    const states = [
-      play(state(puzzle), [CODE]),
-      play(state(puzzle), [[1, 4, 5, 1], CODE]),
-      play(state(puzzle), [[0, 0, 1, 2], [0, 0, 1, 3], CODE]),
-      play(state(puzzle), [
-        [0, 0, 0, 0], [0, 0, 0, 1], [0, 0, 0, 2], [0, 0, 0, 3], [0, 0, 0, 4], [0, 0, 1, 0],
-      ]),
-    ];
-    for (const played of states) {
-      const outcome = cipherV3.inspect(played as never);
-      expect(outcome.kind).toBe("finished");
-      if (outcome.kind !== "finished") continue;
-      expect(internals.bucketOf(outcome, played)).toBe(outcome.bucket);
-    }
-  });
-
   it("hands the mapper a run log the engine accepts", () => {
     const solved = play(state(puzzle), [[1, 4, 5, 1], CODE]);
     const run = internals.telemetry(solved);
     expect(validateRunLog(run).ok).toBe(true);
     expect(run.entries).toHaveLength(2);
     const artifact = internals.shareArtifact(puzzle, solved, run, context());
-    const block = cipher.shareBlock(solved as never, context());
-    expect(artifact.title).toBe(block.title);
-    expect(artifact.rows).toEqual(block.rows);
+    expect(artifact.rows).toHaveLength(2);
     expect(validateArtifact(artifact, cipher.identity.shareUrl).ok).toBe(true);
   });
 });

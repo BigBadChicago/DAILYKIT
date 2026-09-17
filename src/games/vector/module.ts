@@ -1,28 +1,24 @@
 /**
- * Layer 4. The VECTOR GameModule, implementing v2 and v3 at once.
+ * Layer 4. The VECTOR GameModule.
  * VECTOR.md sections 1, 6, 11, 12 and 17.
  *
- * One implementation object satisfies both contracts, because FinishedOutcomeV3
- * is FinishedOutcome plus two fields and is therefore assignable to it. The
- * default export stays the v2 module so the shell, the entry and the build are
- * untouched; `vectorV3` is the same object seen through the v3 seam, and it is
- * what a later phase points the shell at. ARCHITECTURE2 section 47.
+ * The module is written against the v3 contract only. v3 migration phase 6
+ * deleted the v2 contract, and with it this module's `bucketOf`, `shareBlock`
+ * and v2 default export; the default export is now the v3 module the shell
+ * mounts. ARCHITECTURE2 section 56.
  */
 
 import { err, ok, type Result } from "../../core/result.js";
 import type {
   DistributionSpec,
-  FinishedOutcome,
   PuzzleNumber,
   Rejection,
   Seed,
   SerializedState,
-  ShareBlock,
   ShareContext,
 } from "../../core/types.js";
 import { rngFromSeed } from "../../core/seed.js";
 import { intBelow } from "../../core/rng.js";
-import { defineGame, type GameModule } from "../../contract/game-module.js";
 import { defineGameV3, type GameModuleV3 } from "../../contract/v3/game-module.js";
 import type { ShareCapabilities } from "../../contract/v3/types.js";
 import type {
@@ -54,9 +50,6 @@ import {
 } from "./rules.js";
 import {
   SHARE_ROW_WIDTH,
-  artifactRows,
-  artifactTitle,
-  readEntries,
   vectorArtifact,
   vectorRunLog,
 } from "./telemetry.js";
@@ -311,10 +304,6 @@ function migrateState(
   });
 }
 
-function bucketOf(_outcome: FinishedOutcome, state: VectorState): number {
-  return bucketFor(state);
-}
-
 /** v3. Recomputed, never read from the manifest. See rules.difficultyFor. */
 function difficulty(puzzle: VectorPuzzle): number {
   return difficultyFor(puzzle);
@@ -336,18 +325,6 @@ function shareArtifact(
   return vectorArtifact(state, run, context);
 }
 
-/**
- * The v2 block. It is the v3 artifact's title and rows with the fingerprint and
- * the outcome dropped, built from the same two functions, so the two cannot
- * drift apart. VECTOR.md 12.
- */
-function shareBlock(state: VectorState, context: ShareContext): ShareBlock {
-  return {
-    title: artifactTitle(state, context),
-    rows: artifactRows(readEntries(vectorRunLog(state))),
-  };
-}
-
 function mount(
   host: HTMLElement,
   context: MountContext<VectorState, VectorAction, VectorPuzzle>,
@@ -359,9 +336,7 @@ function help(): HelpContent {
   return helpContent();
 }
 
-/* Not annotated, so the two typed views below can each take the members they
-   need without an excess property error on a fresh object literal. */
-const vector = {
+const vector: GameModuleV3<VectorState, VectorAction, VectorPuzzle> = {
   identity,
   input,
   manifest,
@@ -380,22 +355,13 @@ const vector = {
   apply,
   inspect,
   difficulty,
-  bucketOf,
   telemetry,
   shareArtifact,
-  shareBlock,
   mount,
   help,
 };
 
-const asV2: GameModule<VectorState, VectorAction, VectorPuzzle> = vector;
-const asV3: GameModuleV3<VectorState, VectorAction, VectorPuzzle> = vector;
-
-export default defineGame(asV2);
-
-/** The same module through the v3 seam. Nothing imports it yet; the shell is
- *  still v2 and a game cannot lead it. ARCHITECTURE2 section 56, phase 2. */
-export const vectorV3 = defineGameV3(asV3);
+export default defineGameV3(vector);
 
 /** Exported for the module tests only. Nothing in the shell reads these. */
 export const internals = {
@@ -407,9 +373,7 @@ export const internals = {
   serialize,
   deserialize,
   migrateState,
-  shareBlock,
   difficulty,
-  bucketOf,
   telemetry,
   shareArtifact,
   LAYOUT_RADIX,
