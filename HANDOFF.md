@@ -158,15 +158,24 @@ report.
 
 ### 4.3 Open questions for the owner, ask before code
 
-1. **One conversation or two.** The corrections and the game are two phases by
-   the one phase per conversation rule. Doing 4.1 and stopping is the rule as
-   written; doing both in one conversation is what the owner asked for on
-   2026-09-17. Confirm which.
-2. **Defect 2:** wrap the header title to two lines, or step the size down past a
-   length?
-3. **Defect 3:** does CIPHER adopt the list cursor in this change, or does it
-   keep its own model until it is touched for another reason?
-4. **ROTATE LOCK going live**, section 3.2.
+Ask these four as one numbered list, in these words, with the recommendations,
+and wait. They were settled as the phase's opening questions on 2026-09-17.
+
+1. **One conversation or two.** Correction set 4.1 alone, stopping at the
+   rewritten HANDOFF, is the one phase per conversation rule as written. Both 4.1
+   and 4.2 in this conversation is what you asked for on 2026-09-17. Which?
+2. **Defect 2, the header title at 360 pixels:** wrap to two lines, or step the
+   font size down past a length threshold? Recommended: step the size down,
+   because a two line header pushes the board down on the viewport that is
+   already the tightest.
+3. **Defect 3:** does CIPHER adopt `src/ui/listCursor.ts` in this change, or keep
+   its own model until it is touched for another reason? Recommended: ROTATE LOCK
+   only, so the retrofit that proves the seam is one game and CIPHER's committed
+   share strings are not put at risk in a correction pass.
+4. **Has MANUAL-CHECKS.md been run for ROTATE LOCK on devices?** If yes, record
+   the `manual` step, flip the registry row to live, certify and commit the record
+   before anything else, section 3.2. If no, ROTATE LOCK stays planned and nothing
+   in 4.1 or 4.2 depends on it.
 
 **Size.** The design document and the game are each well over 300 lines. Per the
 efficiency protocol, say what is about to be produced in one line and wait.
