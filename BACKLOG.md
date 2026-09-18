@@ -354,15 +354,18 @@ the result, which is a human pass across real devices.
   POKER GRID, CIPHER, VECTOR and ROTATE LOCK all draw blue. Requirement 7.3.8.
   Engine defect 1 of the ROTATE LOCK report; the correction redeclares the
   accent colours on the element that receives the hue, and is owed before the
-  next game, per requirement 7.4.
+  next game, per requirement 7.4. **Corrected 2026-09-18.**
 - **The header truncates a two word name at 360 pixels.** ROTATE LOCK reads
   "ROTATE ..." in the chrome header beside its four icons. DIFFERENCE RELAY and
-  ORDER OF OPERATIONS are longer. Engine defect 2 of the report.
+  ORDER OF OPERATIONS are longer. Engine defect 2 of the report. **Corrected
+  2026-09-18**, as a size ladder plus a two line wrap for the two longest names,
+  because measurement showed no legible single line size fits them.
 - **A list cursor for ORDER games.** ARCHITECTURE2 section 21 names an ORDER
   adapter as reusable, and none exists in `src/ui/`. ROTATE LOCK wrote its own
   roving focus, select and swap keyboard model, the second custom list model
   after CIPHER's. Two examples now; DIFFERENCE RELAY, RING BALANCE and ORDER OF
   OPERATIONS are all ORDER games, so the third would be copying. Engine defect 3.
+  **Corrected 2026-09-18** as `src/ui/listCursor.ts`, with ROTATE LOCK retrofitted.
 - **A counterclockwise rotation in ROTATE LOCK.** A piece that needs a quarter
   turn left costs three moves. Par counts it the same way, so the tier is fair,
   but it may read as busywork. A rule change that lowers every par, so it waits
@@ -379,3 +382,19 @@ the result, which is a human pass across real devices.
   its `GAME_PLANS` row, flip the row to live and commit the record.
 - The **`unused` glyph** item above now has a second reason: ROTATE LOCK is the
   first game whose ordinary result, any run over eight moves, shows it.
+
+## Logged in charter Phase 13, the corrections
+
+- **CIPHER still owns its own key model.** The list cursor exists and CIPHER did
+  not adopt it, because its share strings are pinned as fixed strings and a
+  correction pass is the wrong place to risk them. Adopt it the next time CIPHER
+  is opened for a reason of its own, and assert its announcements and share
+  output are byte identical across the change.
+- **`ENGINE_VERSION` must move to 3 on the build that first ships a live game
+  importing the list cursor.** It stayed 2 here because the only importer is a
+  planned game and a planned game is not in a release, so the chunk's 61 exports
+  did not change. Whoever makes ROTATE LOCK or DIFFERENCE RELAY live owns this.
+- **The header ladder is measured at one viewport.** The steps in ARCHITECTURE2
+  were measured at 360 pixels in headless Chromium with the system font stack. A
+  device whose system font is wider could still clip. The manual mobile check is
+  what would catch it.

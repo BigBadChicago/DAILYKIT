@@ -3410,3 +3410,111 @@ PHASE-13-PLAN.md section 1.1's order for the four that remain. Its conversation
 begins with the three corrections above, because requirement 7.4 puts them after
 the report and before the next game, and because the list cursor of defect 3 must
 exist before an ORDER game consumes it. HANDOFF.md carries the detail.
+
+---
+
+## Charter Phase 13, the three ROTATE LOCK corrections. Done 2026-09-18.
+
+The defect report of the ROTATE LOCK entry, applied. All three are engine
+changes, which is why they were held back until the game was finished and are
+made before DIFFERENCE RELAY begins. Green against that entry's baseline: three
+typechecks, the dependency check, 72 files and 940 tests (69 and 909 before),
+all four verifiers, the production build, the byte budget, `npm run certify
+-- --check` reporting the three live games production safe with every committed
+record unchanged, and an offline smoke below.
+
+### Decisions, approved 2026-09-18
+
+1. **Both the corrections and the next game were approved for one conversation**
+   by the owner, over the one phase per conversation rule. The corrections are
+   recorded here on their own so the record still reads as one phase per entry.
+2. **Defect 2 is a hybrid, not the size ladder alone.** The recommendation was
+   to step the font size down and never wrap. Measurement refused it. At 360
+   pixels the title has **104 pixels** between five 44 pixel touch targets, and
+   the rendered widths of every display name in the slate are:
+
+   | Name | 1.05rem | 0.95rem | 0.85rem | 0.78rem | 0.70rem | 0.64rem |
+   |---|---|---|---|---|---|---|
+   | CIPHER | 74 | 65 | 57 | 52 | 47 | 43 |
+   | VECTOR | 80 | 71 | 62 | 57 | 51 | 46 |
+   | POKER GRID | 124 | 109 | 96 | 87 | 78 | 72 |
+   | TURN TABLE | 123 | 108 | 96 | 87 | 78 | 71 |
+   | ROTATE LOCK | 135 | 119 | 105 | 95 | 85 | 78 |
+   | RING BALANCE | 149 | 131 | 116 | 105 | 94 | 86 |
+   | DIFFERENCE RELAY | 192 | 169 | 149 | 135 | 121 | 111 |
+   | ORDER OF OPERATIONS | 237 | 209 | 184 | 167 | 150 | 137 |
+
+   ORDER OF OPERATIONS needs 0.6rem, under ten pixels, to fit on one line, which
+   fails requirement 8.1 before it fails taste. So the ladder carries every name
+   up to twelve characters and the two longest wrap to two lines at 0.85rem,
+   where the longest single word is 100 pixels. The header is `min-height`
+   rather than `height` so it grows only when a title wraps.
+3. **CIPHER keeps its own key model.** Defect 3 builds `src/ui/listCursor.ts`
+   and retrofits ROTATE LOCK only. CIPHER's committed share strings are fixed
+   strings since v3 migration phase 6, and a correction pass is the wrong place
+   to put them at risk. CIPHER adopts the cursor when it is next opened for a
+   reason of its own; BACKLOG.md records it.
+4. **`ENGINE_VERSION` stays 2.** The release build's engine chunk still exports
+   the same 61 names, because the only importer of the list cursor is a planned
+   game and planned games are not in a release. It grew from 30,262 to 30,412
+   bytes, which is content and not surface. The version moves to 3 on the build
+   that first ships a **live** game importing the cursor, which is the build
+   that makes DIFFERENCE RELAY or ROTATE LOCK live.
+
+### What changed
+
+**Defect 1, no game rendered its own accent.** `applyAccent` set
+`--dk-accent-hue` on the game root, but `--dk-accent`, `--dk-accent-text` and
+`--dk-focus` were declared on `:root`, where `var(--dk-accent-hue)` resolves
+against the root's own 210. Every game and every hub card drew the same blue.
+`applyAccent` now also marks its host with `data-dk-accent`, and `chrome.css`
+redeclares the three derived colours on `:root[data-theme] [data-dk-accent]` in
+light, in dark and in the increased contrast layer, and resets them to the
+system colours under forced colours. Measured after the change at 360 pixels,
+in both themes: hub 148, POKER GRID 148, CIPHER 268, VECTOR 28, ROTATE LOCK 308,
+with `--dk-focus` tracking each. The hub now shows four distinct card accents at
+once, which is what requirement 7.3.8 asked for and had never rendered.
+
+**Defect 2, the header truncated a display name.** ROTATE LOCK read
+"ROTATE ..." beside the four chrome icons. `titleFit` in `header.ts` buckets a
+title by length into `base`, `tight`, `tighter` and `wrap`, and writes it as
+`data-fit` on the heading, restating it on `setTitle`. Measured after the change,
+every name in the slate renders whole at 360 pixels with no clipping in either
+direction: POKER GRID and TURN TABLE at `tight`, ROTATE LOCK and RING BALANCE at
+`tighter`, DIFFERENCE RELAY and ORDER OF OPERATIONS on two lines at `wrap`.
+
+**Defect 3, no ORDER list cursor.** `src/ui/listCursor.ts`, Layer 2, is the
+ORDER adapter of section 21: a roving tabindex over an ordered list with focus,
+selection, swap, a cancel and a declared pass through verb. Two decisions are
+recorded in the file. It holds the **selection by item identity, not by slot**,
+because a swap reorders the slots under the cursor and a selection stored as a
+slot silently comes to mean a different item. It uses a **roving tabindex**
+where `gridCursor` uses `aria-activedescendant`, because a list here is a
+handful of real buttons whose pressed state a screen reader should say, and the
+35 cell reason for activedescendant does not apply. ROTATE LOCK's tray is
+retrofitted onto it and its renderer lost 70 lines of its own key model; its
+declared keys, its announcements and its 69 tests are unchanged. `cursor.keys`
+exposes the consumed keys so a module's `InputDescriptor` has one source.
+
+### Offline smoke, recorded 2026-09-18
+
+Headless Chromium at 360 pixels against `vite preview` of the release build:
+hub, POKER GRID, CIPHER and VECTOR each visited twice online past the practice
+board, then the context set offline and every page revisited. All four rendered
+from cache, with the hub's cards, POKER GRID's board, CIPHER's keys and VECTOR's
+cells present and no console error. The worker and the asset naming did not
+change, so the committed `offline-smoke` evidence stands and no certification
+record changed.
+
+### Files
+
+| Path | Change |
+|---|---|
+| src/ui/listCursor.ts | New: the ORDER adapter, Layer 2 |
+| src/ui/theme.ts | `applyAccent` marks its host with `data-dk-accent` |
+| src/ui/chrome.css | Accent colours redeclared on the carrier in every layer; the title ladder; `min-height` on the header |
+| src/ui/header.ts | `titleFit` and the `data-fit` attribute |
+| src/games/rotate-lock/render.ts | The tray adopts the list cursor |
+| tests/ui/listCursor.test.ts | New: 15 tests |
+| tests/ui/theme.test.ts | The carrier marker and the CSS layers |
+| tests/ui/header.test.ts | Every display name's step, and the header's min-height |

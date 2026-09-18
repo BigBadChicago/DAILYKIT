@@ -114,4 +114,7 @@ export interface Accent {
 export function applyAccent(host: HTMLElement, accent: Accent): void {
   host.style.setProperty("--dk-accent-hue", accent.hue);
   host.style.setProperty("--dk-board-font", accent.boardFontStack);
+  // The marker is what chrome.css hangs the accent derived colours on. Without
+  // it the hue lands here and --dk-accent still resolves against :root.
+  host.setAttribute("data-dk-accent", "");
 }
