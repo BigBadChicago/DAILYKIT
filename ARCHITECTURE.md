@@ -195,6 +195,7 @@ Table columns are fixed as follows and every future entry uses them.
 | PHASE-13-PLAN.md | n/a | The Phase 13 specification: the three remaining games, one per chat, with their fixed facts and per game gates | none |
 | NEW_GAME.md | n/a | The procedure for authoring a new game against the v3 contract and shipping it through its own certification record | none |
 | tools/new-game.ts | tools | Pure scaffold planning and filesystem writer for a complete planned v3 game, its four tests, and its registry, build target and GAME_PLANS rows | node:fs, node:path, node:url, shell/registry |
+| tools/ship.ps1 | tools | The owner's delivery command: branches from a patch's base commit, applies and commits it with git am, pushes the branch and prints the pull request link. Never run in CI | git, PowerShell 5.1 or later |
 | tests/tools/new-game.test.ts | n/a | Pure output, v3 only output, plan evidence coverage, validation, determinism, and insertion tests for the game scaffold | tools/certify, tools/new-game, vitest |
 | .github/copilot-instructions.md | n/a | The always loaded instruction set for GitHub Copilot, including the reading order and the phase rules | none |
 | .github/instructions/*.instructions.md | n/a | Path scoped rules that load when a matching file is opened, one per layer | none |

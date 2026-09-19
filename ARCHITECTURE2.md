@@ -3760,3 +3760,48 @@ The registry is bundled into every page, so four rows cost each page about 0.3 K
 
 LETTER TRAIL is game six. Then WORD LADDER, PANGRAM and FIVE LETTERS, then TURN
 TABLE, RING BALANCE and ORDER OF OPERATIONS, each in its own conversation.
+
+## Delivery pipeline. Done 2026-09-19.
+
+Directed by the owner. Every conversation starts from a fresh clone of GitHub
+`main`, all development and testing happen in the container, and a finished,
+green piece of work reaches the repository as one patch that the owner ships
+with one command.
+
+### Decisions, made 2026-09-19
+
+1. **The handoff names a base commit, a branch and a subject, not the delivered
+   commit's id.** A file cannot name the commit that contains it, and the owner's
+   `git am` and GitHub's merge both make commits whose ids cannot be known in
+   advance. The next conversation checks that the base is an ancestor of `main`
+   and that the subject follows it.
+2. **The patch carries its base.** `git format-patch --base` writes a
+   `base-commit:` line, and `tools/ship.ps1` branches from it, so a patch always
+   applies to the tree it was tested on however far `main` has moved. Newer
+   commits meet it in the pull request.
+3. **The script lives in the repository,** so each conversation delivers only a
+   patch. It is PowerShell because the owner works on Windows, written for
+   Windows PowerShell 5.1 as well as pwsh, and it refuses rather than guesses:
+   a dirty tree, an unfinished `git am`, a patch without a base, a malformed
+   name, a branch already in use. A patch that does not apply leaves the owner
+   back on the branch they started from with nothing pushed.
+4. **The container never pushes.** It holds no credentials for the owner's
+   account and must not.
+
+### Tested 2026-09-19
+
+With pwsh 7.4.6 in the container against a local bare remote whose `main` had
+moved past the patch's base: the success path created, committed and pushed
+`claude/<name>` and printed the compare link; a repeat refused the existing
+branch; a dirty tree and a patch without a base line were refused; a patch that
+conflicted aborted `git am`, deleted the branch, returned to `main` and pushed
+nothing. Not tested on Windows PowerShell 5.1 itself; the script avoids
+constructs newer than 5.1.
+
+### Files
+
+| Path | What it is |
+|---|---|
+| tools/ship.ps1 | The delivery command |
+| HANDOFF.md | Section 7 rewritten for the clone, the merge check and delivery; a Built on row in the header |
+

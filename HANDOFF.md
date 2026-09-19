@@ -7,7 +7,8 @@ and it describes exactly one conversation: the next one.
 
 | Field | Value |
 |---|---|
-| Written | 2026-09-19, at the slate amendment that made four word games the next four |
+| Written | 2026-09-19, with the delivery pipeline, after the slate amendment that made four word games the next four |
+| Built on | Base commit `ec4061aeb76fe2d414f57868342ac9b2b6e07477` ("UAT folder and tests added"), branch `claude/delivery-pipeline`, commit subject "Delivery pipeline: work in the container, ship one patch through tools/ship.ps1" |
 | For the conversation | **Charter Phase 13: LETTER TRAIL**, game six of twelve |
 | Phase scheme | Charter phases, Section 9 of the project instructions, with PHASE-13-PLAN.md as amended by ARCHITECTURE2.md. The v3 migration phases are complete |
 | Before any work | Check section 3, then settle section 4's open design decisions in the design document first |
@@ -17,7 +18,10 @@ and it describes exactly one conversation: the next one.
 
 ## 1. Reading order
 
-Read these before doing anything, in this order, and nothing else unless a
+First, clone `main` into the container; section 7 item 1 has the commands and
+the merge check. The project file copies are not the code and may be stale.
+
+Then read these before doing anything, in this order, and nothing else unless a
 section below names it.
 
 1. **HANDOFF.md**, this file.
@@ -74,8 +78,11 @@ the record.
 
 ## 3. Preconditions to check first
 
-1. **The slate amendment is on `origin/main`.** It was delivered as a patch;
-   confirm `src/shell/registry.ts` has the `letter-trail` row before building.
+1. **The previous delivery was merged.** The base commit in the header is in
+   `main`'s history and a commit with the header's subject follows it
+   (section 7 item 1). If not, the branch `claude/delivery-pipeline` was never
+   merged: stop and say so. `src/shell/registry.ts` must also carry the
+   `letter-trail` row from the slate amendment.
 2. **Whether the owner has run the manual checks for ROTATE LOCK or DIFFERENCE
    RELAY.** For each that is done, record the `manual` steps, flip the registry
    row to `live`, move `ENGINE_VERSION` to 3 on the first live game that imports
@@ -178,33 +185,69 @@ efficiency protocol, say what is about to be produced in one line and wait.
 | MANUAL-CHECKS.md | The device checklist, still to be run for ROTATE LOCK and DIFFERENCE RELAY |
 | src/ui/listCursor.ts, src/ui/gridCursor.ts | The two input adapters |
 | src/shell/registry.ts | The twelve game slate |
+| tools/ship.ps1 | The owner's one command delivery: branch, apply, commit, push, pull request link |
+| uat/ | The owner's UAT scripts per game and the UAT workbook |
 
 ---
 
 ## 7. How to work in this environment
 
-1. **The workspace shell cannot mount the repository**, a Windows update of
-   2026-09-08: `device_bash` fails with "no Plan9 drive shares mounted". Read the
-   owner's tree with `device_list_dir` and `device_stage_files`, and write with
-   `device_commit_files` when the bridge is up. List `src`, `tests`, `tools` and
-   `data` separately; a recursive listing of the root overflows on `node_modules`.
-2. **Run the real gates in a cloud clone.** A shallow clone of GitHub `main` then
-   `npm ci` is about a minute. `origin/main` may be ahead of the owner's checkout,
-   and it may not yet carry DIFFERENCE RELAY if the patch is unapplied; check.
-3. **Pushing from the container is refused** unless the repository is an
-   authorised source. Otherwise commit in the clone and deliver a patch and a
-   bundle for the owner to apply and push.
-4. **The bridge cannot write under `.github` and cannot delete.** Deliver those
-   changes inside the patch and tell the owner to apply it.
-5. **`npm run certify` needs git** and must be started through npm. Use
+All development, coding, generation and testing happen in the container. The
+owner runs only the manual device checks, UAT and the one delivery command.
+
+1. **Start from a fresh clone of `main`.** The repository is public and cloning
+   needs no credentials:
+
+   ```
+   git clone -q https://github.com/BigBadChicago/DAILYKIT.git dk && cd dk
+   git merge-base --is-ancestor <base commit from the header> HEAD && echo BASE_OK
+   git log --format=%s <base commit>..HEAD | grep -Fx "<subject from the header>"
+   npm ci
+   ```
+
+   Both checks must pass before any work. A commit id cannot be predicted for a
+   delivery, because the owner's `git am` makes a new commit and GitHub may merge
+   with another, so the handoff names the base and the subject rather than the
+   delivered commit's id. `main` may also carry the owner's own commits after
+   the base, such as the UAT folder; that is normal.
+2. **Work on a local branch named for the work,** for example
+   `git switch -c claude/letter-trail`, from the commit the clone checked out.
+   Record that commit's full id: it becomes the next handoff's base commit.
+3. **Deliver when every automated gate is green,** never before: typecheck, the
+   dependency check, all tests, every verifier, the build, the byte budget and
+   `npm run certify -- --check`. Commit everything, including the rewritten
+   HANDOFF.md, as one commit with a message that says what changed and why, then:
+
+   ```
+   git format-patch -1 --base=<recorded base commit> --stdout > /mnt/user-data/outputs/<name>.patch
+   ```
+
+   `<name>` is lowercase words joined by hyphens and becomes the branch
+   `claude/<name>`. Present the patch and tell the owner to run, from the
+   repository root:
+
+   ```
+   powershell -ExecutionPolicy Bypass -File tools\ship.ps1 <path to the patch>
+   ```
+
+   The script creates the branch from the base commit, applies and commits the
+   patch, pushes the branch to origin and prints the pull request link. It refuses
+   a dirty tree, a patch with no base commit, and a branch name already in use,
+   and if the patch does not apply it restores the owner's checkout and pushes
+   nothing. CI runs on the pull request, a second green run not produced here.
+4. **Pushing from the container is not possible and is not attempted.** The
+   container holds no credentials for the owner's GitHub account, and must not.
+5. **New games ship planned.** The gate refuses a live game without its manual
+   steps. After the owner's UAT passes, making the game live is its own small
+   patch through the same pipeline.
+6. **`npm run certify` needs git** and must be started through npm. Use
    `-- --check` to evaluate without rewriting records.
-6. **`npm run <id>:calibrate`, `:generate`, `:verify`** run through npm, which is
-   the allowed path in this environment; a bare `npx tsx tools/...` is blocked.
+7. **`npm run <id>:calibrate`, `:generate`, `:verify`** run through npm.
    `node --import tsx tools/<file>.ts` runs a throwaway script.
-7. **A planned game cannot enter a release build.** `npm run build:harness` builds
+8. **A planned game cannot enter a release build.** `npm run build:harness` builds
    every target including planned ones into `dist`, and is the way to render a new
    game at 360 pixels and measure its page. Never patch the target list in the tree.
-8. **A screenshot at 360 pixels is evidence no automated check produces.** A
+9. **A screenshot at 360 pixels is evidence no automated check produces.** A
    letter grid is the densest board in the suite, so measure it in the page at
    360 pixels rather than trusting the stylesheet.
 
@@ -226,6 +269,10 @@ efficiency protocol, say what is about to be produced in one line and wait.
 9. Every file added or repurposed is recorded in the architecture documents.
 10. v3 telemetry is the player's own run log on device. Any proposal that sends
     it anywhere is refused.
+11. The code comes from a fresh clone of GitHub `main`, never from the project
+    file copies, and every delivery is one patch shipped through `tools/ship.ps1`
+    (section 7). The rewritten HANDOFF.md travels inside that patch and names its
+    base commit, branch and subject.
 
 ---
 
