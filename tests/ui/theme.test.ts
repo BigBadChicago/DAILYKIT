@@ -2,6 +2,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { applyAccent, contrastMode, installTheme, memoryThemePort } from "../../src/ui/theme.js";
 import { el } from "../../src/ui/dom.js";
+import { readFileSync } from "node:fs";
 
 const listeners = new Map<string, Set<(e: MediaQueryListEvent) => void>>();
 let media: Record<string, boolean> = {};
@@ -121,5 +122,43 @@ describe("applyAccent", () => {
     expect(host.style.getPropertyValue("--dk-accent-hue")).toBe("12");
     expect(host.style.getPropertyValue("--dk-board-font")).toBe("monospace");
     expect(document.documentElement.style.getPropertyValue("--dk-accent-hue")).toBe("");
+  });
+
+  it("marks the host so the accent derived colours resolve against its hue", () => {
+    const host = el("div");
+    applyAccent(host, { hue: "308", boardFontStack: "monospace" });
+    expect(host.hasAttribute("data-dk-accent")).toBe(true);
+  });
+});
+
+describe("chrome.css accent carrier", () => {
+  const css = readFileSync("src/ui/chrome.css", "utf-8");
+
+  // Charter Phase 13 defect 1: a var() in a :root declaration resolves against
+  // :root's hue, so every accent derived colour must be redeclared on the
+  // element applyAccent marks, in every layer that declares it on :root.
+  const layers = [
+    ':root[data-theme="light"] [data-dk-accent]',
+    ':root[data-theme="dark"] [data-dk-accent]',
+  ];
+
+  it.each(layers)("declares the accent colours for %s", (selector) => {
+    const block = css.slice(css.indexOf(selector));
+    const body = block.slice(block.indexOf("{"), block.indexOf("}"));
+    expect(body).toContain("--dk-accent:");
+    expect(body).toContain("--dk-focus:");
+  });
+
+  it("redeclares the accent inside the increased contrast layer", () => {
+    const more = css.slice(css.indexOf("@media (prefers-contrast: more)"));
+    const scoped = more.slice(0, more.indexOf("@media (forced-colors"));
+    expect(scoped).toContain(':root[data-theme="light"] [data-dk-accent]');
+    expect(scoped).toContain(':root[data-theme="dark"] [data-dk-accent]');
+  });
+
+  it("resets the accent carrier under forced colours", () => {
+    const forced = css.slice(css.indexOf("@media (forced-colors: active)"));
+    const carrier = forced.slice(forced.indexOf("[data-dk-accent]"));
+    expect(carrier.slice(0, carrier.indexOf("}"))).toContain("--dk-accent: Highlight");
   });
 });

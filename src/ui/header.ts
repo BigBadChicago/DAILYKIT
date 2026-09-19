@@ -41,6 +41,30 @@ const THEME_LABEL: Readonly<Record<ThemeChoice, string>> = {
   dark: "Theme, dark. Activate to follow the system.",
 };
 
+/**
+ * Charter Phase 13 defect 2. At 360 pixels the title shares the row with five
+ * 44 pixel icon buttons, so anything past about eleven characters was clipped
+ * to an ellipsis: ROTATE LOCK read "ROTATE ...". The size steps down by name
+ * length. Measurement, recorded in ARCHITECTURE2.md section 56, then forced a
+ * hybrid: the title has 104 pixels there, and no legible size fits a name past
+ * twelve characters on one line, so the two longest names wrap to two lines
+ * instead of shrinking into illegibility. Stepping down is preferred wherever
+ * it works, because a second line pushes the board down.
+ */
+export type TitleFit = "base" | "tight" | "tighter" | "wrap";
+
+export function titleFit(title: string): TitleFit {
+  const length = title.length;
+  if (length <= 8) return "base";
+  if (length <= 10) return "tight";
+  if (length <= 12) return "tighter";
+  return "wrap";
+}
+
+function applyTitleFit(element: HTMLElement, title: string): void {
+  setAttr(element, "data-fit", titleFit(title));
+}
+
 export function createHeader(options: HeaderOptions): HeaderView {
   const hub = el("a", {
     class: "dk-iconbutton",
@@ -48,6 +72,7 @@ export function createHeader(options: HeaderOptions): HeaderView {
     attrs: { href: options.hubUrl, "aria-label": options.hubLabel ?? "All games" },
   });
   const title = el("h1", { class: "dk-header__title", text: options.title });
+  applyTitleFit(title, options.title);
   const help = el("button", {
     class: "dk-iconbutton",
     text: "?",
@@ -104,6 +129,7 @@ export function createHeader(options: HeaderOptions): HeaderView {
     element,
     setTitle(next: string): void {
       setText(title, next);
+      applyTitleFit(title, next);
     },
     destroy(): void {
       for (const dispose of disposers) dispose();

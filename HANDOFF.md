@@ -7,11 +7,11 @@ and it describes exactly one conversation: the next one.
 
 | Field | Value |
 |---|---|
-| Written | 2026-09-17, at the end of charter Phase 13's ROTATE LOCK build |
-| For the conversation | **Charter Phase 13: DIFFERENCE RELAY**, preceded by the three ROTATE LOCK engine corrections |
+| Written | 2026-09-18, at the end of the three ROTATE LOCK corrections |
+| For the conversation | **Charter Phase 13: DIFFERENCE RELAY**, game five of eight |
 | Phase scheme | Charter phases, Section 9 of the project instructions, with PHASE-13-PLAN.md as amended by ARCHITECTURE2.md. The v3 migration phases are complete |
-| Before any work | Check section 3, then ask section 4's open questions |
-| Next after this | The sixth game, in its own conversation |
+| Before any work | Check section 3, then settle section 4's one open design decision |
+| Next after this | TURN TABLE, RING BALANCE, then ORDER OF OPERATIONS, each in its own conversation |
 
 ---
 
@@ -21,18 +21,18 @@ Read these before doing anything, in this order, and nothing else unless a
 section below names it.
 
 1. **HANDOFF.md**, this file.
-2. **ARCHITECTURE2.md**. Section 56's last entry, "Charter Phase 13, ROTATE
-   LOCK", for the defect report the corrections come from. Then, for the game:
+2. **ARCHITECTURE2.md**. The last two entries of section 56, "Charter Phase 13,
+   ROTATE LOCK" and "Charter Phase 13, the three ROTATE LOCK corrections". Then
    section 3 (the contract), 9 to 18 (difficulty, verification, decomposition and
    symmetry, telemetry, share grammar, leak checks, artifact, fingerprint),
    section 21 (the ORDER adapter), 27 and 35 (the ordering game family), 44 (the
    authoring contract), 45 (the gate), 46's DIFFERENCE RELAY note and 54.
 3. **ARCHITECTURE.md**. Presentation decisions, Contract decisions, Template
    decisions, the Build model, Suite decisions and the File manifest.
-4. **BACKLOG.md**, most of all "Logged in charter Phase 13, ROTATE LOCK".
+4. **BACKLOG.md**, most of all the two "Logged in charter Phase 13" sections.
 
 Then **NEW_GAME.md**, the procedure, and **ROTATE-LOCK.md**, the worked example
-of a v3 design document and the only game authored through that procedure.
+of a v3 design document.
 
 Precedence: the working tree, then ARCHITECTURE2.md, then ARCHITECTURE.md, then
 the project instructions. If this file disagrees with ARCHITECTURE2.md, this
@@ -49,133 +49,105 @@ VECTOR, CIPHER. ROTATE LOCK built and `planned`, waiting on its manual mobile
 check. Four planned and unbuilt: DIFFERENCE RELAY, TURN TABLE, RING BALANCE,
 ORDER OF OPERATIONS.
 
-**ROTATE LOCK, charter Phase 13, done 2026-09-17.** Nine source files, three
-tools, a verified 365 day horizon, a calibration study, seven test files and a
-plan row, built with zero engine changes. Its defect report is the input to this
-conversation's first task.
+**The three ROTATE LOCK engine corrections are done, 2026-09-18.** The per game
+accent renders, the header shows every display name in the slate whole at 360
+pixels, and `src/ui/listCursor.ts` is the ORDER adapter with ROTATE LOCK's tray
+retrofitted onto it. ARCHITECTURE2.md section 56 has the measurements. Nothing
+is owed from that work except the two BACKLOG items it logged.
 
-**Green baseline to regress against,** measured 2026-09-17:
+**Green baseline to regress against,** measured 2026-09-18:
 
 | Gate | Result |
 |---|---|
 | Typecheck | `tsconfig.json`, `tsconfig.tools.json`, `tsconfig.sw.json` |
 | Dependency check | layers verified |
-| Tests | 69 files, 909 tests |
-| Verifiers | POKER GRID, CIPHER, VECTOR (about 100 s), ROTATE LOCK (about 53 s), 365 days each |
-| Production build | `engine-v2.js`, 30,262 bytes |
-| Byte budget | Hub 17.6, POKER GRID 27.8, CIPHER 25.7, VECTOR 28.0, About 3.4 KB gzipped; ROTATE LOCK 28.3 in a certification build |
+| Tests | 72 files, 940 tests |
+| Verifiers | POKER GRID 365 boards, CIPHER 365 days, VECTOR 365 puzzles, ROTATE LOCK 365 days in about 49 s |
+| Production build | `engine-v2.js`, 30,412 bytes, 61 exports |
+| Byte budget | Hub 17.8, POKER GRID 28.0, CIPHER 25.9, VECTOR 28.2, About 3.5 KB gzipped |
 | Certification | `npm run certify -- --check`: three games production safe, every committed record unchanged |
+| Offline smoke | Hub, POKER GRID, CIPHER and VECTOR from cache on a second visit past the practice board, no console error, 2026-09-18 |
 
 ---
 
 ## 3. Preconditions to check first
 
-1. **The ROTATE LOCK branch is merged into main and CI passed on it.** The branch
-   is `charter-phase-13-rotate-lock`. It carries the `.github` changes, applied
-   by the owner from `phase13-github.patch`, so CI runs `rotate-lock:verify`.
-2. **Whether the owner has run MANUAL-CHECKS.md for ROTATE LOCK.** If yes, the
-   first work of this conversation is to record it as a `manual` step in
-   `GAME_PLANS["rotate-lock"]`, flip the registry row to `live`, run
-   `npm run certify`, and commit `data/rotate-lock/certification.json`. If no, it
-   stays planned and nothing here depends on it.
-3. **The baseline in section 2 still holds.** Run it before changing anything, so
-   a later failure is attributable.
+1. **The corrections are committed and CI passed.** They touch five source files
+   and three test files and no `.github` file, so there is no patch to apply.
+2. **Whether the owner has run MANUAL-CHECKS.md for ROTATE LOCK.** If yes, record
+   it as a `manual` step in `GAME_PLANS["rotate-lock"]`, flip the registry row to
+   `live`, move `ENGINE_VERSION` to 3 because that build is the first to ship a
+   live game importing the list cursor, run `npm run certify`, and commit
+   `data/rotate-lock/certification.json`. If no, it stays planned and nothing
+   here depends on it.
+3. **The baseline in section 2 still holds.** Run it before changing anything.
 
 ---
 
-## 4. The task
+## 4. The task: DIFFERENCE RELAY, game five of eight
 
-Two pieces, in this order, because requirement 7.4 puts the corrections after
-the report and before the next game is built.
-
-### 4.1 The three ROTATE LOCK corrections
-
-Each one is an engine change and none of them may be made while a game is being
-built, which is why they come first. After each, rebuild and re-run the gates in
-section 2 for every game.
-
-1. **No game renders its own accent.** `applyAccent` in `src/ui/theme.ts` sets
-   `--dk-accent-hue` on the game root, but `--dk-accent` and `--dk-focus` are
-   declared on `:root` in `src/ui/chrome.css`, where `var()` resolves against the
-   root's hue, 210, so all four games draw the same blue. Redeclare the accent
-   derived colours, in every theme and contrast layer, on the element that
-   receives the hue. This is a live defect in the three shipped games.
-   **The offline smoke and a 360 pixel screenshot of every game are owed after
-   it**, because nothing automated sees a colour.
-2. **The header truncates a display name at 360 pixels.** ROTATE LOCK reads
-   "ROTATE ..." beside the four chrome icons, and DIFFERENCE RELAY is longer.
-3. **No ORDER list cursor in the presentation kit.** ARCHITECTURE2 section 21
-   names the ORDER adapter as reusable and `src/ui/` has none, so CIPHER and
-   ROTATE LOCK each wrote their own list keyboard model. Build
-   `src/ui/listCursor.ts` with focus, select, swap and a declared pass through
-   verb, retrofit ROTATE LOCK's tray onto it, and keep CIPHER's behaviour
-   identical whether or not it adopts it. **Doing this now is what lets
-   DIFFERENCE RELAY, an ORDER game, consume it without an engine change during
-   its build.**
-
-Record the corrections in ARCHITECTURE2.md section 56 under the ROTATE LOCK
-entry, as the phases before this one did.
-
-### 4.2 DIFFERENCE RELAY, game five of eight
-
-Then the game, through NEW_GAME.md, under requirement 7.4's zero engine changes
-rule, ending in a defect report.
-
-**Why this game next.** PHASE-13-PLAN.md section 1.1 put it first of the five as
-the test of the v3 authoring path; ROTATE LOCK took that role instead, by the
-owner's decision of 2026-09-17, so DIFFERENCE RELAY is now the first ordering
-game and the first consumer of the list cursor. Its id, path, epoch and hue are
-fixed in `src/shell/registry.ts`: `difference-relay`, `/difference-relay/`,
-2026-01-05, hue 68. Its `bucketCount`, `hasWinLoss`, `stateVersion` and one line
-rule in that row are provisional and are corrected in the change that builds it,
-the way ROTATE LOCK's were.
+Through NEW_GAME.md, under requirement 7.4's zero engine changes rule, ending in
+a defect report. Its id, path, epoch and hue are fixed in `src/shell/registry.ts`:
+`difference-relay`, `/difference-relay/`, 2026-01-05, hue 68. Its `bucketCount`,
+`hasWinLoss`, `stateVersion` and one line rule in that row are provisional and
+are corrected in the change that builds it, the way ROTATE LOCK's were. The
+scaffold adopts the planned row, template decision 10:
+`npm run new-game -- --id difference-relay`.
 
 **What the documents already settle**, ARCHITECTURE2 sections 27, 35 and 46:
 
 | Piece | What is named |
 |---|---|
 | Concept | Order numbers under adjacent difference constraints |
-| Input | The ORDER adapter |
-| Verification | 6! permutation enumeration plus deduction. Exhaustive, so uniqueness is EXACT and nothing is a beam |
+| Input | The ORDER adapter, which now exists as `src/ui/listCursor.ts` |
+| Verification | Permutation enumeration plus deduction. Exhaustive, so uniqueness is EXACT and nothing is a beam |
 | Difficulty | Forced depth |
 | Share | Attempt ladder or composite |
 | Telemetry | Action chronology plus a fingerprint |
 | Family risk, section 35 | Symmetric score surfaces and brute force feeling difficulty |
 
-**The stress test, and the real work of this game:** whether **deduction fairness
-can be kept stricter than mere uniqueness**. A board with one solution that a
-human can only reach by guessing satisfies uniqueness and fails fairness.
-DIFFERENCE RELAY is where that distinction gets a mechanical definition: a
-declared deduction model, a solver that applies only that model's rules, and a
-screen that rejects a board the model cannot finish without a guess. ROTATE LOCK
-deliberately did not claim this, ROTATE-LOCK.md 10.5, so there is no precedent in
-the tree to copy. Settle it in the design document before any code.
+### 4.1 The one open design decision, settle it in the design document first
 
-**Deliverables**, NEW_GAME.md section 2: `DIFFERENCE-RELAY.md` answering all 28
-items of section 44, then rules, generator plus two tools plus the manifest,
-module, leak probes with positive controls, renderer, plan row, and the defect
-report.
+**The stress test is whether deduction fairness can be kept stricter than mere
+uniqueness**, and it turns on a choice the documents do not make: **is the board
+perfect information or not.** The two are not interchangeable and the whole game
+follows from the answer.
 
-### 4.3 Open questions for the owner, ask before code
+- **Perfect information.** Every tile value and every mark is visible, exactly
+  one ordering satisfies them, and the declared deduction model reaches it
+  without a guess. Then a careful player always finishes on the first
+  submission, so an attempt ladder has no distribution and the failure model has
+  to be a continuum, which is ROTATE LOCK's shape again: a move count against an
+  exact par. Distinct in substrate, not in scoring feel.
+- **Imperfect information.** Some marks are hidden. The hidden marks are real
+  constraints the player cannot read, and the only way to learn about them is to
+  commit an ordering and see how far the relay gets before a gap fails. Then the
+  attempt ladder that section 46 names is real, `hasWinLoss` is true as the
+  registry already says, and **deduction fairness has a mechanical definition
+  worth writing**: the declared model, given the visible marks plus the prefix
+  feedback from every previous relay, must reach the unique ordering inside the
+  attempt budget without ever guessing, and a board where it cannot is rejected
+  by a screen. That is strictly stronger than uniqueness and is the thing this
+  game exists to prove.
 
-Ask these four as one numbered list, in these words, with the recommendations,
-and wait. They were settled as the phase's opening questions on 2026-09-17.
+Recommended: **imperfect information**, because it is the only one of the two
+where the stress test has any content, and because it is what makes the attempt
+ladder of section 46 and the registry's `hasWinLoss: true` consistent. The cost
+to name honestly in the design document is that the cognitive mode then sits
+near CIPHER's deduction from feedback; the distinction to defend is that
+CIPHER's feedback is a count over a code and this one is a **position**, the
+depth the relay reached, over an ordering.
 
-1. **One conversation or two.** Correction set 4.1 alone, stopping at the
-   rewritten HANDOFF, is the one phase per conversation rule as written. Both 4.1
-   and 4.2 in this conversation is what you asked for on 2026-09-17. Which?
-2. **Defect 2, the header title at 360 pixels:** wrap to two lines, or step the
-   font size down past a length threshold? Recommended: step the size down,
-   because a two line header pushes the board down on the viewport that is
-   already the tightest.
-3. **Defect 3:** does CIPHER adopt `src/ui/listCursor.ts` in this change, or keep
-   its own model until it is touched for another reason? Recommended: ROTATE LOCK
-   only, so the retrofit that proves the seam is one game and CIPHER's committed
-   share strings are not put at risk in a correction pass.
-4. **Has MANUAL-CHECKS.md been run for ROTATE LOCK on devices?** If yes, record
-   the `manual` step, flip the registry row to live, certify and commit the record
-   before anything else, section 3.2. If no, ROTATE LOCK stays planned and nothing
-   in 4.1 or 4.2 depends on it.
+Whichever is chosen, the design document settles it in section 10.5's style with
+a declared fairness claim, and ROTATE-LOCK.md 10.5 is the precedent for stating
+plainly what the game does **not** claim.
+
+### 4.2 Deliverables
+
+NEW_GAME.md section 2: `DIFFERENCE-RELAY.md` answering all 28 items of
+ARCHITECTURE2 section 44, then rules, generator plus two tools plus the 365 day
+manifest, module, leak probes with positive controls, renderer on the list
+cursor, the plan row in `tools/certify.ts`, and the defect report.
 
 **Size.** The design document and the game are each well over 300 lines. Per the
 efficiency protocol, say what is about to be produced in one line and wait.
@@ -186,13 +158,13 @@ efficiency protocol, say what is about to be produced in one line and wait.
 
 | Requirement | Exists today as | Notes |
 |---|---|---|
-| Accent and chrome | `src/ui/theme.ts`, `src/ui/chrome.css`, `src/ui/header.ts` | Corrections 1 and 2 |
-| List input | `src/games/rotate-lock/render.ts` tray, `src/games/cipher/render.ts` keys | The two models correction 3 generalises |
-| Scaffold | `tools/new-game.ts`, `tests/tools/new-game.test.ts` | `npm run new-game -- --id difference-relay` adopts the planned row, template decision 10 |
+| ORDER input | `src/ui/listCursor.ts`, `tests/ui/listCursor.test.ts` | New. Focus, selection by identity, swap, cancel, declared verb, `cursor.keys` for the `InputDescriptor` |
+| Worked adoption of it | `src/games/rotate-lock/render.ts` | The tray, retrofitted |
+| Scaffold | `tools/new-game.ts`, `tests/tools/new-game.test.ts` | Adopts the planned row |
 | Procedure | NEW_GAME.md | Sections 2, 3, 6 and 12 |
 | Worked v3 game | `src/games/rotate-lock/`, `ROTATE-LOCK.md` | Nine files, three tools, seven test files |
-| Exhaustive enumeration precedent | `src/games/rotate-lock/solver.ts`, `tools/rotate-lock-verify.ts` | Two independent searches, one in the browser and one in CI |
-| Gate plan | `newGamePlan` and `GAME_PLANS` in `tools/certify.ts` | Override a step's key after the spread; ROTATE LOCK's row is the worked example |
+| Exhaustive enumeration precedent | `src/games/rotate-lock/solver.ts`, `tools/rotate-lock-verify.ts` | Two independent searches |
+| Gate plan | `newGamePlan` and `GAME_PLANS` in `tools/certify.ts` | ROTATE LOCK's row is the worked example |
 | Exemptions | `GATE_EXEMPTIONS` in `src/engine/certification.ts` | None covers a new game, and none is to be added |
 | CI | `.github/workflows/ci.yml` | A live game's verifier must run before the certify step. The bridge cannot write `.github`; deliver a patch |
 
@@ -210,6 +182,7 @@ efficiency protocol, say what is about to be produced in one line and wait.
 | ROTATE-LOCK.md | The first v3 design document |
 | PHASE-13-PLAN.md | The five games. Its build order is superseded for ROTATE LOCK only |
 | MANUAL-CHECKS.md | The device checklist, never run |
+| src/ui/listCursor.ts | The ORDER adapter this game consumes |
 | src/games/rotate-lock/, tools/rotate-lock-*.ts, data/rotate-lock/ | The newest game |
 
 ---
@@ -221,31 +194,32 @@ efficiency protocol, say what is about to be produced in one line and wait.
    write the owner's tree with `device_list_dir`, `device_stage_files` and
    `device_commit_files`. List `src`, `tests`, `tools` and `data` separately; a
    recursive listing of the root overflows on `node_modules`.
-2. **Run the real gates in the cloud container.** A clone of GitHub `main` is the
-   fastest start when the owner's tree matches it: check
-   `.git/refs/heads/main` by staging it. Then `npm ci` and every gate in
-   section 2.
+2. **Run the real gates in the cloud container.** A shallow clone of GitHub
+   `main` then `npm ci` is about a minute. Check `.git/refs/heads/main` in the
+   owner's tree against `origin/main` first: on 2026-09-17 origin was one
+   documentation commit ahead of the owner's checkout.
 3. **Pushing from the container is refused** unless the repository is in the
    session's authorised sources. Otherwise write the files into the owner's tree
    and hand them the commit and push commands.
 4. **The bridge cannot write under `.github` and cannot delete.** Deliver those
-   changes as a patch file in the repository root, as `phase13-github.patch` did,
-   and tell the owner to `git apply` and delete it.
-5. **Pass `expectedMtimeMs`** from staging for every file already in the tree, so
-   a newer edit by the owner is never overwritten. Compare a staged file's git
-   hash against the commit before overwriting it.
-6. **`npm run certify` needs git** and must be started through npm. The
-   container's commits are not the owner's, so set `certifiedCommit` to the
-   owner's HEAD afterwards.
+   changes as a patch file in the repository root and tell the owner to
+   `git apply` and delete it.
+5. **Pass `expectedMtimeMs`** from staging for every file already in the tree.
+6. **`npm run certify` needs git** and must be started through npm. Use
+   `-- --check` to evaluate without rewriting records.
 7. **Headless Chromium** is at `/opt/pw-browsers/chromium-1194/chrome-linux/chrome`
-   and the global Playwright package drives it against `vite preview`. Visit each
-   page twice so the smoke passes the practice board, then set the context
-   offline and revisit. Stop the server with `fuser -k 4173/tcp`.
-8. **A planned game cannot enter a release build.** To smoke or budget one, patch
-   the target list in a throwaway copy of the tree, never in the tree itself.
-9. **A screenshot at 360 pixels is evidence no automated check produces.** Both
-   of ROTATE LOCK's first two defects were invisible to every gate and visible in
-   one screenshot.
+   and the global Playwright package at
+   `/home/claude/.npm-global/lib/node_modules/playwright` drives it against
+   `vite preview --outDir dist --port 4173`. Stop the server with
+   `fuser -k 4173/tcp`.
+8. **A planned game cannot enter a release build.** `npm run build:harness`,
+   which is `vite build --mode development`, builds every target including the
+   planned ones into `dist`, and is the way to render a new game at 360 pixels.
+   Never patch the target list in the tree itself.
+9. **A screenshot at 360 pixels is evidence no automated check produces**, and
+   measuring in the page is better than guessing: both ROTATE LOCK defects 1 and
+   2 were invisible to every gate, and the size ladder that fixed defect 2 was
+   wrong until the rendered widths were measured.
 10. **Project copies of the documents go stale.** After a phase, write
     ARCHITECTURE2.md, ARCHITECTURE.md, BACKLOG.md and HANDOFF.md back to the
     project as well as the repository.

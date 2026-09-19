@@ -16,7 +16,7 @@ resume work in a fresh conversation with no chat history.
 
 | Field | Value |
 |---|---|
-| Current phase | Phase 13 in progress. VECTOR is live. ROTATE LOCK, the first new game on v3, is built, verified and green, and stays planned until the owner runs its manual mobile check, 2026-09-17. Four new games remain. Phase 8's manual checklist is still unrun |
+| Current phase | Phase 13 in progress. ROTATE LOCK, the first new game on v3, is built, verified and green, and stays planned until the owner runs its manual mobile check. Its three engine defects are corrected, 2026-09-18: the per game accent, the header title at 360 pixels, and the ORDER list cursor. DIFFERENCE RELAY is next and three new games follow it. Phase 8's manual checklist is still unrun |
 | Games playable | POKER GRID, VECTOR, and CIPHER, end to end in a browser, inside the suite shell |
 | Engine contract version | v3 only. The shell has read v3 alone since v3 migration phase 5, part A, 2026-09-16, and phase 6, 2026-09-17, deleted the v2 `GameModule`, `defineGame` and `ShareBlock`. Each game's default export is its v3 module and `npm run new-game` scaffolds v3. ARCHITECTURE2.md section 56 |
 | Release gate | Since v3 migration phase 5 part B a game enters a release only through a production safe `data/<game>/certification.json`, produced by `npm run certify` and checked in CI. The manual mobile check is pending for the three live games under an exemption that expires 2026-12-15. ARCHITECTURE2.md sections 45 and 56 |
@@ -137,6 +137,7 @@ Table columns are fixed as follows and every future entry uses them.
 | src/ui/statsPanel.ts | 2 | Statistics figures and distribution histogram over an injected view model | ui/dom |
 | src/ui/helpPanel.ts | 2 | How to play body over the shared HelpContent shape | ui/dom, core/types |
 | src/ui/gridCursor.ts | 2 | Keyboard cursor over a lattice using the shared grid dimensions and aria-activedescendant | ui/dom, core/types |
+| src/ui/listCursor.ts | 2 | The ORDER adapter: roving tabindex over an ordered list with focus, selection by identity, swap and a declared pass through verb | ui/dom |
 | tools/share-harness/index.html | tools | Harness page shell and its own styling, served at /harness/ by `npm run harness` | ui/chrome.css |
 | tools/share-harness/main.ts | tools | Renders every sample block with a width and line count report | ui/dom, ui/theme, harness/cases, harness/bind |
 | tools/share-harness/cases.ts | tools | Sample share blocks spanning the outcome space | core/types |
@@ -320,6 +321,7 @@ dailykit/
                      scheduler.ts telemetry.ts tiers.ts
     ui/              Layer 2. dom.ts modal.ts toast.ts countdown.ts
                      statsPanel.ts helpPanel.ts header.ts theme.ts a11y.ts gridCursor.ts
+                     listCursor.ts
                      chrome.css
     contract/        Layer 3. types.ts, v3/game-module.ts v3/types.ts
     shell/           Layer 5. main.ts boot.ts index.html

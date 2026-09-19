@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { createHeader } from "../../src/ui/header.js";
+import { createHeader, titleFit } from "../../src/ui/header.js";
 import { installTheme, memoryThemePort } from "../../src/ui/theme.js";
+import { readFileSync } from "node:fs";
 
 beforeEach(() => {
   window.matchMedia = ((query: string) => ({
@@ -86,5 +87,47 @@ describe("header", () => {
     view.destroy();
     expect(document.querySelector(".dk-header")).toBeNull();
     theme.destroy();
+  });
+
+  // Charter Phase 13 defect 2. Every display name in the suite, present and
+  // planned, must be shown whole at 360 pixels.
+  it.each([
+    ["CIPHER", "base"],
+    ["VECTOR", "base"],
+    ["POKER GRID", "tight"],
+    ["TURN TABLE", "tight"],
+    ["ROTATE LOCK", "tighter"],
+    ["RING BALANCE", "tighter"],
+    ["DIFFERENCE RELAY", "wrap"],
+    ["ORDER OF OPERATIONS", "wrap"],
+  ])("fits %s at step %s", (name, fit) => {
+    expect(titleFit(name)).toBe(fit);
+  });
+
+  it("marks the title with its step and restates it on setTitle", () => {
+    const { view, theme } = build({ title: "ROTATE LOCK" });
+    const heading = view.element.querySelector("h1")!;
+    expect(heading.getAttribute("data-fit")).toBe("tighter");
+    view.setTitle("ORDER OF OPERATIONS");
+    expect(heading.getAttribute("data-fit")).toBe("wrap");
+    view.destroy();
+    theme.destroy();
+  });
+
+  it("lets the header grow when the title wraps", () => {
+    const css = readFileSync("src/ui/chrome.css", "utf-8");
+    const block = css.slice(css.indexOf(".dk-header {"));
+    const body = block.slice(0, block.indexOf("}"));
+    expect(body).toContain("min-height:");
+    expect(body).not.toContain("\n  height:");
+  });
+
+  it("declares a font size for every step but the base", () => {
+    const css = readFileSync("src/ui/chrome.css", "utf-8");
+    for (const fit of ["tight", "tighter", "wrap"]) {
+      const at = css.indexOf(`.dk-header__title[data-fit="${fit}"]`);
+      expect(at).toBeGreaterThan(-1);
+      expect(css.slice(at, css.indexOf("}", at))).toContain("font-size:");
+    }
   });
 });

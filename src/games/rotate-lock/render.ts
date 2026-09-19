@@ -9,6 +9,7 @@
 
 import type { GameView, MountContext } from "../../contract/types.js";
 import { el, on, setAttr, setText } from "../../ui/dom.js";
+import { createListCursor } from "../../ui/listCursor.js";
 
 import { CELLS, PIECES, colOf, rowOf, type Direction, type Trace } from "./route.js";
 import { MOVE_CAP, isTerminal, traceOf, type RotateLockAction, type RotateLockPuzzle, type RotateLockState } from "./rules.js";
@@ -59,8 +60,6 @@ export function mountRotateLock(
 ): GameView<RotateLockState> {
   const puzzle = context.puzzle;
   let state = context.initial;
-  let selected: number | null = null;
-  let focusSlot = 0;
 
   const root = el("div", { class: "rl-game", attrs: { "data-reduced-motion": String(context.reducedMotion) } });
   const status = el("p", { class: "rl-status" });
@@ -84,57 +83,34 @@ export function mountRotateLock(
 
   const locked = (): boolean => context.readOnly || isTerminal(state);
 
-  function act(slot: number): void {
-    if (locked()) return;
-    const piece = state.order[slot];
-    if (piece === undefined) return;
-    focusSlot = slot;
-    if (selected === null) {
-      selected = piece;
-      paint();
-      return;
-    }
-    if (selected === piece) {
-      selected = null;
-      paint();
-      return;
-    }
-    const other = selected;
-    selected = null;
-    context.dispatch({ kind: "swap", a: other, b: piece });
-  }
-
   function rotatePiece(piece: number | null): void {
     if (locked() || piece === null) return;
     context.dispatch({ kind: "rotate", piece });
   }
 
-  function moveFocus(slot: number): void {
-    focusSlot = Math.max(0, Math.min(PIECES - 1, slot));
-    paint();
-    pieceNodes[focusSlot]?.focus();
-  }
+  // The tray is the ORDER adapter. Selection, focus and the swap live in
+  // ui/listCursor; the rotation verb is declared to it and dispatched here.
+  const cursor = createListCursor({
+    host: tray,
+    count: () => PIECES,
+    itemAt: (slot) => pieceNodes[slot] ?? null,
+    idAt: (slot) => state.order[slot] ?? null,
+    onSwap: (a, b) => context.dispatch({ kind: "swap", a, b }),
+    onSelect: () => paint(),
+    onCancel: () => paint(),
+    isLocked: locked,
+    verbs: [{ keys: ["r", "R"], run: (piece) => rotatePiece(piece) }],
+  });
 
   const disposeTray = on(tray, "click", (event) => {
     const target = (event.target as HTMLElement).closest<HTMLElement>("[data-slot]");
-    if (target) act(Number(target.dataset["slot"]));
-  });
-  const disposeRotate = on(rotate, "click", () => rotatePiece(selected));
-  const disposeKeys = on(tray, "keydown", (event) => {
-    const key = (event as KeyboardEvent).key;
-    let handled = true;
-    if (key === "ArrowLeft" || key === "ArrowUp") moveFocus(focusSlot - 1);
-    else if (key === "ArrowRight" || key === "ArrowDown") moveFocus(focusSlot + 1);
-    else if (key === "Home") moveFocus(0);
-    else if (key === "End") moveFocus(PIECES - 1);
-    else if (key === "Enter" || key === " ") act(focusSlot);
-    else if (key === "r" || key === "R") rotatePiece(state.order[focusSlot] ?? null);
-    else if (key === "Escape") {
-      selected = null;
+    if (target) {
+      cursor.activate(Number(target.dataset["slot"]));
       paint();
-    } else handled = false;
-    if (handled) event.preventDefault();
+    }
   });
+  const disposeRotate = on(rotate, "click", () => rotatePiece(cursor.selected));
+  const disposeKeys = (): void => cursor.destroy();
 
   function paintBoard(trace: Trace): void {
     const glyphs = new Array<string>(CELLS).fill("");
@@ -180,15 +156,15 @@ export function mountRotateLock(
       const piece = state.order[slot] as number;
       const length = puzzle.lengths[piece] as number;
       const dir = state.facing[piece] as Direction;
-      const isSelected = selected === piece;
+      const isSelected = cursor.selected === piece;
       setText(node, (DIRECTION_GLYPHS[dir] ?? "").repeat(length));
       setAttr(node, "aria-label", pieceLabel(slot, length, dir, isSelected));
       setAttr(node, "aria-pressed", String(isSelected));
       setAttr(node, "data-length", length);
-      setAttr(node, "tabindex", slot === focusSlot ? "0" : "-1");
       setAttr(node, "disabled", done ? "true" : null);
     });
-    setAttr(rotate, "disabled", done || selected === null ? "true" : null);
+    cursor.refresh();
+    setAttr(rotate, "disabled", done || cursor.selected === null ? "true" : null);
   }
 
   root.append(status, board, counter, tray, rotate);
@@ -209,7 +185,7 @@ export function mountRotateLock(
           context.announce(`${said} ${routeSentence(traceOf(next), puzzle.marks.length)}`);
         }
       }
-      if (isTerminal(next)) selected = null;
+      if (isTerminal(next)) cursor.clearSelection();
       paint();
     },
     unmount(): void {
