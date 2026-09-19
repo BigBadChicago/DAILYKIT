@@ -1,0 +1,6 @@
+<!-- @dsCard group="Interaction" height=220 -->
+<body style="padding:16px"><div id="m"></div><script>var K=window.DailyKit,m=document.getElementById('m');
+var g=document.createElement('div');g.style.cssText='display:grid;grid-template-columns:repeat(4,52px);gap:6px;width:max-content;padding:6px';
+for(var i=0;i<12;i++){var d=document.createElement('div');d.setAttribute('data-cell',i);d.style.cssText='height:52px;border:1px solid var(--line);border-radius:8px;background:var(--surface-raised)';g.appendChild(d)}
+m.appendChild(g);K.GridCursor({host:g,rows:3,cols:4});
+var p=document.createElement('p');p.style.color='var(--text-dim)';p.textContent='Focus the grid and use the arrow keys. Enter or Space activates.';m.appendChild(p);</script></body>

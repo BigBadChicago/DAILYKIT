@@ -1,0 +1,3 @@
+ROTATE LOCK 6x6 display-only board plus a tray of rotatable route pieces.
+
+`RotateLockBoard({cells[36], tray[], status, moves, description})`; a cell is `{glyph, kind}` with kind `empty|route|start|lock|open|mark|mark-taken|fault`. Every kind carries a glyph (`S`, `L`, `O`, `+`, `x`, and `^ > v <` for route steps), and kinds are reinforced by border style (dashed mark, thick taken mark, double fault), never hue alone. The tray piece shows its direction glyph repeated by length; the selected piece inverts to the accent fill with a 3px outline. `role=img` with a spoken description of start, lock and marks. Tray pieces are 56px tall. Set `--accent` to `game-rotate-lock`.

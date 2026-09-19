@@ -1,0 +1,5 @@
+<!-- @dsCard group="Boards" height=560 -->
+<body style="padding:16px"><div id="m" style="max-width:340px"></div><script>var K=window.DailyKit,m=document.getElementById('m');m.style.setProperty('--accent','var(--game-rotate-lock)');
+var c=[];for(var i=0;i<36;i++)c.push({glyph:'',kind:'empty'});
+c[6]={glyph:'S',kind:'start'};c[7]={glyph:'>',kind:'route'};c[8]={glyph:'>',kind:'route'};c[14]={glyph:'+',kind:'mark-taken'};c[20]={glyph:'v',kind:'route'};c[26]={glyph:'+',kind:'mark'};c[33]={glyph:'L',kind:'lock'};c[22]={glyph:'x',kind:'fault'};
+m.appendChild(K.RotateLockBoard({cells:c,tray:[{length:2,dir:1,selected:true},{length:1,dir:2},{length:3,dir:1},{length:2,dir:0}],status:'Piece 3 crosses the route.',moves:'Moves 4 of 12'}));</script></body>

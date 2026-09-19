@@ -1,0 +1,8 @@
+<!-- @dsCard group="Hub" height=260 -->
+<body style="padding:16px"><div id="m"></div><script>var K=window.DailyKit,m=document.getElementById('m');m.style.maxWidth='420px';
+var l=document.createElement('ul');l.className='hub-list';
+l.appendChild(K.HubCard({name:'POKER GRID',rule:'Clear the board in as few moves as you can.',badge:'Solved',finished:true,style:'--accent:var(--game-poker-grid)'}));
+l.appendChild(K.HubCard({name:'VECTOR',rule:'Light every cell with the fewest rays.',badge:'3 of 8',style:'--accent:var(--game-vector)'}));
+l.appendChild(K.HubCard({name:'ORDER OF OPERATIONS',rule:'Coming soon.',planned:true,style:'--accent:var(--game-order-of-operations)'}));
+m.appendChild(l);
+Array.prototype.forEach.call(l.querySelectorAll('.hub-card'),function(el,i){var s=[l.children[i]&&'','var(--game-poker-grid)','var(--game-vector)','var(--game-order-of-operations)'][i+1];if(s)el.style.setProperty('--accent',s)});</script></body>

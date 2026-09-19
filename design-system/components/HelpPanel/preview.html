@@ -1,0 +1,42 @@
+<!-- @dsCard group="Chrome" height=760 -->
+<body style="padding:16px">
+<div id="m" style="display:flex;flex-direction:column;gap:20px;max-width:380px"></div>
+<script>
+var K = window.DailyKit, m = document.getElementById('m');
+function card(title, help) {
+  var wrap = document.createElement('div');
+  var h = document.createElement('p');
+  h.style.cssText = 'margin:0 0 6px;font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:var(--text-dim)';
+  h.textContent = title;
+  wrap.appendChild(h);
+  wrap.appendChild(K.HelpPanel(help));
+  m.appendChild(wrap);
+}
+card('POKER GRID', {
+  headline: 'Clear five connected cards that form a poker hand.',
+  steps: ['Tap five cards that touch.', 'A valid hand clears them.', 'Clear the whole board.'],
+  example: { lines: ['A♠ K♠ Q♠ J♠ 10♠', 'Royal flush'], caption: 'Five spades in a row: a valid hand.' }
+});
+card('ROTATE LOCK — ROTATE-LOCK.md §19, four steps, a three-piece route', {
+  headline: 'Order and rotate the route pieces so the path takes every marked turn and ends at the lock.',
+  steps: [
+    'The tray holds seven route pieces. Each is a straight arrow one, two or three cells long.',
+    'The route leaves the start and follows the pieces in tray order.',
+    'Swap any two pieces, or rotate one a quarter turn. Each is one move.',
+    'The lock opens when the route turns at every marked cell and ends on the lock.'
+  ],
+  example: { lines: ['S → → v', 'v → L'], caption: 'Three pieces, two marked turns: right twice, down, right, into the lock.' }
+});
+card('DIFFERENCE RELAY — DIFFERENCE-RELAY.md §19, five steps, a four-station relay from two runs', {
+  headline: 'Order the numbers so every neighbouring pair differs by the amount marked between them.',
+  steps: [
+    'Six stations hold numbers one to six, in some order.',
+    'Some of the five gaps between them show the difference between neighbours; some are hidden.',
+    'Swap two stations, then run the relay.',
+    'The baton walks from station one as long as each pair keeps its marked difference.',
+    'Six runs. Read where the baton stopped to infer a hidden gap before your next run.'
+  ],
+  example: { lines: ['Run 1: 3 1 4 2 — baton reaches station 3 of 4', 'Run 2: 3 1 2 4 — baton reaches station 4: open'], caption: 'The first run’s stop told them station 3–4 was wrong; swapping it opened the relay.' }
+});
+</script>
+</body>
