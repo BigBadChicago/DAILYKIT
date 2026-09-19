@@ -1,0 +1,3 @@
+End-of-game summary: tier, one line of detail, and an optional numeric score.
+
+`EndScreen({tier, detail, score})`. `tier` is the only accent-colored text on the end screen, from that game's own `game-*` token (set `--accent` on a wrapping element, the same technique `GameButton` and the board components use); `score` is omitted for games that don't keep one — POKER GRID has one, ROTATE LOCK and DIFFERENCE RELAY don't (`hasWinLoss: true`, a moves/runs count instead, per each game's `§19` contract). The tier name itself always comes from the five suite-wide names (`TierBadge`), never a game-specific word.

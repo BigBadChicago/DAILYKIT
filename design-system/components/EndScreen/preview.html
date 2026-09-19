@@ -1,0 +1,18 @@
+<!-- @dsCard group="Layout" height=460 -->
+<body style="padding:16px">
+<div id="m" style="display:flex;flex-direction:column;gap:20px;max-width:340px;text-align:center"></div>
+<script>
+var K = window.DailyKit, m = document.getElementById('m');
+function row(accentVar, logoId, end) {
+  var w = document.createElement('div');
+  if (accentVar) w.style.setProperty('--accent', accentVar);
+  if (logoId) w.appendChild(K.GameLogo(logoId));
+  var e = document.createElement('div'); e.style.marginTop = '4px'; e.appendChild(K.EndScreen(end));
+  w.appendChild(e);
+  m.appendChild(w);
+}
+row(null, null, { tier: 'Excellent', detail: 'Cleared the board in 6 moves.', score: 1280 });
+row('var(--game-rotate-lock)', 'rotate-lock', { tier: 'Excellent', detail: 'Opened the lock at par, 9 moves.' });
+row('var(--game-difference-relay)', 'difference-relay', { tier: 'Rough', detail: 'Out of runs. Best run reached station 4 of 6.' });
+</script>
+</body>

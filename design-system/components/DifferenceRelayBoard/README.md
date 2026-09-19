@@ -1,0 +1,3 @@
+DIFFERENCE RELAY row of six number stations with five gap markers between them.
+
+`DifferenceRelayBoard({order[6], marks[5] (number or null for hidden), selected, runs[] (depth reached per run), status, runsLabel})`. A hidden gap shows `?` in the dim text color; a known gap shows its difference in the accent color. Run history is drawn as a ladder of filled and empty bars (`▮▯`), decorative and `aria-hidden` because the status sentence says the same in words. The row scrolls sideways rather than the page if a wide font overflows 360px. Stations are 44px minimum. Set `--accent` to `game-difference-relay`.

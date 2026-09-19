@@ -1,0 +1,57 @@
+{
+ "v": 3,
+ "layout": "files",
+ "createdOnFiles": {
+  "v": 1,
+  "at": "2026-09-19T12:00:00Z"
+ },
+ "title": "DailyKit",
+ "namespace": "DailyKit",
+ "libraries": [],
+ "sections": {},
+ "groups": [
+  "Logos"
+ ],
+ "assetGroups": {
+  "Logos": {
+   "name": "Logos",
+   "tile": "l",
+   "order": [
+    "icon.svg",
+    "icon-192.png",
+    "icon-512.png"
+   ],
+   "files": {
+    "icon.svg": {
+     "name": "icon.svg",
+     "blob": "88244c08133771c3e2e9e0cca4593faf",
+     "size": 510,
+     "type": "image/svg+xml"
+    },
+    "icon-192.png": {
+     "name": "icon-192.png",
+     "blob": "165ee0655ebc2df309dbb949411e13f1",
+     "size": 10735,
+     "type": "image/png"
+    },
+    "icon-512.png": {
+     "name": "icon-512.png",
+     "blob": "8837e04359f2da3230354d1fa3690915",
+     "size": 21173,
+     "type": "image/png"
+    }
+   }
+  }
+ },
+ "blobs": {},
+ "docs": {
+  "readme": "project/README.md",
+  "sections": []
+ },
+ "lastChange": {
+  "by": "Jonathan Baltz",
+  "at": "2026-09-19T18:00:00Z",
+  "via": "Claude Code",
+  "note": "Full design-document fidelity for ROTATE LOCK and DIFFERENCE RELAY: real help copy, tier badges, exact share-block text"
+ }
+}

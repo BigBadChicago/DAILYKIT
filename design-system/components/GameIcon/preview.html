@@ -1,0 +1,5 @@
+<!-- @dsCard group="Game marks" height=260 -->
+<body style="padding:16px"><div id="m"></div><script>var K=window.DailyKit,m=document.getElementById('m');
+m.style.cssText='display:grid;grid-template-columns:repeat(2,1fr);gap:16px;max-width:460px';
+K.GAMES.forEach(function(g){var cell=document.createElement('div');cell.style.opacity=g.live?1:0.55;
+cell.appendChild(K.GameIcon(g.id));m.appendChild(cell);});</script></body>
