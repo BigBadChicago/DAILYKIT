@@ -91,23 +91,30 @@ export function createListCursor(options: ListCursorOptions): ListCursor {
 
   // No wrap. A tray is a short line the player reads left to right, and wrapping
   // from the last piece to the first reads as a jump rather than a step.
-  const moveTo = (next: number, focus: boolean): void => {
-    index = clamp(next);
-    if (focus) options.itemAt(index)?.focus();
-  };
+const moveTo = (next: number, focus: boolean): void => {
+  const previous = index;
+  index = clamp(next);
+  if (previous !== index) {
+    const prevNode = options.itemAt(previous);
+    if (prevNode) setAttr(prevNode, "tabindex", "-1");
+    const nextNode = options.itemAt(index);
+    if (nextNode) setAttr(nextNode, "tabindex", "0");
+  }
+  if (focus) options.itemAt(index)?.focus();
+};
 
-  const setSelected = (next: number | null): void => {
-    if (selected === next) return;
-    selected = next;
-    options.onSelect?.(next);
-  };
+const setSelected = (next: number | null): void => {
+  if (selected === next) return;
+  selected = next;
+  options.onSelect?.(next);
+};
 
-  const activate = (slot: number): void => {
-    if (locked()) return;
-    const id = options.idAt(slot);
-    if (id === null) return;
-    index = clamp(slot);
-    if (selected === null) {
+const activate = (slot: number): void => {
+  if (locked()) return;
+  const id = options.idAt(slot);
+  if (id === null) return;
+  moveTo(slot, false);
+  if (selected === null) {
       setSelected(id);
       return;
     }
