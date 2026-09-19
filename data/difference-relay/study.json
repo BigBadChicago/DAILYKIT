@@ -1,0 +1,42 @@
+{
+  "seeds": 400,
+  "attempts": 300,
+  "total": 120000,
+  "screened": 30667,
+  "acceptance": 25.56,
+  "bandEdges": [
+    2,
+    3,
+    7,
+    11,
+    20,
+    37
+  ],
+  "bandCounts": [
+    4769,
+    4904,
+    4949,
+    2915,
+    4575,
+    4244,
+    4311
+  ],
+  "parCounts": {
+    "1": 7099,
+    "2": 10126,
+    "3": 5680,
+    "4": 4163,
+    "5": 2371,
+    "6": 1228
+  },
+  "rejections": {
+    "range": 0,
+    "uniqueness": 69111,
+    "decomposition": 4808,
+    "symmetry": 14631,
+    "fairness": 783,
+    "start": 0,
+    "band": 0,
+    "accepted": 30667
+  }
+}

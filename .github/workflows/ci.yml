@@ -41,6 +41,11 @@ jobs:
       # live game's verifier to run before the certify step, so it is here from
       # the change that adds the game rather than the change that makes it live.
       - run: npm run rotate-lock:verify
+      # Game five, DIFFERENCE RELAY. Its check enumerates all 720 orders and
+      # replays the no guess deduction, sharing no code with the game's solver.
+      # Here from the change that adds the game rather than the one that makes it
+      # live, so the certify test finds the verifier before the certify step.
+      - run: npm run difference-relay:verify
       # Phase 10. The release build is the only build that produces the shared
       # engine chunk, so a change that breaks bundling must fail here rather
       # than at deploy time.

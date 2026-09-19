@@ -1447,3 +1447,13 @@ manifest and its tests. The residue is not engine debt this time. It is the
 irreducible shape of a game that carries a generator, a verifier and a
 propagator, and the abstraction test passed, because none of it reached the
 engine.
+
+## Charter Phase 13 additions, the two v3 games
+
+ROTATE LOCK and DIFFERENCE RELAY are authored on the v3 contract and their file
+manifests live with their phase entries in ARCHITECTURE2.md section 56, not here,
+because this document is the v2 record. Both were built under requirement 7.4
+with zero engine changes wanted, which is the abstraction test holding at games
+four and five. DIFFERENCE RELAY's session length, one to three minutes, is shorter
+than ROTATE LOCK's, so the registry's longest to shortest order will re sort the
+two when the next game is written.

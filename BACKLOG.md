@@ -398,3 +398,25 @@ the result, which is a human pass across real devices.
   were measured at 360 pixels in headless Chromium with the system font stack. A
   device whose system font is wider could still clip. The manual mobile check is
   what would catch it.
+
+## Logged in charter Phase 13, DIFFERENCE RELAY
+
+- **DIFFERENCE RELAY's offline smoke and manual mobile check.** The two empty
+  steps in its `GAME_PLANS` row. The gate refuses a new game without them and no
+  exemption covers one, so the game stays planned until the owner runs
+  MANUAL-CHECKS.md on devices and an offline smoke on a release shaped build,
+  records both, flips the registry row to live, moves `ENGINE_VERSION` to 3
+  because that build is the first live game importing the list cursor, runs
+  `npm run certify` and commits `data/difference-relay/certification.json`.
+- **The hidden lever is one, two or three gaps.** Two clumped forced deduction
+  work at the low end and left a band empty; three spread it across seven
+  distinct septiles. Recorded so a later retune does not read the third value as
+  accidental. DIFFERENCE-RELAY.md 21.
+- **Registry order among the planned games.** DIFFERENCE RELAY now has a stated
+  session length, one to three minutes, shorter than ROTATE LOCK's two to five,
+  so the longest to shortest order will move it below ROTATE LOCK when the next
+  game is written. Left for the re sort that each build does. ARCHITECTURE.md
+  suite note.
+- **The graphic card for DIFFERENCE RELAY.** Section 17.5 hands the suite card
+  renderer a single lane depth over run specification. No game has a card yet, so
+  this is suite work, the same state ROTATE LOCK left it in.

@@ -140,7 +140,9 @@ export const SUITE_GAMES: readonly SuiteGameEntry[] = [
     path: "/difference-relay/",
     accent: { hue: "68", boardFontStack: MONO },
     epoch: { year: 2026, month: 1, day: 5 },
-    bucketCount: 4,
+    /* 7 corrected from the scaffold's provisional 4 when the game was built,
+       DIFFERENCE-RELAY.md 6.5: six run count buckets and a loss. */
+    bucketCount: 7,
     hasWinLoss: true,
     stateVersion: 1,
     status: "planned",

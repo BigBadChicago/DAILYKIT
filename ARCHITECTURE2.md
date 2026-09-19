@@ -3518,3 +3518,109 @@ record changed.
 | tests/ui/listCursor.test.ts | New: 15 tests |
 | tests/ui/theme.test.ts | The carrier marker and the CSS layers |
 | tests/ui/header.test.ts | Every display name's step, and the header's min-height |
+
+## Charter Phase 13, DIFFERENCE RELAY. Built 2026-09-19, planned until its manual mobile check.
+
+Game five of eight, the second game authored on v3 through NEW_GAME.md, under the
+requirement 7.4 zero engine changes rule. Its design document is DIFFERENCE-RELAY.md,
+which answers every item of section 44 and settles the section 46 stress test.
+
+### Decisions, approved 2026-09-19
+
+1. **Imperfect information**, HANDOFF section 4.1 settled. Some gaps are hidden and
+   learned only from how far the relay runs, so the attempt ladder and the
+   registry's `hasWinLoss: true` are real and the fairness claim has content.
+2. **Six stations, five gaps, six numbers from one to nine**, so uniqueness is a
+   full 6! enumeration, EXACT, matching the section 27 profile.
+3. **Feedback is a position, not a count.** The distinction from CIPHER, defended
+   in DIFFERENCE-RELAY.md 2: the baton reaches one station, located exactly.
+4. **Fairness is a no guess minimax deduction reaching the unique order within six
+   runs.** Strictly stronger than uniqueness, the section 46 stress test met. A
+   board the model cannot open without a probe outside the candidate set is
+   rejected by screen S-fair.
+5. **Difficulty is forced deduction work**, the candidate mass the forced line
+   resolves, for seven band resolution. Run count alone has too few values.
+6. **Reversal is the one live symmetry** and is broken by a screen that rejects a
+   board whose reverse target satisfies the visible marks, so the census stays 6!
+   rather than anchoring a station.
+7. **The hidden lever is one, two or three gaps.** Two clumped the difficulty at
+   low values and collapsed a band; three spread it across seven distinct septiles.
+8. Bucket count corrected from the scaffold's provisional 4 to **7**, six run
+   counts and a loss. Distribution distinguished bucket 0.
+
+### The abstraction test, requirement 7.4
+
+**Zero engine changes wanted, zero made.** The only files outside
+`src/games/difference-relay/`, its tests and its tools are the four sanctioned
+per game touch points: the registry row's provisional values corrected, the
+`vite.config.ts` target the scaffold wrote, the `tools/certify.ts` plan row, and
+`package.json` scripts. `src/core`, `src/engine`, `src/ui` and `src/contract`
+were not touched. The list cursor of the ROTATE LOCK corrections carried the
+ORDER input with no addition, the manifest codec obfuscated the payload with no
+addition, and the share grammar, leak harness and tiers all fit the game as they
+stand. The defect list is empty, which is the expected result by game four and
+holds at game five.
+
+### Measured values, DIFFERENCE-RELAY.md 20
+
+- **Calibration**, `data/difference-relay/study.json`: 400 seeds of 300 attempts,
+  120,000 attempts, 30,667 screened, 25.56 percent. Rejections: uniqueness 69,111,
+  symmetry 14,631, decomposition 4,808, fairness 783. `BAND_EDGES` are
+  `[2, 3, 7, 11, 20, 37]`, the septiles of forced deduction work, putting about
+  4,300 to 4,900 screened boards in each band, far above the yearly need of 52.
+- **Par distribution** over the screened sample: par 1 through 6 hold 7,099,
+  10,126, 5,680, 4,163, 2,371 and 1,228, every one inside the six run budget.
+- **Horizon**: 365 days from 10,833 attempts in about 0.8 seconds, 3.37 percent
+  with the band screen, 53 or 52 days per weekday band. The manifest chunk is
+  about 33 KB.
+- **Verification**: 365 days in about 1.4 seconds, one order each EXACT, par and
+  difficulty independently recomputed and equal to the module's, band, symmetry
+  and no repeats.
+- **Page**: the renderer's page is 27.4 KB gzipped against the 150 KB budget,
+  measured on the harness build because a planned game is not in a release build.
+- **Engine chunk** unchanged at 30.41 KB.
+
+### Green after the change, 2026-09-19
+
+Three typechecks, the dependency check, 977 tests in 75 files (940 in 70 before),
+all four live verifiers plus `difference-relay:verify`, the production build, the
+byte budget over every live page, and `npm run certify -- --check` reporting the
+three live games production safe with no committed record changed.
+
+### Found while building, inside the game
+
+- The difficulty measure clumped at low values under a one or two gap hidden
+  lever, which collapsed band 2. Widening the lever to one, two or three gaps
+  spread it. Logged as a design fact in DIFFERENCE-RELAY.md 21, not a defect.
+- The tutorial board is drawn from a separate seed namespace so it cannot collide
+  with a horizon day's answer, and the generator test asserts it is not day one's.
+
+### Files
+
+| Path | What it is |
+|---|---|
+| DIFFERENCE-RELAY.md | The design document, all 28 section 44 items |
+| src/games/difference-relay/relay.ts | Primitives: stations, the relay walk, permutations |
+| src/games/difference-relay/solver.ts | Uniqueness, the no guess deduction, par and difficulty |
+| src/games/difference-relay/rules.ts | Puzzle, actions, runs, terminal, tier and bucket |
+| src/games/difference-relay/generator.ts | Direct construction, screens, bands, fallback |
+| src/games/difference-relay/relay-codec.ts | The obfuscated manifest layout |
+| src/games/difference-relay/telemetry.ts | Run log, artifact mapping, fingerprint, leak probes |
+| src/games/difference-relay/module.ts | The v3 module |
+| src/games/difference-relay/render.ts | The list cursor renderer |
+| src/games/difference-relay/help.ts | One screen and a worked example |
+| src/games/difference-relay/style.css | The play area, mobile first |
+| src/shell/entries/difference-relay.{ts,html} | The entry, scaffolded |
+| tools/difference-relay-generate.ts | The horizon generator |
+| tools/difference-relay-verify.ts | The independent verifier, never imports the solver |
+| tools/difference-relay-calibrate.ts | The band calibration |
+| data/difference-relay/ | The 365 day manifest, index and study |
+| tests/games/difference-relay/ | rules, solver, generator, module and render, 37 tests |
+
+### Next
+
+TURN TABLE is game six, decided 2026-09-19. It is a spatial route game, not an
+ordering game, so it exercises the list cursor differently or not at all and is
+the next chance for a real defect. RING BALANCE and ORDER OF OPERATIONS follow,
+each in its own conversation. DIFFERENCE RELAY stays planned until the owner runs
+MANUAL-CHECKS.md for it and records the manual mobile and offline smoke results.

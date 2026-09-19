@@ -7,11 +7,11 @@ and it describes exactly one conversation: the next one.
 
 | Field | Value |
 |---|---|
-| Written | 2026-09-18, at the end of the three ROTATE LOCK corrections |
-| For the conversation | **Charter Phase 13: DIFFERENCE RELAY**, game five of eight |
+| Written | 2026-09-19, at the end of DIFFERENCE RELAY |
+| For the conversation | **Charter Phase 13: TURN TABLE**, game six of eight |
 | Phase scheme | Charter phases, Section 9 of the project instructions, with PHASE-13-PLAN.md as amended by ARCHITECTURE2.md. The v3 migration phases are complete |
-| Before any work | Check section 3, then settle section 4's one open design decision |
-| Next after this | TURN TABLE, RING BALANCE, then ORDER OF OPERATIONS, each in its own conversation |
+| Before any work | Check section 3, then settle section 4's open design decisions in the design document first |
+| Next after this | RING BALANCE, then ORDER OF OPERATIONS, each in its own conversation |
 
 ---
 
@@ -21,18 +21,18 @@ Read these before doing anything, in this order, and nothing else unless a
 section below names it.
 
 1. **HANDOFF.md**, this file.
-2. **ARCHITECTURE2.md**. The last two entries of section 56, "Charter Phase 13,
-   ROTATE LOCK" and "Charter Phase 13, the three ROTATE LOCK corrections". Then
-   section 3 (the contract), 9 to 18 (difficulty, verification, decomposition and
-   symmetry, telemetry, share grammar, leak checks, artifact, fingerprint),
-   section 21 (the ORDER adapter), 27 and 35 (the ordering game family), 44 (the
-   authoring contract), 45 (the gate), 46's DIFFERENCE RELAY note and 54.
+2. **ARCHITECTURE2.md**. The last section 56 entry, "Charter Phase 13, DIFFERENCE
+   RELAY", then section 3 (the contract), 9 to 18 (difficulty, verification,
+   decomposition and symmetry, telemetry, share grammar, leak checks, artifact,
+   fingerprint), section 21 (input families), 27 and 35 (the spatial route family),
+   the section 46 TURN TABLE note, 44 (the authoring contract) and 45 (the gate).
 3. **ARCHITECTURE.md**. Presentation decisions, Contract decisions, Template
    decisions, the Build model, Suite decisions and the File manifest.
-4. **BACKLOG.md**, most of all the two "Logged in charter Phase 13" sections.
+4. **BACKLOG.md**, most of all the two DIFFERENCE RELAY and ROTATE LOCK sections.
 
-Then **NEW_GAME.md**, the procedure, and **ROTATE-LOCK.md**, the worked example
-of a v3 design document.
+Then **NEW_GAME.md**, the procedure, and both **ROTATE-LOCK.md** and
+**DIFFERENCE-RELAY.md**, the two worked v3 design documents. ROTATE LOCK is the
+precedent for a spatial route game, which is what TURN TABLE is.
 
 Precedence: the working tree, then ARCHITECTURE2.md, then ARCHITECTURE.md, then
 the project instructions. If this file disagrees with ARCHITECTURE2.md, this
@@ -45,109 +45,87 @@ State in one line which phase this conversation is and wait for confirmation.
 ## 2. Where the project stands
 
 **Suite.** Eight games in `src/shell/registry.ts`. Three live: POKER GRID,
-VECTOR, CIPHER. ROTATE LOCK built and `planned`, waiting on its manual mobile
-check. Four planned and unbuilt: DIFFERENCE RELAY, TURN TABLE, RING BALANCE,
-ORDER OF OPERATIONS.
+VECTOR, CIPHER. ROTATE LOCK and DIFFERENCE RELAY built and `planned`, each
+waiting on its manual mobile check. Three planned and unbuilt: TURN TABLE, RING
+BALANCE, ORDER OF OPERATIONS.
 
-**The three ROTATE LOCK engine corrections are done, 2026-09-18.** The per game
-accent renders, the header shows every display name in the slate whole at 360
-pixels, and `src/ui/listCursor.ts` is the ORDER adapter with ROTATE LOCK's tray
-retrofitted onto it. ARCHITECTURE2.md section 56 has the measurements. Nothing
-is owed from that work except the two BACKLOG items it logged.
+**DIFFERENCE RELAY is built and green, 2026-09-19,** under the zero engine
+changes rule with zero engine changes wanted. Its design document is
+DIFFERENCE-RELAY.md, its manifest and study are committed, and its verifier
+agrees with the generator over 365 days. ARCHITECTURE2.md section 56 has the
+record. Nothing is owed from it except its two manual checks and the BACKLOG
+items it logged.
 
-**Green baseline to regress against,** measured 2026-09-18:
+**Green baseline to regress against,** measured 2026-09-19 on a clone of
+`origin/main` plus this change:
 
 | Gate | Result |
 |---|---|
 | Typecheck | `tsconfig.json`, `tsconfig.tools.json`, `tsconfig.sw.json` |
-| Dependency check | layers verified |
-| Tests | 72 files, 940 tests |
-| Verifiers | POKER GRID 365 boards, CIPHER 365 days, VECTOR 365 puzzles, ROTATE LOCK 365 days in about 49 s |
-| Production build | `engine-v2.js`, 30,412 bytes, 61 exports |
-| Byte budget | Hub 17.8, POKER GRID 28.0, CIPHER 25.9, VECTOR 28.2, About 3.5 KB gzipped |
-| Certification | `npm run certify -- --check`: three games production safe, every committed record unchanged |
-| Offline smoke | Hub, POKER GRID, CIPHER and VECTOR from cache on a second visit past the practice board, no console error, 2026-09-18 |
+| Dependency check | layers verified, no engine source touched |
+| Tests | 75 files, 977 tests |
+| Verifiers | POKER GRID, CIPHER, VECTOR, ROTATE LOCK, DIFFERENCE RELAY, each 365 days |
+| Production build | `engine-v2.js`, 30.41 KB, unchanged |
+| Byte budget | Hub 17.8, POKER GRID 28.0, CIPHER 25.9, VECTOR 28.2, About 3.5 KB gzipped; DIFFERENCE RELAY 27.4 on the harness build |
+| Certification | `npm run certify -- --check`: three live games production safe, every committed record unchanged |
 
 ---
 
 ## 3. Preconditions to check first
 
-1. **The corrections are committed and CI passed.** They touch five source files
-   and three test files and no `.github` file, so there is no patch to apply.
-2. **Whether the owner has run MANUAL-CHECKS.md for ROTATE LOCK.** If yes, record
-   it as a `manual` step in `GAME_PLANS["rotate-lock"]`, flip the registry row to
-   `live`, move `ENGINE_VERSION` to 3 because that build is the first to ship a
-   live game importing the list cursor, run `npm run certify`, and commit
-   `data/rotate-lock/certification.json`. If no, it stays planned and nothing
-   here depends on it.
+1. **DIFFERENCE RELAY is delivered as a patch, not pushed.** The container cannot
+   push. The owner applies the patch and pushes; confirm `origin/main` carries
+   the DIFFERENCE RELAY files before building on top, or build on the same base
+   the patch was cut from and rebase.
+2. **Whether the owner has run the manual checks for ROTATE LOCK or DIFFERENCE
+   RELAY.** For each that is done, record the `manual` steps, flip the registry
+   row to `live`, move `ENGINE_VERSION` to 3 on the first live game that imports
+   the list cursor, run `npm run certify`, and commit that game's
+   `certification.json`. If neither is done, both stay planned and nothing here
+   depends on them.
 3. **The baseline in section 2 still holds.** Run it before changing anything.
 
 ---
 
-## 4. The task: DIFFERENCE RELAY, game five of eight
+## 4. The task: TURN TABLE, game six of eight
 
 Through NEW_GAME.md, under requirement 7.4's zero engine changes rule, ending in
 a defect report. Its id, path, epoch and hue are fixed in `src/shell/registry.ts`:
-`difference-relay`, `/difference-relay/`, 2026-01-05, hue 68. Its `bucketCount`,
+`turn-table`, `/turn-table/`, 2026-01-05, hue 108. Its `bucketCount`,
 `hasWinLoss`, `stateVersion` and one line rule in that row are provisional and
-are corrected in the change that builds it, the way ROTATE LOCK's were. The
-scaffold adopts the planned row, template decision 10:
-`npm run new-game -- --id difference-relay`.
+are corrected in the change that builds it. The scaffold adopts the planned row:
+`npm run new-game -- --id turn-table`.
 
 **What the documents already settle**, ARCHITECTURE2 sections 27, 35 and 46:
 
 | Piece | What is named |
 |---|---|
-| Concept | Order numbers under adjacent difference constraints |
-| Input | The ORDER adapter, which now exists as `src/ui/listCursor.ts` |
-| Verification | Permutation enumeration plus deduction. Exhaustive, so uniqueness is EXACT and nothing is a beam |
-| Difficulty | Forced depth |
-| Share | Attempt ladder or composite |
-| Telemetry | Action chronology plus a fingerprint |
-| Family risk, section 35 | Symmetric score surfaces and brute force feeling difficulty |
+| Concept | Rotate route tiles under checkpoint constraints |
+| Input | Custom rotation actions |
+| Verification | Orientation enumeration plus a graph connectivity check |
+| Difficulty | Propagation work |
+| Share | Spatial replay artifact |
+| Family, section 35 | Spatial route games, risk visual density and accidental decomposition |
 
-### 4.1 The one open design decision, settle it in the design document first
+### 4.1 The open design decisions, settle them in the design document first
 
-**The stress test is whether deduction fairness can be kept stricter than mere
-uniqueness**, and it turns on a choice the documents do not make: **is the board
-perfect information or not.** The two are not interchangeable and the whole game
-follows from the answer.
-
-- **Perfect information.** Every tile value and every mark is visible, exactly
-  one ordering satisfies them, and the declared deduction model reaches it
-  without a guess. Then a careful player always finishes on the first
-  submission, so an attempt ladder has no distribution and the failure model has
-  to be a continuum, which is ROTATE LOCK's shape again: a move count against an
-  exact par. Distinct in substrate, not in scoring feel.
-- **Imperfect information.** Some marks are hidden. The hidden marks are real
-  constraints the player cannot read, and the only way to learn about them is to
-  commit an ordering and see how far the relay gets before a gap fails. Then the
-  attempt ladder that section 46 names is real, `hasWinLoss` is true as the
-  registry already says, and **deduction fairness has a mechanical definition
-  worth writing**: the declared model, given the visible marks plus the prefix
-  feedback from every previous relay, must reach the unique ordering inside the
-  attempt budget without ever guessing, and a board where it cannot is rejected
-  by a screen. That is strictly stronger than uniqueness and is the thing this
-  game exists to prove.
-
-Recommended: **imperfect information**, because it is the only one of the two
-where the stress test has any content, and because it is what makes the attempt
-ladder of section 46 and the registry's `hasWinLoss: true` consistent. The cost
-to name honestly in the design document is that the cognitive mode then sits
-near CIPHER's deduction from feedback; the distinction to defend is that
-CIPHER's feedback is a count over a code and this one is a **position**, the
-depth the relay reached, over an ordering.
-
-Whichever is chosen, the design document settles it in section 10.5's style with
-a declared fairness claim, and ROTATE-LOCK.md 10.5 is the precedent for stating
-plainly what the game does **not** claim.
+TURN TABLE is a **spatial route game**, the same family as ROTATE LOCK, so the
+list cursor of `src/ui/listCursor.ts` may not fit at all. The primary stress
+test of section 46 is **compact rendering and touch and keyboard parity**. The
+design document must settle: the board shape and tile set at 360 pixels; whether
+input is per tile rotation (custom, like ROTATE LOCK's rotate verb) or the list
+cursor; the exact win and loss model, since the registry provisionally says
+`hasWinLoss: false` while a single connectivity check reads like a pass or fail;
+and the difficulty measure, propagation work, made a countable emergent integer
+with seven band resolution, the DIFFERENCE RELAY lesson being that a measure with
+too few values collapses a band.
 
 ### 4.2 Deliverables
 
-NEW_GAME.md section 2: `DIFFERENCE-RELAY.md` answering all 28 items of
-ARCHITECTURE2 section 44, then rules, generator plus two tools plus the 365 day
-manifest, module, leak probes with positive controls, renderer on the list
-cursor, the plan row in `tools/certify.ts`, and the defect report.
+NEW_GAME.md section 2: `TURN-TABLE.md` answering all 28 items of ARCHITECTURE2
+section 44, then rules, generator plus two tools plus the 365 day manifest,
+module, leak probes with positive controls, renderer, the plan row in
+`tools/certify.ts`, the CI verify step, and the defect report.
 
 **Size.** The design document and the game are each well over 300 lines. Per the
 efficiency protocol, say what is about to be produced in one line and wait.
@@ -158,15 +136,16 @@ efficiency protocol, say what is about to be produced in one line and wait.
 
 | Requirement | Exists today as | Notes |
 |---|---|---|
-| ORDER input | `src/ui/listCursor.ts`, `tests/ui/listCursor.test.ts` | New. Focus, selection by identity, swap, cancel, declared verb, `cursor.keys` for the `InputDescriptor` |
-| Worked adoption of it | `src/games/rotate-lock/render.ts` | The tray, retrofitted |
-| Scaffold | `tools/new-game.ts`, `tests/tools/new-game.test.ts` | Adopts the planned row |
+| Rotation input | ROTATE LOCK's rotate verb on the list cursor | May or may not fit a lattice of tiles; the design decides |
+| ORDER input | `src/ui/listCursor.ts` | Available if TURN TABLE turns out to be an ordering |
+| Grid input | `src/ui/gridCursor.ts` | For a lattice of tiles, the likelier fit |
+| Scaffold | `tools/new-game.ts` | Adopts the planned row |
 | Procedure | NEW_GAME.md | Sections 2, 3, 6 and 12 |
-| Worked v3 game | `src/games/rotate-lock/`, `ROTATE-LOCK.md` | Nine files, three tools, seven test files |
-| Exhaustive enumeration precedent | `src/games/rotate-lock/solver.ts`, `tools/rotate-lock-verify.ts` | Two independent searches |
-| Gate plan | `newGamePlan` and `GAME_PLANS` in `tools/certify.ts` | ROTATE LOCK's row is the worked example |
-| Exemptions | `GATE_EXEMPTIONS` in `src/engine/certification.ts` | None covers a new game, and none is to be added |
-| CI | `.github/workflows/ci.yml` | A live game's verifier must run before the certify step. The bridge cannot write `.github`; deliver a patch |
+| Worked v3 route game | `src/games/rotate-lock/`, `ROTATE-LOCK.md` | Route solver, independent verifier, custom input |
+| Worked v3 deduction game | `src/games/difference-relay/`, `DIFFERENCE-RELAY.md` | Full enumeration, minimax fairness, list cursor |
+| Manifest codec | `src/engine/manifest-codec.ts` via a per game codec | ROTATE LOCK and DIFFERENCE RELAY each wrote a thin codec |
+| Gate plan | `newGamePlan` and `GAME_PLANS` in `tools/certify.ts` | DIFFERENCE RELAY's row is the newest worked example |
+| CI | `.github/workflows/ci.yml` | A verifier step per game; the bridge cannot write `.github`, so deliver the change inside the patch |
 
 ---
 
@@ -179,50 +158,40 @@ efficiency protocol, say what is about to be produced in one line and wait.
 | ARCHITECTURE.md | The v2 record, the file manifest, every settled decision |
 | BACKLOG.md | Everything deliberately not built |
 | NEW_GAME.md | The authoring procedure |
-| ROTATE-LOCK.md | The first v3 design document |
-| PHASE-13-PLAN.md | The five games. Its build order is superseded for ROTATE LOCK only |
-| MANUAL-CHECKS.md | The device checklist, never run |
-| src/ui/listCursor.ts | The ORDER adapter this game consumes |
-| src/games/rotate-lock/, tools/rotate-lock-*.ts, data/rotate-lock/ | The newest game |
+| ROTATE-LOCK.md, DIFFERENCE-RELAY.md | The two v3 design documents |
+| PHASE-13-PLAN.md | The five games. Build order superseded per game as each is written |
+| MANUAL-CHECKS.md | The device checklist, still to be run for ROTATE LOCK and DIFFERENCE RELAY |
+| src/ui/listCursor.ts, src/ui/gridCursor.ts | The two input adapters |
+| src/games/rotate-lock/, src/games/difference-relay/ | The two newest games |
 
 ---
 
 ## 7. How to work in this environment
 
 1. **The workspace shell cannot mount the repository**, a Windows update of
-   2026-09-08: `device_bash` fails with "no Plan9 drive shares mounted". Read and
-   write the owner's tree with `device_list_dir`, `device_stage_files` and
-   `device_commit_files`. List `src`, `tests`, `tools` and `data` separately; a
-   recursive listing of the root overflows on `node_modules`.
-2. **Run the real gates in the cloud container.** A shallow clone of GitHub
-   `main` then `npm ci` is about a minute. Check `.git/refs/heads/main` in the
-   owner's tree against `origin/main` first: on 2026-09-17 origin was one
-   documentation commit ahead of the owner's checkout.
-3. **Pushing from the container is refused** unless the repository is in the
-   session's authorised sources. Otherwise write the files into the owner's tree
-   and hand them the commit and push commands.
+   2026-09-08: `device_bash` fails with "no Plan9 drive shares mounted". Read the
+   owner's tree with `device_list_dir` and `device_stage_files`, and write with
+   `device_commit_files` when the bridge is up. List `src`, `tests`, `tools` and
+   `data` separately; a recursive listing of the root overflows on `node_modules`.
+2. **Run the real gates in a cloud clone.** A shallow clone of GitHub `main` then
+   `npm ci` is about a minute. `origin/main` may be ahead of the owner's checkout,
+   and it may not yet carry DIFFERENCE RELAY if the patch is unapplied; check.
+3. **Pushing from the container is refused** unless the repository is an
+   authorised source. Otherwise commit in the clone and deliver a patch and a
+   bundle for the owner to apply and push.
 4. **The bridge cannot write under `.github` and cannot delete.** Deliver those
-   changes as a patch file in the repository root and tell the owner to
-   `git apply` and delete it.
-5. **Pass `expectedMtimeMs`** from staging for every file already in the tree.
-6. **`npm run certify` needs git** and must be started through npm. Use
+   changes inside the patch and tell the owner to apply it.
+5. **`npm run certify` needs git** and must be started through npm. Use
    `-- --check` to evaluate without rewriting records.
-7. **Headless Chromium** is at `/opt/pw-browsers/chromium-1194/chrome-linux/chrome`
-   and the global Playwright package at
-   `/home/claude/.npm-global/lib/node_modules/playwright` drives it against
-   `vite preview --outDir dist --port 4173`. Stop the server with
-   `fuser -k 4173/tcp`.
-8. **A planned game cannot enter a release build.** `npm run build:harness`,
-   which is `vite build --mode development`, builds every target including the
-   planned ones into `dist`, and is the way to render a new game at 360 pixels.
-   Never patch the target list in the tree itself.
-9. **A screenshot at 360 pixels is evidence no automated check produces**, and
-   measuring in the page is better than guessing: both ROTATE LOCK defects 1 and
-   2 were invisible to every gate, and the size ladder that fixed defect 2 was
-   wrong until the rendered widths were measured.
-10. **Project copies of the documents go stale.** After a phase, write
-    ARCHITECTURE2.md, ARCHITECTURE.md, BACKLOG.md and HANDOFF.md back to the
-    project as well as the repository.
+6. **`npm run <id>:calibrate`, `:generate`, `:verify`** run through npm, which is
+   the allowed path in this environment; a bare `npx tsx tools/...` is blocked.
+   `node --import tsx tools/<file>.ts` runs a throwaway script.
+7. **A planned game cannot enter a release build.** `npm run build:harness` builds
+   every target including planned ones into `dist`, and is the way to render a new
+   game at 360 pixels and measure its page. Never patch the target list in the tree.
+8. **A screenshot at 360 pixels is evidence no automated check produces.** TURN
+   TABLE's stress test is exactly compact rendering and touch parity, so the
+   manual check matters more here than usual.
 
 ---
 

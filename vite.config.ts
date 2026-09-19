@@ -112,6 +112,12 @@ const TARGETS: Readonly<Record<string, Target>> = {
     gameId: "rotate-lock",
     productionSafe: false,
   },
+  "difference-relay": {
+    outPath: "difference-relay",
+    html: "src/shell/entries/difference-relay.html",
+    gameId: "difference-relay",
+    productionSafe: false,
+  },
   /* NEW_GAME_INSERTION: TARGETS */
 };
 

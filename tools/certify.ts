@@ -295,6 +295,22 @@ export const GAME_PLANS: Readonly<Record<string, GamePlan>> = {
        until the owner runs MANUAL-CHECKS.md for ROTATE LOCK on devices. No
        exemption covers a new game and none is added. */
   },
+  "difference-relay": {
+    ...newGamePlan("difference-relay"),
+    /* DIFFERENCE-RELAY.md 15: the committed study and the test that reads its edges. */
+    "difficulty-calibration": probes(
+      file("data/difference-relay/study.json"),
+      testFile("tests/games/difference-relay/generator.test.ts"),
+    ),
+    /* DIFFERENCE-RELAY.md 11 and 12: the generator screens every day, the
+       verifier reruns decomposition and symmetry on every committed day, and the
+       generator test holds each to a control. */
+    "decomposition-check": probes(npm("difference-relay:verify"), testFile("tests/games/difference-relay/generator.test.ts")),
+    "symmetry-check": probes(npm("difference-relay:verify"), testFile("tests/games/difference-relay/generator.test.ts")),
+    /* offline-smoke and manual-mobile-check stay the stub's empty lists, which the
+       gate refuses, until the owner runs them on devices. No exemption covers a
+       new game and none is added, so difference-relay stays planned. */
+  },
   /* NEW_GAME_INSERTION: GAME_PLANS */
 };
 
