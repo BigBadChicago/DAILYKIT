@@ -26,6 +26,11 @@ requirement 7.3.1, recorded in ARCHITECTURE2.md section 56 under Slate
 reconciliation and Slate amendment. Anything in this repository that still says
 five or eight games predates that and is the stale copy.
 
+Development happens in a Claude conversation working on a fresh clone of GitHub
+`main`. A finished, green piece of work is delivered as one patch made with
+`git format-patch --base`, which the owner ships with `tools/ship.ps1`: new
+branch, commit, push, pull request. HANDOFF.md section 7 is the procedure.
+
 The product is the suite, not any one game. The share block is the entire
 distribution mechanism. Daily content cost is zero: every puzzle is generated
 from a seed and verified by machine.
