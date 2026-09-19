@@ -147,6 +147,65 @@ export const SUITE_GAMES: readonly SuiteGameEntry[] = [
     stateVersion: 1,
     status: "planned",
   },
+  /*
+   * Slate amendment, 2026-09-19, directed by the owner: four word games are the
+   * next four built, in this order, ahead of TURN TABLE, RING BALANCE and ORDER
+   * OF OPERATIONS, which stay approved and move behind them. ARCHITECTURE2.md
+   * section 56, "Slate amendment: four word games".
+   *
+   * Names are this suite's own and deliberately avoid other daily games' marks.
+   * Hues sit twenty degrees off the existing forty degree ring, so no live hue
+   * moves. Rules, bucket counts, hasWinLoss and stateVersion are provisional
+   * until each design document settles them, as for every planned row.
+   */
+  {
+    id: "letter-trail",
+    displayName: "LETTER TRAIL",
+    oneLineRule: "Trace chains of touching letters to find every hidden word, using each letter exactly once.",
+    path: "/letter-trail/",
+    accent: { hue: "48", boardFontStack: MONO },
+    epoch: { year: 2026, month: 1, day: 5 },
+    bucketCount: 4,
+    hasWinLoss: false,
+    stateVersion: 1,
+    status: "planned",
+  },
+  {
+    id: "word-ladder",
+    displayName: "WORD LADDER",
+    oneLineRule: "Change one letter at a time to climb from the start word to the goal word in as few steps as you can.",
+    path: "/word-ladder/",
+    accent: { hue: "128", boardFontStack: MONO },
+    epoch: { year: 2026, month: 1, day: 5 },
+    bucketCount: 5,
+    hasWinLoss: false,
+    stateVersion: 1,
+    status: "planned",
+  },
+  {
+    id: "pangram",
+    displayName: "PANGRAM",
+    oneLineRule: "Make words from seven letters, always using the centre letter, and find the word that uses all seven.",
+    path: "/pangram/",
+    accent: { hue: "208", boardFontStack: MONO },
+    epoch: { year: 2026, month: 1, day: 5 },
+    bucketCount: 5,
+    hasWinLoss: false,
+    stateVersion: 1,
+    status: "planned",
+  },
+  {
+    id: "five-letters",
+    displayName: "FIVE LETTERS",
+    oneLineRule: "Find the five letter word in six guesses, each letter marked right, present or absent.",
+    path: "/five-letters/",
+    accent: { hue: "288", boardFontStack: MONO },
+    epoch: { year: 2026, month: 1, day: 5 },
+    bucketCount: 7,
+    hasWinLoss: true,
+    stateVersion: 1,
+    status: "planned",
+  },
   {
     id: "turn-table",
     displayName: "TURN TABLE",

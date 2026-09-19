@@ -2,6 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { emptyGameRecord } from "../../src/engine/storage.js";
+import { DAILY_CARD_ROW_WIDTH } from "../../src/engine/dailycard.js";
 import { LIVE_GAMES, SUITE_GAMES, entryFor } from "../../src/shell/registry.js";
 import { openGameStore } from "../../src/shell/suite.js";
 import { mountHub } from "../../src/hub/hub.js";
@@ -83,7 +84,9 @@ describe("the hub", () => {
     const section = root.querySelector(".hub-dailycard")!;
     expect(section.classList.contains("dk-hidden")).toBe(false);
     const block = section.querySelector(".hub-dailycard__block")!.textContent ?? "";
-    expect(block.split("\n")).toHaveLength(3);
+    /* Title, one line per row of the daily card, URL. Derived for the same
+       reason as the count below. */
+    expect(block.split("\n")).toHaveLength(2 + Math.ceil(SUITE_GAMES.length / DAILY_CARD_ROW_WIDTH));
     /* Derived, not literal. Phase 11 defect 8 again: a count the registry
        already states must never be spelled out in a hub test. */
     expect(block).toContain(`DAILYKIT 2026-01-03 1/${SUITE_GAMES.length}`);

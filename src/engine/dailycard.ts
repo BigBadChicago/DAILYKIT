@@ -3,7 +3,7 @@
  *
  * The suite's one growth asset that no single game product can produce. A
  * player who finished three games gets one block covering the whole day, and a
- * reader who sees it learns that DAILYKIT is eight games rather than one.
+ * reader who sees it learns that DAILYKIT is a suite rather than one game.
  *
  * It lives in Layer 1 rather than in the hub because it is share assembly, and
  * every other piece of share assembly is here. The hub supplies facts and gets
@@ -27,13 +27,15 @@ import { TIER_TOKENS } from "../shared/share-vocabulary.js";
  * nine line cap ARCHITECTURE2.md section 49 makes a hard contract. The meter
  * also spent five cells to carry one value between zero and four.
  *
- * Eight is section 49's per row token cap, so a ninth game wraps to a second
- * row rather than breaking the token cap. That second row would be shorter
- * than the first, which the grammar refuses as ragged, so a ninth game fails
- * the daily card test on the day it is added. That is deliberate: how a
- * partial row should read is a product decision, and it is made then.
+ * Six since the slate amendment of 2026-09-19 made the suite twelve games.
+ * Eight is section 49's per row token cap, and twelve at eight would leave a
+ * ragged second row of four, which the grammar refuses. Six divides twelve, so
+ * the card is two full rows and stays under the cap. The decision the previous
+ * comment deferred to the day a ninth game arrived is made here: rows are the
+ * widest width at or under the cap that divides the slate evenly. A slate size
+ * with no such divisor fails the daily card test again, on purpose.
  */
-export const DAILY_CARD_ROW_WIDTH = 8;
+export const DAILY_CARD_ROW_WIDTH = 6;
 
 export type DailyCardStatus = "graded" | "ungraded" | "unplayed";
 

@@ -94,10 +94,14 @@ describe("header", () => {
   it.each([
     ["CIPHER", "base"],
     ["VECTOR", "base"],
+    ["PANGRAM", "base"],
     ["POKER GRID", "tight"],
     ["TURN TABLE", "tight"],
     ["ROTATE LOCK", "tighter"],
     ["RING BALANCE", "tighter"],
+    ["WORD LADDER", "tighter"],
+    ["LETTER TRAIL", "tighter"],
+    ["FIVE LETTERS", "tighter"],
     ["DIFFERENCE RELAY", "wrap"],
     ["ORDER OF OPERATIONS", "wrap"],
   ])("fits %s at step %s", (name, fit) => {

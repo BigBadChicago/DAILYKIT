@@ -7,11 +7,11 @@ and it describes exactly one conversation: the next one.
 
 | Field | Value |
 |---|---|
-| Written | 2026-09-19, at the end of DIFFERENCE RELAY |
-| For the conversation | **Charter Phase 13: TURN TABLE**, game six of eight |
+| Written | 2026-09-19, at the slate amendment that made four word games the next four |
+| For the conversation | **Charter Phase 13: LETTER TRAIL**, game six of twelve |
 | Phase scheme | Charter phases, Section 9 of the project instructions, with PHASE-13-PLAN.md as amended by ARCHITECTURE2.md. The v3 migration phases are complete |
 | Before any work | Check section 3, then settle section 4's open design decisions in the design document first |
-| Next after this | RING BALANCE, then ORDER OF OPERATIONS, each in its own conversation |
+| Next after this | WORD LADDER, PANGRAM, FIVE LETTERS, then TURN TABLE, RING BALANCE, ORDER OF OPERATIONS, each in its own conversation |
 
 ---
 
@@ -21,22 +21,24 @@ Read these before doing anything, in this order, and nothing else unless a
 section below names it.
 
 1. **HANDOFF.md**, this file.
-2. **ARCHITECTURE2.md**. The last section 56 entry, "Charter Phase 13, DIFFERENCE
-   RELAY", then section 3 (the contract), 9 to 18 (difficulty, verification,
-   decomposition and symmetry, telemetry, share grammar, leak checks, artifact,
-   fingerprint), section 21 (input families), 27 and 35 (the spatial route family),
-   the section 46 TURN TABLE note, 44 (the authoring contract) and 45 (the gate).
+2. **ARCHITECTURE2.md**. The last two section 56 entries, "Charter Phase 13,
+   DIFFERENCE RELAY" and "Slate amendment: four word games", then section 3 (the
+   contract), 9 to 18 (difficulty, verification, decomposition and symmetry,
+   telemetry, share grammar, leak checks, artifact, fingerprint), section 21
+   (input families), 35's word graph family, the section 46 LETTER TRAIL note, 44
+   (the authoring contract) and 45 (the gate).
 3. **ARCHITECTURE.md**. Presentation decisions, Contract decisions, Template
    decisions, the Build model, Suite decisions and the File manifest.
-4. **BACKLOG.md**, most of all the two DIFFERENCE RELAY and ROTATE LOCK sections.
+4. **BACKLOG.md**, most of all "Logged at the slate amendment, four word games"
+   and the DIFFERENCE RELAY section.
 
 Then **NEW_GAME.md**, the procedure, and both **ROTATE-LOCK.md** and
-**DIFFERENCE-RELAY.md**, the two worked v3 design documents. ROTATE LOCK is the
-precedent for a spatial route game, which is what TURN TABLE is.
+**DIFFERENCE-RELAY.md**, the two worked v3 design documents.
 
 Precedence: the working tree, then ARCHITECTURE2.md, then ARCHITECTURE.md, then
-the project instructions. If this file disagrees with ARCHITECTURE2.md, this
-file is stale; say so.
+the project instructions. The project instructions' Section 0 still says eight
+games; the architecture documents amend it to twelve. If this file disagrees with
+ARCHITECTURE2.md, this file is stale; say so.
 
 State in one line which phase this conversation is and wait for confirmation.
 
@@ -44,85 +46,99 @@ State in one line which phase this conversation is and wait for confirmation.
 
 ## 2. Where the project stands
 
-**Suite.** Eight games in `src/shell/registry.ts`. Three live: POKER GRID,
-VECTOR, CIPHER. ROTATE LOCK and DIFFERENCE RELAY built and `planned`, each
-waiting on its manual mobile check. Three planned and unbuilt: TURN TABLE, RING
-BALANCE, ORDER OF OPERATIONS.
+**Suite.** Twelve games in `src/shell/registry.ts`, in this order: POKER GRID,
+VECTOR, CIPHER (live); ROTATE LOCK, DIFFERENCE RELAY (built, planned, each
+waiting on its manual mobile check); LETTER TRAIL, WORD LADDER, PANGRAM, FIVE
+LETTERS (planned, the next four in build order); TURN TABLE, RING BALANCE, ORDER
+OF OPERATIONS (planned, deferred behind the word games).
 
-**DIFFERENCE RELAY is built and green, 2026-09-19,** under the zero engine
-changes rule with zero engine changes wanted. Its design document is
-DIFFERENCE-RELAY.md, its manifest and study are committed, and its verifier
-agrees with the generator over 365 days. ARCHITECTURE2.md section 56 has the
-record. Nothing is owed from it except its two manual checks and the BACKLOG
-items it logged.
+**The slate amendment is done, 2026-09-19.** Four planned registry rows, the
+daily card row width moved from eight to six so twelve games make two even rows,
+and the tests and documents that name the slate. ARCHITECTURE2.md section 56 has
+the record.
 
 **Green baseline to regress against,** measured 2026-09-19 on a clone of
-`origin/main` plus this change:
+`origin/main` plus the amendment:
 
 | Gate | Result |
 |---|---|
 | Typecheck | `tsconfig.json`, `tsconfig.tools.json`, `tsconfig.sw.json` |
-| Dependency check | layers verified, no engine source touched |
-| Tests | 75 files, 977 tests |
+| Dependency check | layers verified |
+| Tests | 75 files, 983 tests |
 | Verifiers | POKER GRID, CIPHER, VECTOR, ROTATE LOCK, DIFFERENCE RELAY, each 365 days |
-| Production build | `engine-v2.js`, 30.41 KB, unchanged |
-| Byte budget | Hub 17.8, POKER GRID 28.0, CIPHER 25.9, VECTOR 28.2, About 3.5 KB gzipped; DIFFERENCE RELAY 27.4 on the harness build |
-| Certification | `npm run certify -- --check`: three live games production safe, every committed record unchanged |
+| Production build | `engine-v2.js` about 30.4 KB |
+| Byte budget | Hub 18.1, POKER GRID 28.3, CIPHER 26.2, VECTOR 28.5, About 3.5 KB gzipped |
+| Certification | `npm run certify -- --check`: three live games production safe |
 
 ---
 
 ## 3. Preconditions to check first
 
-1. **DIFFERENCE RELAY is delivered as a patch, not pushed.** The container cannot
-   push. The owner applies the patch and pushes; confirm `origin/main` carries
-   the DIFFERENCE RELAY files before building on top, or build on the same base
-   the patch was cut from and rebase.
+1. **The slate amendment is on `origin/main`.** It was delivered as a patch;
+   confirm `src/shell/registry.ts` has the `letter-trail` row before building.
 2. **Whether the owner has run the manual checks for ROTATE LOCK or DIFFERENCE
    RELAY.** For each that is done, record the `manual` steps, flip the registry
    row to `live`, move `ENGINE_VERSION` to 3 on the first live game that imports
    the list cursor, run `npm run certify`, and commit that game's
-   `certification.json`. If neither is done, both stay planned and nothing here
-   depends on them.
-3. **The baseline in section 2 still holds.** Run it before changing anything.
+   `certification.json`. If neither is done, both stay planned.
+3. **Whether the accent contrast correction from the 2026-09-19 review was
+   approved.** It is an engine change and cannot happen inside LETTER TRAIL under
+   the zero engine changes rule. If it is approved and not yet done, it goes
+   first, in its own conversation.
+4. **The baseline in section 2 still holds.** Run it before changing anything.
 
 ---
 
-## 4. The task: TURN TABLE, game six of eight
+## 4. The task: LETTER TRAIL, game six of twelve
 
 Through NEW_GAME.md, under requirement 7.4's zero engine changes rule, ending in
 a defect report. Its id, path, epoch and hue are fixed in `src/shell/registry.ts`:
-`turn-table`, `/turn-table/`, 2026-01-05, hue 108. Its `bucketCount`,
-`hasWinLoss`, `stateVersion` and one line rule in that row are provisional and
-are corrected in the change that builds it. The scaffold adopts the planned row:
-`npm run new-game -- --id turn-table`.
+`letter-trail`, `/letter-trail/`, 2026-01-05, hue 48. Its `bucketCount`,
+`hasWinLoss`, `stateVersion` and one line rule are provisional and are corrected
+in the change that builds it. The scaffold adopts the planned row, checked
+2026-09-19: `npm run new-game -- --id letter-trail`.
 
-**What the documents already settle**, ARCHITECTURE2 sections 27, 35 and 46:
+**The concept, as the owner chose it:** a grid of letters that hides a set of
+themed or unthemed words, found by tracing chains of touching letters, with every
+letter used exactly once, and one word that spans the board. The genre name
+belongs to another product; this game does not use it, and its layout must not
+copy that product's trade dress.
+
+**What the documents already settle**, ARCHITECTURE2 sections 35 and 46:
 
 | Piece | What is named |
 |---|---|
-| Concept | Rotate route tiles under checkpoint constraints |
-| Input | Custom rotation actions |
-| Verification | Orientation enumeration plus a graph connectivity check |
-| Difficulty | Propagation work |
-| Share | Spatial replay artifact |
-| Family, section 35 | Spatial route games, risk visual density and accidental decomposition |
+| Input | GRID adapter, path selection under eight way adjacency |
+| Verification | Exact placement search over the answer list; the full cover must be unique |
+| Difficulty | Extraneous word count and placement ambiguity, one emergent integer |
+| Share | Found order token rows, no letters, no positions |
+| Family, section 35 | Word graph games, risk translation debt and vocabulary fairness |
 
 ### 4.1 The open design decisions, settle them in the design document first
 
-TURN TABLE is a **spatial route game**, the same family as ROTATE LOCK, so the
-list cursor of `src/ui/listCursor.ts` may not fit at all. The primary stress
-test of section 46 is **compact rendering and touch and keyboard parity**. The
-design document must settle: the board shape and tile set at 360 pixels; whether
-input is per tile rotation (custom, like ROTATE LOCK's rotate verb) or the list
-cursor; the exact win and loss model, since the registry provisionally says
-`hasWinLoss: false` while a single connectivity check reads like a pass or fail;
-and the difficulty measure, propagation work, made a countable emergent integer
-with seven band resolution, the DIFFERENCE RELAY lesson being that a measure with
-too few values collapses a band.
+1. **No daily editor.** A theme in the source genre is written by a person every
+   day, which the zero daily content cost rule forbids. Either the game is
+   unthemed, or themes come from a one time curated set of word groups whose
+   generator recombines them. Say which, and prove the second does not repeat a
+   board within the manifest horizon.
+2. **The word list.** Name the answer list and the validation list, their
+   license, their size gzipped against the per game budget, and how offensive
+   and obscure words are removed once. Record it for ASSETS.md.
+3. **Board shape at 360 pixels.** Grid dimensions, letter size and the 44 pixel
+   floor for a cell that is also a path node, and how a drag path is drawn and
+   announced.
+4. **Touch and keyboard path building on `src/ui/gridCursor.ts`.** Whether the
+   grid cursor can build a path without an engine change. If it cannot, that is
+   the defect this game exists to find.
+5. **Failure model and hints.** Whether the game can be lost, how non answer
+   words found along the way count, and whether they buy hints.
+6. **Difficulty as a countable integer with seven band resolution.** The
+   DIFFERENCE RELAY lesson is that a measure with too few distinct values
+   collapses a band.
 
 ### 4.2 Deliverables
 
-NEW_GAME.md section 2: `TURN-TABLE.md` answering all 28 items of ARCHITECTURE2
+NEW_GAME.md section 2: `LETTER-TRAIL.md` answering all 28 items of ARCHITECTURE2
 section 44, then rules, generator plus two tools plus the 365 day manifest,
 module, leak probes with positive controls, renderer, the plan row in
 `tools/certify.ts`, the CI verify step, and the defect report.
@@ -136,16 +152,15 @@ efficiency protocol, say what is about to be produced in one line and wait.
 
 | Requirement | Exists today as | Notes |
 |---|---|---|
-| Rotation input | ROTATE LOCK's rotate verb on the list cursor | May or may not fit a lattice of tiles; the design decides |
-| ORDER input | `src/ui/listCursor.ts` | Available if TURN TABLE turns out to be an ordering |
-| Grid input | `src/ui/gridCursor.ts` | For a lattice of tiles, the likelier fit |
+| Grid input | `src/ui/gridCursor.ts` | Cell selection; path building is the open question |
+| Guess and feedback loop | `src/games/cipher/` | Slot entry and keyboard handling, useful for FIVE LETTERS later |
+| Exact search precedent | `src/games/difference-relay/solver.ts`, `src/games/rotate-lock/solver.ts` | Uniqueness proofs with independent verifiers |
 | Scaffold | `tools/new-game.ts` | Adopts the planned row |
 | Procedure | NEW_GAME.md | Sections 2, 3, 6 and 12 |
-| Worked v3 route game | `src/games/rotate-lock/`, `ROTATE-LOCK.md` | Route solver, independent verifier, custom input |
-| Worked v3 deduction game | `src/games/difference-relay/`, `DIFFERENCE-RELAY.md` | Full enumeration, minimax fairness, list cursor |
-| Manifest codec | `src/engine/manifest-codec.ts` via a per game codec | ROTATE LOCK and DIFFERENCE RELAY each wrote a thin codec |
+| Manifest codec | `src/engine/manifest-codec.ts` via a per game codec | Light obfuscation of the answer words |
 | Gate plan | `newGamePlan` and `GAME_PLANS` in `tools/certify.ts` | DIFFERENCE RELAY's row is the newest worked example |
-| CI | `.github/workflows/ci.yml` | A verifier step per game; the bridge cannot write `.github`, so deliver the change inside the patch |
+| Word list | Nothing yet | The first asset of its kind; ASSETS.md row required |
+| CI | `.github/workflows/ci.yml` | A verifier step per game, delivered inside the patch |
 
 ---
 
@@ -159,10 +174,10 @@ efficiency protocol, say what is about to be produced in one line and wait.
 | BACKLOG.md | Everything deliberately not built |
 | NEW_GAME.md | The authoring procedure |
 | ROTATE-LOCK.md, DIFFERENCE-RELAY.md | The two v3 design documents |
-| PHASE-13-PLAN.md | The five games. Build order superseded per game as each is written |
+| PHASE-13-PLAN.md | Its build order is superseded by the note at its top |
 | MANUAL-CHECKS.md | The device checklist, still to be run for ROTATE LOCK and DIFFERENCE RELAY |
 | src/ui/listCursor.ts, src/ui/gridCursor.ts | The two input adapters |
-| src/games/rotate-lock/, src/games/difference-relay/ | The two newest games |
+| src/shell/registry.ts | The twelve game slate |
 
 ---
 
@@ -189,9 +204,9 @@ efficiency protocol, say what is about to be produced in one line and wait.
 7. **A planned game cannot enter a release build.** `npm run build:harness` builds
    every target including planned ones into `dist`, and is the way to render a new
    game at 360 pixels and measure its page. Never patch the target list in the tree.
-8. **A screenshot at 360 pixels is evidence no automated check produces.** TURN
-   TABLE's stress test is exactly compact rendering and touch parity, so the
-   manual check matters more here than usual.
+8. **A screenshot at 360 pixels is evidence no automated check produces.** A
+   letter grid is the densest board in the suite, so measure it in the page at
+   360 pixels rather than trusting the stylesheet.
 
 ---
 

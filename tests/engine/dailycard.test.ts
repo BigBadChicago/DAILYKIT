@@ -16,13 +16,14 @@ import { composeShareText, validateArtifactText } from "../../src/engine/share-g
 
 const unplayed = (gameId: string): DailyCardEntry => ({ gameId, status: "unplayed", tier: null });
 
-const EIGHT = ["POKER GRID", "VECTOR", "CIPHER", "D", "E", "F", "G", "H"];
+/* The slate size since 2026-09-19. Twelve divides into two rows of six. */
+const SLATE = ["POKER GRID", "VECTOR", "CIPHER", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
 
 const base = (over: Partial<DailyCardInput> = {}): DailyCardInput => ({
   date: "2026-09-08",
   games: [
-    { gameId: EIGHT[0]!, status: "graded", tier: 0 },
-    ...EIGHT.slice(1).map(unplayed),
+    { gameId: SLATE[0]!, status: "graded", tier: 0 },
+    ...SLATE.slice(1).map(unplayed),
   ],
   suiteStreak: 1,
   ...over,
@@ -59,17 +60,23 @@ describe("daily card cells", () => {
 });
 
 describe("daily card rows", () => {
-  it("is one row of one cell per game", () => {
+  it("is one cell per game in full rows of the row width", () => {
     const rows = dailyCardRows(base());
-    expect(rows).toHaveLength(1);
-    expect(rows[0]).toHaveLength(EIGHT.length);
+    expect(rows).toHaveLength(SLATE.length / DAILY_CARD_ROW_WIDTH);
+    for (const row of rows) expect(row).toHaveLength(DAILY_CARD_ROW_WIDTH);
+    expect(rows.flat()).toHaveLength(SLATE.length);
   });
 
-  /* The decision point finding 3 of v3 migration phase 5 left open. A ninth
-     game wraps into a short second row, which the grammar refuses as ragged.
-     When this fails because the registry grew, decide how a partial row reads
-     and change this test with that decision, not before. */
-  it("wraps a ninth game into a row the grammar refuses as ragged", () => {
+  /* The decision finding 3 of v3 migration phase 5 left open, made 2026-09-19:
+     the row width divides the slate evenly and stays under section 49's cap of
+     eight. A slate size it does not divide still produces a short row that the
+     grammar refuses, and that failure is the signal to choose a width again. */
+  it("keeps the row width under the token cap and dividing the slate", () => {
+    expect(DAILY_CARD_ROW_WIDTH).toBeLessThanOrEqual(8);
+    expect(SLATE.length % DAILY_CARD_ROW_WIDTH).toBe(0);
+  });
+
+  it("still refuses a slate the row width does not divide, as ragged", () => {
     const games = Array.from({ length: DAILY_CARD_ROW_WIDTH + 1 }, (_v, i) =>
       i === 0 ? ({ gameId: "G0", status: "graded", tier: 0 } as DailyCardEntry) : unplayed(`G${i}`),
     );
@@ -89,16 +96,16 @@ describe("daily card rows", () => {
 
 describe("daily card share", () => {
   it("is null when nothing was finished", () => {
-    expect(dailyCardShare(base({ games: EIGHT.map(unplayed) }))).toBeNull();
+    expect(dailyCardShare(base({ games: SLATE.map(unplayed) }))).toBeNull();
   });
 
   it("carries the count and shows a streak only from two days", () => {
-    expect(dailyCardTitle(base({ suiteStreak: 1 }))).toBe("DAILYKIT 2026-09-08 1/8");
-    expect(dailyCardTitle(base({ suiteStreak: 7 }))).toBe("DAILYKIT 2026-09-08 1/8 streak 7");
+    expect(dailyCardTitle(base({ suiteStreak: 1 }))).toBe("DAILYKIT 2026-09-08 1/12");
+    expect(dailyCardTitle(base({ suiteStreak: 7 }))).toBe("DAILYKIT 2026-09-08 1/12 streak 7");
   });
 
-  it("is three lines with every game in an eight game suite finished", () => {
-    const games: DailyCardEntry[] = EIGHT.map((gameId, i) => ({
+  it("is four lines with every game in a twelve game suite finished", () => {
+    const games: DailyCardEntry[] = SLATE.map((gameId, i) => ({
       gameId,
       status: "graded",
       tier: (i % TIER_COUNT) as TierIndex,
@@ -106,9 +113,9 @@ describe("daily card share", () => {
     const card = dailyCardShare(base({ games }))!;
     const composed = composeShareText(card, "dailykit.providentia.games");
     expect(composed.fault).toBeNull();
-    /* Title, one row, URL. ARCHITECTURE2 section 49 caps a block at nine lines
-       and a full house now sits at three. The old meter sat at ten. */
-    expect(composed.lines).toHaveLength(3);
+    /* Title, two rows of six, URL. ARCHITECTURE2 section 49 caps a block at
+       nine lines and a full house sits at four. The old meter sat at ten. */
+    expect(composed.lines).toHaveLength(4);
   });
 
   it("leaks no game state beyond the tier", () => {
@@ -118,11 +125,11 @@ describe("daily card share", () => {
   });
 
   it("summarises in text for the live region", () => {
-    expect(dailyCardSummary(base({ games: EIGHT.map(unplayed) }))).toContain("No games finished");
-    expect(dailyCardSummary(base())).toBe("1 of 8 finished. POKER GRID Excellent.");
+    expect(dailyCardSummary(base({ games: SLATE.map(unplayed) }))).toContain("No games finished");
+    expect(dailyCardSummary(base())).toBe("1 of 12 finished. POKER GRID Excellent.");
     const withUngraded: DailyCardEntry[] = [
       { gameId: "X", status: "ungraded", tier: null },
-      ...EIGHT.slice(1).map(unplayed),
+      ...SLATE.slice(1).map(unplayed),
     ];
     expect(dailyCardSummary(base({ games: withUngraded }))).toContain("unrated");
   });

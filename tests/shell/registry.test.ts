@@ -9,11 +9,12 @@ import { crossPromotionTarget } from "../../src/engine/stats.js";
 import { emptySuiteRecord } from "../../src/engine/storage.js";
 
 describe("suite registry", () => {
-  it("lists exactly the eight approved games with unique ids and paths", () => {
-    /* Three live plus the five approved 2026-09-13. The count is spelled out
-       because changing the slate should have to change this line. The
-       uniqueness checks derive from it so they cannot drift apart. */
-    expect(SUITE_GAMES).toHaveLength(8);
+  it("lists exactly the twelve approved games with unique ids and paths", () => {
+    /* Three live, the five approved 2026-09-13, and the four word games added
+       2026-09-19. The count is spelled out because changing the slate should
+       have to change this line. The uniqueness checks derive from it so they
+       cannot drift apart. */
+    expect(SUITE_GAMES).toHaveLength(12);
     expect(new Set(SUITE_GAMES.map((entry) => entry.id)).size).toBe(SUITE_GAMES.length);
     expect(new Set(SUITE_GAMES.map((entry) => entry.path)).size).toBe(SUITE_GAMES.length);
     expect(new Set(SUITE_GAMES.map((entry) => entry.accent.hue)).size).toBe(SUITE_GAMES.length);
@@ -84,5 +85,19 @@ describe("suite registry", () => {
     const suite = { ...emptySuiteRecord(), lastPlayed: { a: 10, b: 3, c: 7 } };
     expect(crossPromotionTarget(suite, ["a", "b", "c"], "a")).toBe("b");
     expect(crossPromotionTarget(suite, ["a", "b", "c", "d"], "a")).toBe("d");
+  });
+
+  /* Slate amendment 2026-09-19. The four word games are the next four built,
+     in this order, directly after the two built games and ahead of the three
+     deferred ones. The registry order is the hub order and the daily card order,
+     so the build order is asserted where it is written. */
+  it("places the four word games next, in build order", () => {
+    const ids = SUITE_GAMES.map((entry) => entry.id);
+    const at = ids.indexOf("difference-relay");
+    expect(ids.slice(at + 1, at + 5)).toEqual(["letter-trail", "word-ladder", "pangram", "five-letters"]);
+    expect(ids.slice(at + 5)).toEqual(["turn-table", "ring-balance", "order-of-operations"]);
+    for (const id of ["letter-trail", "word-ladder", "pangram", "five-letters"]) {
+      expect(entryFor(id)?.status).toBe("planned");
+    }
   });
 });

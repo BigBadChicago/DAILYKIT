@@ -37,7 +37,7 @@ pipeline, theme/chrome, offline behavior, and certification gate.
 | Storage policy | Small JSON snapshot for in-progress state; telemetry retained only when required for the local result artifact |
 | Deployment | Cloudflare Pages at `dailykit.providentia.games` |
 | Migration status | Phases 1 to 4 are done: the contract and engine seams, then VECTOR, CIPHER and POKER GRID, each implementing v2 and v3 at once. Phase 5 is done: part A moved the shell, the hub and the daily card to v3 with one share composer, and part B made the section 45 gate a CI job whose committed records decide which games a release contains. Phase 6 is done, 2026-09-17: the v2 contract is deleted, every game's default export is its v3 module, and the scaffold writes v3 and a certification plan row. Charter Phase 13, 2026-09-17: ROTATE LOCK, the first new game on v3, is built and verified, and stays planned until its manual mobile check (section 56) |
-| Chosen lineup | Approved 2026-09-13: the five recommended concepts become the new build slate, DIFFERENCE RELAY, TURN TABLE, RING BALANCE, ORDER OF OPERATIONS, ROTATE LOCK. This supersedes SLATE.md's five for new work; the three legacy games stay live. Composition A approved the same day: the suite is eight games, not five, and TALLY DROP and RECALL are cancelled. ROTATE LOCK was named VECTOR LOCK until the rename that removed the collision with the shipped VECTOR. Carried into `src/shell/registry.ts`, section 56 |
+| Chosen lineup | Approved 2026-09-13: the five recommended concepts become the new build slate, DIFFERENCE RELAY, TURN TABLE, RING BALANCE, ORDER OF OPERATIONS, ROTATE LOCK. This supersedes SLATE.md's five for new work; the three legacy games stay live. Composition A approved the same day: the suite is eight games, not five, and TALLY DROP and RECALL are cancelled. ROTATE LOCK was named VECTOR LOCK until the rename that removed the collision with the shipped VECTOR. Carried into `src/shell/registry.ts`, section 56. **Amended 2026-09-19 by the owner:** four word games, LETTER TRAIL, WORD LADDER, PANGRAM and FIVE LETTERS, are the next four built, in that order, ahead of TURN TABLE, RING BALANCE and ORDER OF OPERATIONS, which stay approved and move behind them. The suite is twelve games. Section 56, "Slate amendment: four word games" |
 | This document | The active architecture target. ARCHITECTURE.md is the v2 record the legacy games still satisfy and is retained until migration completes |
 
 The original architecture established the project as a layered static application with
@@ -1647,11 +1647,19 @@ Key risk: resemblance to established grid-logic formats.
 
 Use dictionary membership only and exact graph search.
 
-Target:
+Targets:
 
+- LETTER TRAIL
+- WORD LADDER
+- PANGRAM
+- FIVE LETTERS
 - WORD WEAVE
 
-Key risk: translation debt and vocabulary-dependent fairness.
+Key risk: translation debt and vocabulary-dependent fairness. Added 2026-09-19 for
+the four word games: an answer that is a real word the player has never met reads
+as unfair no matter what the verifier proves, so every game in this family draws
+answers from a curated answer list and accepts guesses from a larger validation
+list, and the curation is a one time asset, not daily authoring.
 
 ---
 
@@ -2236,6 +2244,71 @@ meter + friction
 ```
 
 Primary engine stress test: division edge cases and human arithmetic load.
+
+## LETTER TRAIL
+
+Added 2026-09-19. Game six in build order.
+
+Preferred contract shape:
+
+```text
+GRID adapter, path selection under eight way adjacency
+exact word placement search over the answer list, uniqueness of the full cover
+extraneous word count and placement ambiguity as difficulty
+found order token rows, no letters, no positions
+```
+
+Primary engine stress test: a lattice of letters where the grid cursor must build
+a path, not select a cell, and a share that must say how the player found the
+words without saying which words or where.
+
+## WORD LADDER
+
+Added 2026-09-19. Game seven in build order.
+
+Preferred contract shape:
+
+```text
+CUSTOM word entry, one rung at a time
+breadth first search over the one letter change graph, exact shortest path
+shortest path length and branching near the goal as difficulty
+rung count against par, dead end rungs marked, no words
+```
+
+Primary engine stress test: the validation list as a runtime asset inside the per
+game byte budget, and a par computed exactly offline.
+
+## PANGRAM
+
+Added 2026-09-19. Game eight in build order.
+
+Preferred contract shape:
+
+```text
+CUSTOM word entry from seven letter keys
+exhaustive enumeration of the answer list against the seven letters
+total available score and the rarity of the pangram as difficulty
+continuous score ladder toward the pangram, no words
+```
+
+Primary engine stress test: a continuous score whose maximum is a word count the
+player cannot see, and keeping the layout clear of other games' trade dress.
+
+## FIVE LETTERS
+
+Added 2026-09-19. Game nine in build order.
+
+Preferred contract shape:
+
+```text
+CUSTOM word entry on a letter keyboard, CIPHER's slot pattern
+exact per position feedback, answer list with a larger validation list
+remaining candidate count after an ideal opening as difficulty
+per position feedback rows, the genre's own grammar
+```
+
+Primary engine stress test: a 26 key keyboard at 360 pixels against the 44 pixel
+touch floor, and a cognitive mode that overlaps CIPHER's deduction from feedback.
 
 ---
 
@@ -3624,3 +3697,66 @@ ordering game, so it exercises the list cursor differently or not at all and is
 the next chance for a real defect. RING BALANCE and ORDER OF OPERATIONS follow,
 each in its own conversation. DIFFERENCE RELAY stays planned until the owner runs
 MANUAL-CHECKS.md for it and records the manual mobile and offline smoke results.
+
+## Slate amendment: four word games. Done 2026-09-19.
+
+Directed by the owner: LETTER TRAIL, WORD LADDER, PANGRAM and FIVE LETTERS are the
+next four games built, in that order, regardless of the earlier build order. They
+are the owner's four chosen shapes: a connected letter grid with a spanning word,
+a one letter change ladder, seven letters with a pangram, and a five letter guess
+with per position feedback.
+
+### Decisions, made 2026-09-19
+
+1. **Added, not substituted.** TURN TABLE, RING BALANCE and ORDER OF OPERATIONS
+   stay approved and planned and move behind the four. The suite is twelve games:
+   three live, two built and planned, seven planned and unbuilt. This extends
+   composition A's deviation from the charter's Section 0 and requirement 7.3.1.
+2. **Names are the suite's own.** None uses another daily game's name or a
+   product name, so requirement 7.1.5's licensing rule holds. They are provisional
+   in the same way the rules are, and a rename before a game is built is a
+   registry edit.
+3. **Hues 48, 128, 208 and 288.** Twenty degrees off the existing forty degree
+   ring, so no live or built hue moves and each new hue sits between two existing
+   ones. The accent contrast defect found in the 2026-09-19 review applies to 48
+   and 128 as it does to 68, 108 and 148; see BACKLOG.md.
+4. **Registry order is build order for now.** The four sit directly after
+   DIFFERENCE RELAY and before TURN TABLE. Each design document states a session
+   length and the longest to shortest re sort happens then, as for every game.
+5. **The daily card row width is six.** Eight at twelve games leaves a ragged row
+   of four, which the grammar refuses. Six divides twelve, so a full house is two
+   rows and four lines against the nine line cap. The rule is recorded where the
+   constant is: the widest width at or under eight that divides the slate.
+6. **Word lists are an asset, not content.** Every one of the four needs an
+   answer list and a validation list. Only public domain or permissively licensed
+   lists are admissible, each gets an ASSETS.md row when it ships, and curating
+   the answer list once does not breach the zero daily content cost rule.
+
+### What changed
+
+`src/shell/registry.ts` gains four planned rows. `src/engine/dailycard.ts` moves
+`DAILY_CARD_ROW_WIDTH` from eight to six; this is an engine edit made outside any
+game build, so no game's zero engine changes rule is involved. Tests changed with
+it: the registry count is twelve and the build order is asserted, the header test
+holds the four names to their fit steps (PANGRAM base, the other three tighter),
+the daily card tests use a twelve game fixture, and the hub test derives its line
+count from the row width. `npm run new-game -- --id letter-trail` adopts the
+planned row, checked in a scratch copy.
+
+### Green after the change, 2026-09-19
+
+| Gate | Result |
+|---|---|
+| Typecheck | `tsconfig.json`, `tsconfig.tools.json` |
+| Dependency check | layers verified |
+| Tests | 75 files, 983 tests |
+| Build | pass |
+| Byte budget | Hub 18.1, POKER GRID 28.3, CIPHER 26.2, VECTOR 28.5, About 3.5 KB gzipped |
+| Certification | three live games production safe |
+
+The registry is bundled into every page, so four rows cost each page about 0.3 KB.
+
+### Next
+
+LETTER TRAIL is game six. Then WORD LADDER, PANGRAM and FIVE LETTERS, then TURN
+TABLE, RING BALANCE and ORDER OF OPERATIONS, each in its own conversation.

@@ -11,6 +11,15 @@ outranks this file, and outranks `ARCHITECTURE.md` wherever the two disagree.**
 games are, in what order, and what each must prove. Where they overlap, follow
 `NEW_GAME.md` for how and this file for what.
 
+## Superseded build order, 2026-09-19
+
+The owner directed that four word games are the next four built, in this order:
+**LETTER TRAIL, WORD LADDER, PANGRAM, FIVE LETTERS.** TURN TABLE, RING BALANCE
+and ORDER OF OPERATIONS follow them. ROTATE LOCK and DIFFERENCE RELAY are already
+built. The suite is twelve games. This file does not specify the four word games;
+ARCHITECTURE2.md section 46 carries their notes and each gets its own design
+document through `NEW_GAME.md`. Where this file's order disagrees, this note wins.
+
 ## 0. What this document replaced, and the numbering trap
 
 The previous version of this file specified VECTOR, TALLY DROP and RECALL as

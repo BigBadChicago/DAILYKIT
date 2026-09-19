@@ -909,6 +909,12 @@ phase and are not to be reopened without a stated reason.
    Section 0 and requirement 7.3.1, approved the same day. The mechanism is
    unchanged: changing the slate is still an edit to that one file.
 
+   **Amended 2026-09-19.** The owner made four word games the next four built,
+   LETTER TRAIL, WORD LADDER, PANGRAM and FIVE LETTERS, in that order, ahead of
+   TURN TABLE, RING BALANCE and ORDER OF OPERATIONS, which stay approved behind
+   them. The suite is twelve games. Same mechanism, four rows in the registry.
+   ARCHITECTURE2.md section 56, "Slate amendment: four word games".
+
 ## Resolutions of internal conflicts in the source document
 
 Recorded so a fresh conversation does not rediscover them.
@@ -990,9 +996,10 @@ presentation, and generation decisions above.
 
    Every game is present, including the ones not played, so positions are the
    registry's and two cards on the same day compare cell by cell. Rows are
-   chunked at eight cells, which is section 49's per row token cap, so a ninth
-   game wraps rather than breaking the contract. An eight game suite fully
-   finished is three lines.
+   chunked at six cells since 2026-09-19: the widest width at or under section
+   49's per row token cap of eight that divides the twelve game slate, so no row
+   is ragged. A twelve game suite fully finished is four lines. It was eight
+   cells, and three lines, while the suite was eight games.
 
    Three cell states, not two. A graded game is its tier token. A game finished
    with nothing to grade against is `ungraded`, never a tier glyph, because past

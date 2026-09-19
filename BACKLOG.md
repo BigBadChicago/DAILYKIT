@@ -420,3 +420,38 @@ the result, which is a human pass across real devices.
 - **The graphic card for DIFFERENCE RELAY.** Section 17.5 hands the suite card
   renderer a single lane depth over run specification. No game has a card yet, so
   this is suite work, the same state ROTATE LOCK left it in.
+
+## Logged at the slate amendment, four word games, 2026-09-19
+
+- **TURN TABLE, RING BALANCE and ORDER OF OPERATIONS are deferred, not
+  cancelled.** They stay planned in the registry behind the four word games.
+  Removing any of them is a registry edit while it is unbuilt.
+- **Requirement 7.1.1 is further strained.** FIVE LETTERS exercises deduction
+  from feedback, CIPHER's mode, with letters instead of shapes. The difference to
+  defend in its design document is that the feedback is per position and the
+  candidate space is a vocabulary rather than a uniform code space. The word
+  games do add a vocabulary mode the suite had none of.
+- **Word lists must be sourced and licensed.** Each word game needs an answer
+  list and a validation list, public domain or permissively licensed, recorded
+  in ASSETS.md with its license when it ships. Nothing is chosen yet. Lifting
+  another daily game's answer list is refused.
+- **English only.** Every word game is tied to one language's list, which is
+  requirement 11.7's localization debt made concrete. A second language is a
+  second list and a second calibration, not a translation.
+- **A 26 key keyboard does not meet the 44 pixel touch floor at 360 pixels.**
+  Ten keys across leaves about 32 pixels each. FIVE LETTERS, WORD LADDER and
+  LETTER TRAIL's design documents must either use taller keys with a stated
+  exception to requirement 8.2 or avoid a full keyboard. PANGRAM needs only
+  seven keys.
+- **Trade dress.** The names avoid other games' marks. The layouts must too: in
+  particular PANGRAM should not be a honeycomb of seven hexagons.
+- **New hues 48 and 128 inherit the accent contrast defect.** Both fail WCAG AA
+  for white text on the accent fill in light theme, as 68, 108 and 148 do. Fix
+  with the per game lightness correction found in the 2026-09-19 review, not per
+  game.
+- **Twelve hub cards on one screen.** The hub now lists twelve games, seven not
+  playable. Whether planned games should collapse into one line is a product
+  decision not taken here.
+- **design-system/ still describes eight games.** The snapshot's GAMES list,
+  tokens and marks do not include the four. Its README says it is refreshed from
+  the hosted design project, so it is left untouched here.
