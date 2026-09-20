@@ -2247,16 +2247,28 @@ Primary engine stress test: division edge cases and human arithmetic load.
 
 ## LETTER TRAIL
 
-Added 2026-09-19. Game six in build order.
-
-Preferred contract shape:
+Added 2026-09-19. Game six in build order. The preferred contract shape below was
+amended in the design phase, charter Phase 13, when the full cover uniqueness claim
+was measured and found unachievable; see the section 56 entry and LETTER-TRAIL.md
+section 0. The settled shape is:
 
 ```text
 GRID adapter, path selection under eight way adjacency
-exact word placement search over the answer list, uniqueness of the full cover
-extraneous word count and placement ambiguity as difficulty
+themed known word set, given as a count; the board hides seven words including a span
+exact enumeration of every answer word present, span is the unique longest present
+decoy word count as a difficulty hypothesis, calibrated during the build
 found order token rows, no letters, no positions
 ```
+
+The abandoned line was "exact word placement search over the answer list, uniqueness
+of the full cover" with "extraneous word count and placement ambiguity as difficulty."
+A dense letter grid admits many dictionary tilings, so full cover uniqueness sits at
+about one percent at four by four and zero at five by five and larger; it is not a
+buildable fairness model. The claim proved instead is span uniqueness: the intended
+spanning word is the unique longest answer word anywhere on the board, which anchors
+the day's set. A curated theme replaces the missing uniqueness with directed recall,
+so early play is not guessing, and supplies a non repeating horizon from a one time
+asset: one forty five word theme yields over two thousand distinct boards.
 
 Primary engine stress test: a lattice of letters where the grid cursor must build
 a path, not select a cell, and a share that must say how the player found the
@@ -3805,3 +3817,99 @@ constructs newer than 5.1.
 | tools/ship.ps1 | The delivery command |
 | HANDOFF.md | Section 7 rewritten for the clone, the merge check and delivery; a Built on row in the header |
 
+## Charter Phase 13, LETTER TRAIL design. Done 2026-09-19.
+
+Game six of twelve, the design document only. No game code was written; the build is
+a later conversation. The design document is LETTER-TRAIL.md, which answers every item
+of section 44, settles the six open decisions in the handoff section 4.1, and records
+the finding below. This entry exists because the finding overturns a preferred contract
+in section 46 and the reason must survive in the log, not only in the game's own document.
+
+### The finding: full cover uniqueness is not buildable
+
+The section 46 preferred contract named "uniqueness of the full cover" as the fairness
+claim. It was measured before any design was built on it, because an unachievable claim
+makes the game unbuildable. Measured unique cover rates over the curated answer list, as
+eight adjacency simple path tilings that cover every cell exactly once:
+
+- four by four: about 1.0 percent of built boards have a unique cover
+- five by four: about 1.0 percent
+- five by five and larger: 0.0 percent
+- with a span anchor forcing one long word into the cover: 0.2 percent at six by five, 0.0 at six by six
+
+Where a unique cover did exist the difficulty integer had about six distinct values, too
+few for seven bands. A dense rectangle of common letters simply admits many dictionary
+tilings. The claim is false for this substrate at any playable size.
+
+### The resolution
+
+The fairness claim changed rather than the assertion being kept. LETTER TRAIL hides a
+known set of seven words, tells the player the count, and proves span uniqueness: the
+intended spanning word is the unique longest answer list word that appears anywhere on
+the board as an eight adjacency simple path. That anchors the day's set, is verified
+exactly and cheaply (node counts in the low tens of thousands, a horizon in seconds),
+and is the strongest claim the substrate supports. This is a design finding, not a
+defect; no engine change fixes a word list fact. Section 11 of the design document is
+the fairness claim, section 9 the verifier's two proved claims, SOLVABLE and FAIR under
+the declared model, never UNIQUE full cover.
+
+### Decisions, approved 2026-09-19
+
+1. **Curated themes**, handoff 4.1 decision 1. Without a theme, no hint and no runtime
+   dictionary, tracing a familiar word that is refused is guessing. A theme makes it
+   directed recall against a stated category and shrinks the decoy universe from the
+   whole language to the theme. Evidence: one forty five word theme yields 2,716
+   distinct boards from 3,000 seeds, so a one time set of about twenty four to fifty two
+   themes covers a non repeating 365 day horizon, and themed build acceptance is 82 to
+   86 percent, unchanged from unthemed. The rejected alternative, carrying each day's
+   decoy set in the manifest to earn hints, costs about 54 KB gzipped per horizon and
+   leaves the core loop as rewarded guessing.
+2. **Answer list is commercial safe.** The first candidate, google-10000-english,
+   derives from the LDC Google corpus and its own license disallows commercial use
+   without an LDC license, which fails requirement 8.6 for a commercial product. Replaced
+   with ENABLE, public domain, intersected with wordfreq's top 30,000, Apache 2.0:
+   12,522 words, 40 KB gzipped, build time input only, never served. wordfreq is a build
+   time only dependency.
+3. **A reviewed profanity and slur stop list is mandatory.** The wordfreq intersection
+   contains profanity and slurs, confirmed, so the stop list is subtracted once at
+   curation. One time, not daily, so it does not breach the zero daily content cost rule.
+   Recorded in ASSETS.md.
+4. **No runtime validation list.** The player finds a known set, so there is no "is this
+   a real word" check at play time. The dictionary is offline only. This makes LETTER
+   TRAIL the cheapest of the four word games and sidesteps the section 46 byte budget
+   stress that WORD LADDER and FIVE LETTERS still face.
+5. **Board is six rows by five columns, thirty cells, seven words including the span.**
+   Fits 360 pixels, gives 11.1 percent fairness acceptance, and is the densest board in
+   the suite, so the manual mobile check must measure it in the page.
+6. **Difficulty is decoy word count, held as a hypothesis to calibrate, not settled.**
+   With a theme the decoy universe is the theme rather than the language, so the measured
+   spread of 101 distinct values from the unthemed probe will shrink and must be
+   recalibrated during the build. The named fallback metric, if decoy count collapses a
+   band, is span length combined with theme breadth.
+7. **No win or loss.** Continuum result, words found of seven, a reveal escape, streak
+   defined as played. Registry `hasWinLoss: false` stays.
+8. **Provisional registry values to correct when the game is built:** bucket count from
+   4 to 8 (words found zero through seven, Solved distinguished), and the one line rule
+   tightened to name the spanning word. State version 1 stays.
+
+### The abstraction test, requirement 7.4
+
+Not yet run. The design anticipates no engine change for keyboard path building on the
+grid cursor, because `onActivate`, `onCancel` and a readable `index` let the renderer
+own the path, but the defect report comes after the build, not from the design. No claim
+that the test resolves to zero changes is made here.
+
+### Files
+
+| Path | What it is |
+|---|---|
+| LETTER-TRAIL.md | The design document, all 28 section 44 items and the six 4.1 decisions |
+| ASSETS.md | Six rows for the answer list, themes, ENABLE, wordfreq, and the stop list, all build time only |
+| ARCHITECTURE2.md | The section 46 note amended and this section 56 entry |
+
+### Next
+
+The build, in its own conversation: scaffold through NEW_GAME.md, real rules and
+generator, the themed manifest, module, renderer, certification plan, and the defect
+report. The build corrects the two provisional registry values and calibrates the
+difficulty hypothesis of decision 6.
