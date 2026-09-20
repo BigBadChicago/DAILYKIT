@@ -455,3 +455,26 @@ the result, which is a human pass across real devices.
 - **design-system/ still describes eight games.** The snapshot's GAMES list,
   tokens and marks do not include the four. Its README says it is refreshed from
   the hosted design project, so it is left untouched here.
+- **Two family word sources, kept on purpose.** LETTER TRAIL uses ENABLE
+  intersected with wordfreq; WORD LADDER (and by intent PANGRAM and FIVE LETTERS)
+  uses ENABLE intersected with SCOWL/ESDB. The reason is measured: wordfreq admits
+  proper nouns as four letter lowercase tokens, which a displayed ladder rung
+  cannot tolerate, while ESDB excludes them. A later maintainer must not unify the
+  two sources; doing so reintroduces proper noun rungs (WORD-LADDER.md 12, section
+  46, migration log 2026-09-20).
+- **WORD LADDER hand additions are an empty set today.** The list preparation
+  provides a mechanism for the owner to add plainly common ENABLE words that ESDB
+  50 rejects, but the current deny list plus ESDB 50 needed none, so the shipped
+  hand added set is empty. If players report a common word refused, the owner adds
+  it to the derivation and regenerates.
+- **WORD LADDER 26 key keyboard uses seven across, not ten.** The 44 pixel floor
+  defect above is met for WORD LADDER by an alphabetical seven across keyboard
+  (about 46 pixels a key at 360), not the ten across QWERTY that fails. PANGRAM
+  and FIVE LETTERS still owe their own resolution.
+- **ARCHITECTURE.md file manifest lags the new v3 games.** It lists per file rows
+  for poker-grid, vector, cipher and rotate-lock but not difference-relay or
+  word-ladder, whose files are instead documented in the ARCHITECTURE2.md section 56
+  migration log. WORD LADDER followed the difference-relay precedent rather than
+  reopen the manifest convention mid build. Reconciling the manifest to list every
+  game's files, or retiring it in favour of the migration log, is a documentation
+  decision not taken here.

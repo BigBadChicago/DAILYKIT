@@ -79,7 +79,7 @@ Table columns are fixed as follows and every future entry uses them.
 | POKER-GRID.md | n/a | POKER GRID rules, scoring, tiers, and share layout | none |
 | SLATE.md | n/a | The Phase 9 candidate list and the recommended five | none |
 | CIPHER.md | n/a | CIPHER rules, feedback algorithm, verification, tiers, and share layout | none |
-| WORD-LADDER-PREP.md | n/a | Measured evidence for WORD LADDER's design document; transient, deleted when WORD-LADDER.md absorbs it | none |
+| WORD-LADDER.md | n/a | WORD LADDER rules, par and fairness model, difficulty, deny list, share layout, and the family word source decision | none |
 | src/shared/share-vocabulary.ts | shared | Suite wide share tokens, their glyphs, and their shapes | none |
 | src/shared/poker-hands.ts | shared | Poker hand categories, ordinals, and shared result tier mapping | shared/share-vocabulary |
 | src/core/result.ts | 0 | Result type so rule failures are values rather than throws | none |

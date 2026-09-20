@@ -2290,10 +2290,19 @@ rung count against par, dead end rungs marked, no words
 Primary engine stress test: the validation list as a runtime asset inside the per
 game byte budget, and a par computed exactly offline.
 
-Preparation evidence, 2026-09-19: `WORD-LADDER-PREP.md` measures word length,
+Preparation evidence, 2026-09-19: `WORD-LADDER-PREP.md` measured word length,
 the accepted list against par exactness, difficulty integer candidates, keyboard
-geometry, bytes and word list licensing. It is input for the design document,
-which absorbs it and deletes it.
+geometry, bytes and word list licensing. It was input for the design document,
+which absorbed it and deleted it on 2026-09-20.
+
+Designed and built 2026-09-20: `WORD-LADDER.md` is the design document, answering
+every item of section 44. The game is built on the v3 contract and ships planned.
+The family familiarity source, left open here, is settled: WORD LADDER uses
+SCOWL/ESDB, and the four word games do not converge on one source, for the measured
+reason in the migration log (proper noun contamination in the wordfreq source that
+a displayed rung cannot tolerate). Par is the exact shortest path over the single
+accepted list, with a familiar shortest path screen as the fairness claim; the
+difficulty integer is the search ball below par.
 
 ## PANGRAM
 
@@ -3918,3 +3927,66 @@ The build, in its own conversation: scaffold through NEW_GAME.md, real rules and
 generator, the themed manifest, module, renderer, certification plan, and the defect
 report. The build corrects the two provisional registry values and calibrates the
 difficulty hypothesis of decision 6.
+
+## Charter Phase 13, WORD LADDER design and build. Done 2026-09-20.
+
+Game seven of twelve. This conversation found that the game's design document had
+never been written: `main` carried only `WORD-LADDER-PREP.md`, the transient
+evidence file, and the HANDOFF described the next conversation as the design only.
+The prep states plainly that it is input, not decisions, and that every proposal in
+it is for the design document to confirm or overturn with its own evidence. So the
+design was written first, `WORD-LADDER.md`, answering every item of section 44 and
+settling the six open decisions, then the game was built against it in the same
+conversation, and the prep was deleted. This compresses two charter steps into one
+run, a deliberate deviation from the HANDOFF's design only expectation, recorded here
+because the reason must survive in the log. Every prep measurement was reproduced in
+the container before any number was adopted; the reproductions are in WORD-LADDER.md
+section 30.
+
+### The finding: par is exact only over one list
+
+The prep's load bearing finding, reproduced: if the game accepted every dictionary
+word but scored par over a familiar subset, a player using obscure words would beat
+par on more than half of all pairs (reproduced at 53.9 percent), and par would no
+longer be the optimum the verifier claims. So WORD LADDER computes par as the exact
+shortest path over the single accepted list, and screens every board so at least one
+shortest path is all familiar words (section 11 of the design). Par is then both exact
+and reachable with an ordinary vocabulary, which removes the "under par" bucket. The
+verifier proves SOLVABLE with exact par and FAIR under the familiar path model, never
+a unique path, because a word ladder has many shortest paths by nature.
+
+### The cross game decision: two family word sources, not one
+
+The one cross game decision the HANDOFF said the design must not defer was the family
+familiarity source. Decision, approved 2026-09-20: **WORD LADDER adopts SCOWL/ESDB,
+and the four word games do not converge on one source.** LETTER TRAIL keeps ENABLE
+intersected with wordfreq; WORD LADDER, PANGRAM and FIVE LETTERS adopt ENABLE
+intersected with SCOWL size levels. The reason is measured, not aesthetic: wordfreq is
+a frequency list from a corpus, so a four letter lowercase token list drawn from it
+admits proper nouns and brands (abba, alan, alba, alec, alfa, anna, axel, bach, beth,
+carl, jane and more); a probe of 48 common four letter names and brands found 24 in the
+wordfreq list against 8 in the ESDB list, and the ESDB survivors are all also common
+words. LETTER TRAIL tolerates this because its words are hand curated into themes and
+only ever traced inside a grid, never shown as isolated tokens; WORD LADDER displays
+every rung as a standalone word and cannot hand curate a daily set, so a source that
+admits proper nouns as valid rungs would confuse players. ESDB, a spell checker list,
+excludes proper nouns by construction. The two sources are recorded in ASSETS.md and
+BACKLOG.md so a later maintainer does not unify them and reintroduce proper noun rungs.
+This overturns nothing in section 46, whose WORD LADDER note left the source open; it
+settles it.
+
+### Difficulty and the build result
+
+The difficulty integer is the search ball below par, the count of accepted words
+within par minus one of the start, because par alone has only four distinct values (4
+to 7) and cannot fill seven bands. The reproduced septiles filled seven bands cleanly;
+the build's calibration study on the shipped list set the band edges to
+[278, 436, 641, 878, 1122, 1505] and the manifest was generated and independently
+verified against them: 365 days, solvable, exact par, familiar fair, correct
+difficulty and band, no repeated unordered pair (the symmetry result, since the one
+letter change relation is symmetric so a reverse pair is the same puzzle). The page is
+32.9 KB gzipped, well inside the 150 KB budget, with the 2,332 word accepted list as
+its one runtime asset, the byte cost section 46 anticipated for this game and that
+LETTER TRAIL avoided. The game ships planned: its offline smoke and manual mobile
+checks are the gate refusing stubs until the owner runs them, and going live is a
+separate patch, per the delivery pipeline decision.

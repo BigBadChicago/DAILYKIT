@@ -311,6 +311,34 @@ export const GAME_PLANS: Readonly<Record<string, GamePlan>> = {
        gate refuses, until the owner runs them on devices. No exemption covers a
        new game and none is added, so difference-relay stays planned. */
   },
+  "word-ladder": {
+    ...newGamePlan("word-ladder"),
+    /* WORD-LADDER.md 15: the committed calibration study and the test that reads
+       its septile edges. */
+    "difficulty-calibration": probes(
+      file("data/word-ladder/study.json"),
+      testFile("tests/games/word-ladder/generator.test.ts"),
+    ),
+    /* WORD-LADDER.md 13: a word ladder is a single dependency chain from start to
+       goal and does not split into independent sub puzzles, so there is nothing to
+       decompose. n/a with a person's reason, which the gate accepts. */
+    "decomposition-check": {
+      kind: "n/a",
+      reason:
+        "A word ladder is one path from start to goal, not a set of independent sub puzzles; there is no constraint graph to split (WORD-LADDER.md 13).",
+    },
+    /* WORD-LADDER.md 13a: the one letter change relation is symmetric, so the
+       reverse pair is the same puzzle read backwards; the verifier rejects it as a
+       repeat. Proved, not waived. */
+    "symmetry-check": probes(
+      npm("word-ladder:verify"),
+      testFile("tests/games/word-ladder/generator.test.ts"),
+    ),
+    "share-leak-check": probes(testFile("tests/games/word-ladder/telemetry.test.ts")),
+    /* offline-smoke and manual-mobile-check stay the stub's empty lists, which the
+       gate refuses, until the owner runs them on devices. No exemption covers a
+       new game and none is added, so word-ladder stays planned. */
+  },
   /* NEW_GAME_INSERTION: GAME_PLANS */
 };
 
