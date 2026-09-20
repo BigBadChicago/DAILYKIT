@@ -2290,6 +2290,11 @@ rung count against par, dead end rungs marked, no words
 Primary engine stress test: the validation list as a runtime asset inside the per
 game byte budget, and a par computed exactly offline.
 
+Preparation evidence, 2026-09-19: `WORD-LADDER-PREP.md` measures word length,
+the accepted list against par exactness, difficulty integer candidates, keyboard
+geometry, bytes and word list licensing. It is input for the design document,
+which absorbs it and deletes it.
+
 ## PANGRAM
 
 Added 2026-09-19. Game eight in build order.
