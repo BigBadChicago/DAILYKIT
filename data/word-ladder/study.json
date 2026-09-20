@@ -1,0 +1,36 @@
+{
+  "seeds": 1200,
+  "total": 1200,
+  "screened": 676,
+  "acceptance": 56.33,
+  "bandEdges": [
+    278,
+    436,
+    641,
+    878,
+    1122,
+    1505
+  ],
+  "bandCounts": [
+    97,
+    97,
+    96,
+    97,
+    96,
+    98,
+    95
+  ],
+  "parCounts": {
+    "4": 169,
+    "5": 245,
+    "6": 169,
+    "7": 93
+  },
+  "rejections": {
+    "par": 70,
+    "fairness": 454,
+    "reused": 0,
+    "band": 0,
+    "accepted": 676
+  }
+}

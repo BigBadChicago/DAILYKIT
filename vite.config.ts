@@ -118,6 +118,12 @@ const TARGETS: Readonly<Record<string, Target>> = {
     gameId: "difference-relay",
     productionSafe: false,
   },
+  "word-ladder": {
+    outPath: "word-ladder",
+    html: "src/shell/entries/word-ladder.html",
+    gameId: "word-ladder",
+    productionSafe: false,
+  },
   /* NEW_GAME_INSERTION: TARGETS */
 };
 

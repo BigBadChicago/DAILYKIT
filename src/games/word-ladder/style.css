@@ -1,0 +1,149 @@
+/*
+ * WORD LADDER play area. Requirement 7.3.8 gives a game its accent and board
+ * typography and nothing else; every other colour is the suite theme's.
+ *
+ * The keyboard is seven keys across so each key clears the 44 pixel tap floor at
+ * a 360 pixel viewport (WORD-LADDER.md 5, F5). The word cells and every control
+ * meet the same floor. Meaning is never colour alone: progress on a rung is a
+ * word and a marker, and the goal and par are written in text.
+ */
+
+.wl-game {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  max-width: 24rem;
+  margin: 0 auto;
+  font-family: var(--dk-board-font, ui-monospace, monospace);
+}
+
+.wl-status,
+.wl-goal {
+  margin: 0;
+  min-height: 1.4em;
+  text-align: center;
+  font-family: var(--dk-font, system-ui, sans-serif);
+  font-size: 0.95rem;
+}
+
+.wl-goal {
+  color: var(--dk-text-dim, inherit);
+}
+
+.wl-word {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  width: 100%;
+}
+
+.wl-cell {
+  flex: 0 0 auto;
+  min-width: 48px;
+  min-height: 48px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  border: 2px solid var(--dk-border, currentColor);
+  border-radius: 8px;
+  background: var(--dk-surface, transparent);
+  color: inherit;
+  touch-action: manipulation;
+}
+
+.wl-cell[aria-pressed="true"] {
+  border-color: hsl(var(--dk-accent-hue, 128) 70% 45%);
+  outline: 2px solid hsl(var(--dk-accent-hue, 128) 70% 45%);
+}
+
+.wl-keys {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  user-select: none;
+}
+
+.wl-key-row {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+}
+
+.wl-key {
+  flex: 1 1 0;
+  min-width: 44px;
+  min-height: 44px;
+  font-size: 1rem;
+  border: 1px solid var(--dk-border, currentColor);
+  border-radius: 6px;
+  background: var(--dk-surface, transparent);
+  color: inherit;
+  touch-action: manipulation;
+}
+
+.wl-key:disabled,
+.wl-cell:disabled,
+.wl-run:disabled,
+.wl-undo:disabled,
+.wl-reveal:disabled {
+  opacity: 0.5;
+}
+
+.wl-controls {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  width: 100%;
+}
+
+.wl-run,
+.wl-undo,
+.wl-reveal {
+  flex: 1 1 0;
+  min-height: 44px;
+  font-size: 0.95rem;
+  font-family: var(--dk-font, system-ui, sans-serif);
+  border: 1px solid var(--dk-border, currentColor);
+  border-radius: 6px;
+  background: var(--dk-surface, transparent);
+  color: inherit;
+  touch-action: manipulation;
+}
+
+.wl-run {
+  background: hsl(var(--dk-accent-hue, 128) 60% 40%);
+  color: var(--dk-on-accent, #fff);
+  border-color: transparent;
+}
+
+.wl-ladder {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 100%;
+}
+
+.wl-rung {
+  font-size: 1.1rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.wl-rung-start {
+  color: var(--dk-text-dim, inherit);
+}
+
+.wl-rung[data-progress="-1"]::after {
+  content: " ▽";
+}
+
+.wl-rung[data-progress="1"]::after {
+  content: " △";
+}

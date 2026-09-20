@@ -7,12 +7,12 @@ and it describes exactly one conversation: the next one.
 
 | Field | Value |
 |---|---|
-| Written | 2026-09-19, after the LETTER TRAIL design merged (PR #8) and the WORD LADDER preparation evidence was gathered |
-| Built on | Base commit `dcd4409` ("Merge pull request #8 from BigBadChicago/claude/letter-trail-design"), branch `claude/word-ladder-prep`, commit subject "WORD LADDER preparation evidence" |
-| For the conversation | **Charter Phase 13: WORD LADDER design**, game seven of twelve, the design document only |
+| Written | 2026-09-20, after WORD LADDER was designed and built in one conversation |
+| Built on | Base commit `96950b5` ("Merge pull request #9 from BigBadChicago/claude/word-ladder-prep"), branch `claude/word-ladder-build`, commit subject "WORD LADDER design and build" |
+| For the conversation | **Charter Phase 13: PANGRAM design**, game eight of twelve, the design document only |
 | Phase scheme | Charter phases, Section 9 of the project instructions. The v3 migration phases are complete |
-| Before any work | Read WORD-LADDER-PREP.md in full; it is measured input, not decisions. The design document confirms or overturns each item with its own evidence, then absorbs the file and deletes it in the same change |
-| Next after this | The WORD LADDER build, then PANGRAM, FIVE LETTERS, then TURN TABLE, RING BALANCE, ORDER OF OPERATIONS, each in its own conversation |
+| Before any work | There is no PANGRAM prep file. PANGRAM starts from the section 46 note, the LETTER TRAIL and WORD LADDER precedents, and its own reproduced measurements |
+| Next after this | The PANGRAM build, then FIVE LETTERS, then TURN TABLE, RING BALANCE, ORDER OF OPERATIONS, each in its own conversation |
 
 ---
 
@@ -25,28 +25,25 @@ Then read these before doing anything, in this order, and nothing else unless a
 section below names it.
 
 1. **HANDOFF.md**, this file.
-2. **WORD-LADDER-PREP.md**. The measured evidence gathered before this
-   conversation so the design starts from numbers, not from the section 46 note
-   alone. It is input, not decisions: every "proposed" item is for the design
-   document to confirm or overturn with its own reproduced measurements. Its
-   section 4 lists the open questions the design must answer.
-3. **ARCHITECTURE2.md**. The section 46 WORD LADDER note and its preparation
-   evidence line, section 3 (the contract), 9 to 18 (difficulty, verification,
-   decomposition and symmetry, telemetry, share grammar, leak checks, artifact,
-   fingerprint), section 21 (input families), section 35's word graph family, 44
-   (the authoring contract) and 45 (the gate). Read the section 56 entries
-   "Charter Phase 13, LETTER TRAIL design" (the precedent for a word game design)
-   and the DIFFERENCE RELAY entry.
-4. **LETTER-TRAIL.md**. The one worked word game design document, and the direct
-   precedent: it abandoned the section 46 full cover uniqueness claim after
-   measuring it, chose ENABLE intersected with wordfreq as its familiarity source,
-   ships no runtime validation list, and settled a themed known set model. WORD
-   LADDER's design cites it where the family should agree, above all on the
-   familiarity source (see the design task, item 4).
+2. **ARCHITECTURE2.md**. The section 46 PANGRAM note, section 3 (the contract),
+   9 to 18 (difficulty, verification, decomposition and symmetry, telemetry, share
+   grammar, leak checks, artifact, fingerprint), section 21 (input families),
+   section 44 (the authoring contract) and 45 (the gate). Read the section 56
+   entries "Charter Phase 13, LETTER TRAIL design" and "Charter Phase 13, WORD
+   LADDER design and build" as the two worked word game precedents.
+3. **WORD-LADDER.md**. The most recent worked word game design, and the one that
+   settled the family word source: the four word games do not converge, WORD
+   LADDER uses ENABLE intersected with SCOWL/ESDB, LETTER TRAIL uses wordfreq. It
+   also shows the exact-measure-first discipline, the search ball difficulty
+   integer, the independent verifier, and the runtime word asset byte cost. PANGRAM
+   cites it where the word game family should agree.
+4. **LETTER-TRAIL.md**. The first worked word game design: it abandoned an
+   aspirational uniqueness claim after measuring it, and ships no runtime validation
+   list. PANGRAM must decide its own validation model the same way.
 5. **ARCHITECTURE.md**. Presentation, Contract, Template, Build model, Suite
-   decisions, and the File manifest (which now lists WORD-LADDER-PREP.md as
-   transient).
-6. **BACKLOG.md**, most of all "Logged at the slate amendment, four word games".
+   decisions, and the File manifest.
+6. **BACKLOG.md**, most of all the "four word games" entries and the two source
+   word list decision recorded 2026-09-20.
 
 Then **NEW_GAME.md**, the procedure, and both **ROTATE-LOCK.md** and
 **DIFFERENCE-RELAY.md** as worked v3 design references.
@@ -56,7 +53,7 @@ the project instructions. The project instructions' Section 0 still says eight
 games; the architecture documents amend it to twelve. If this file disagrees with
 ARCHITECTURE2.md, this file is stale; say so.
 
-This conversation is the WORD LADDER design; the owner has waived per turn
+This conversation is the PANGRAM design; the owner has waived per turn
 confirmation for the run, so state the phase in one line and proceed.
 
 ---
@@ -64,101 +61,95 @@ confirmation for the run, so state the phase in one line and proceed.
 ## 2. Where the project stands
 
 **Suite.** Twelve games in `src/shell/registry.ts`: POKER GRID, VECTOR, CIPHER
-(live); ROTATE LOCK, DIFFERENCE RELAY (built, planned, each waiting on its manual
-mobile check); LETTER TRAIL (designed, not yet built), WORD LADDER, PANGRAM, FIVE
-LETTERS (planned word games); TURN TABLE, RING BALANCE, ORDER OF OPERATIONS
-(planned, deferred behind the word games).
+(live); ROTATE LOCK, DIFFERENCE RELAY, WORD LADDER (built, planned, each waiting on
+its manual mobile check and go live patch); LETTER TRAIL (designed, not yet built);
+PANGRAM, FIVE LETTERS (planned word games, not yet designed); TURN TABLE, RING
+BALANCE, ORDER OF OPERATIONS (planned, deferred behind the word games).
 
-**LETTER TRAIL is designed and merged (PR #8),** documents only: LETTER-TRAIL.md,
-the ASSETS rows, the section 46 amendment, the section 56 design entry. Its build
-is a separate conversation, not this one. Its lasting relevance to WORD LADDER is
-the familiarity source decision and the "no runtime validation list" precedent.
+**WORD LADDER is designed and built in the patch that carries this handoff.**
+WORD-LADDER.md is the design; the game is a full v3 module with generator, an
+independent verifier, a calibration study, a 365 day manifest, tests, and its wiring
+into the registry (planned), vite, certify GAME_PLANS, and npm scripts. It ships
+planned: its offline smoke and manual mobile checks are the gate refusing stubs, and
+going live is a separate patch after the owner's UAT. The prep file was absorbed and
+deleted. The family word source decision is settled and recorded (section 12 of the
+design, section 56 migration log, BACKLOG.md): WORD LADDER, PANGRAM and FIVE LETTERS
+use SCOWL/ESDB, LETTER TRAIL uses wordfreq, and the four never share one list.
 
-**WORD LADDER preparation is merged in this same patch as this handoff:**
-WORD-LADDER-PREP.md plus a file manifest row and a section 46 evidence line. The
-prep proposes four letter words, ESDB 50 accepted over ESDB 35 familiar, exact par
-with an all familiar shortest path, the search ball as the banded difficulty
-integer, an alphabetical keyboard for the 44 pixel floor, an owner reviewed deny
-list, and the accepted list as the only runtime asset. All of it is a hypothesis
-for the design to test.
-
-**Green baseline to regress against,** measured 2026-09-19 on a clone of
-`origin/main` at the LETTER TRAIL merge. The WORD LADDER design is documents only
-and does not change it:
+**Green baseline to regress against,** measured 2026-09-20 in the container on
+`claude/word-ladder-build` at base `96950b5`, with WORD LADDER built:
 
 | Gate | Result |
 |---|---|
-| Typecheck | three tsconfigs |
+| Typecheck | three tsconfigs, zero errors |
 | Dependency check | layers verified |
-| Tests | 75 files, 983 tests |
-| Verifiers | POKER GRID, CIPHER, VECTOR, ROTATE LOCK, DIFFERENCE RELAY, each 365 days |
-| Production build | `engine-v2.js` about 30.4 KB |
-| Byte budget | Hub 18.1, POKER GRID 28.3, CIPHER 26.2, VECTOR 28.5, About 3.5 KB gzipped |
-| Certification | `npm run certify -- --check`: three live games production safe |
+| Tests | 82 files, 1,049 tests (66 new for WORD LADDER) |
+| Verifiers | POKER GRID, CIPHER, VECTOR, ROTATE LOCK, DIFFERENCE RELAY, WORD LADDER, each 365 days |
+| Production build | `engine-v2.js` about 30.4 KB; word-ladder excluded, being planned |
+| Byte budget | Hub 18.1, POKER GRID 28.3, CIPHER 26.2, VECTOR 28.5, About 3.5 KB; WORD LADDER 32.9 KB measured in a throwaway live build |
+| Certification | `npm run certify`: three live games production safe; word-ladder not evaluated, being planned |
 
 ---
 
 ## 3. Preconditions to check first
 
-1. **The prep patch merged.** WORD-LADDER-PREP.md is present on `main`, the file
-   manifest row is in ARCHITECTURE.md, and the section 46 evidence line is in
-   ARCHITECTURE2.md. If not, say so.
-2. **The LETTER TRAIL design is present** (LETTER-TRAIL.md, section 56 entry), so
-   the family familiarity source decision can cite it.
-3. **The baseline in section 2 still holds.** The design is documents only, so it
-   should; confirm if anything downstream is touched.
+1. **The WORD LADDER patch merged.** WORD-LADDER.md is on `main`,
+   `src/games/word-ladder/` exists, `data/word-ladder/` has accepted.txt,
+   familiar.txt, the manifest and study.json, and WORD-LADDER-PREP.md is gone. If
+   not, say so.
+2. **The baseline in section 2 still holds.** A PANGRAM design is documents only, so
+   it should; confirm if anything downstream is touched.
 
-Nothing about ROTATE LOCK or DIFFERENCE RELAY going live is this conversation's
-work; leave both planned unless the owner says a manual check passed.
+Nothing about ROTATE LOCK, DIFFERENCE RELAY or WORD LADDER going live is this
+conversation's work; leave all three planned unless the owner says a manual check
+passed.
 
 ---
 
-## 4. The task: WORD LADDER design, game seven of twelve
+## 4. The task: PANGRAM design, game eight of twelve
 
-Write WORD-LADDER.md, the design document only, no game code, exactly as LETTER
-TRAIL's design conversation did. It answers every item of ARCHITECTURE2 section 44
-and the open questions in WORD-LADDER-PREP.md section 4, and it reproduces the
-prep's measurements in the container before adopting any number. The prep's seeds
-and probe are named so the generator can match them.
+Go straight to PANGRAM.md, the design document only, no game code, as the WORD
+LADDER conversation did once it found its prep unmerged. There is no PANGRAM prep
+file to absorb. The design answers every item of ARCHITECTURE2 section 44 and
+reproduces its own measurements in the container before adopting any number.
 
 What the design must settle, at least:
 
-1. **Confirm or overturn each prep proposal with reproduced evidence.** Word
-   length four, ESDB 50 over ESDB 35, exact par with an all familiar shortest path,
-   the search ball as the banded integer with par and detours as levers. A number
-   the design cannot reproduce is not used.
-2. **The difficulty integer, and prove seven band resolution.** Par alone has four
-   values and collapses the bands, the DIFFERENCE RELAY lesson. The search ball is
-   the proposal; it is a hypothesis until the design shows it tracks human
-   difficulty and fills seven bands, with a named fallback if it does not.
-3. **The uniqueness and fairness claims the verifier will prove,** stated exactly
-   as SOLVABLE and one fairness claim, never an aspirational claim. Par exactness
-   depends on one accepted list; the prep's F2 shows why. The verifier is
-   independent and never imports the generator.
-4. **The family familiarity source.** LETTER TRAIL uses ENABLE intersected with
-   wordfreq; the prep proposes ESDB. Settle whether WORD LADDER matches LETTER
-   TRAIL, adopts ESDB, and whether the four word games converge on one source with
-   one ASSETS.md entry and one notice. Games may not import from each other, so a
-   shared list is a tools step that writes each game's own copy. This is prep open
-   question 3 and it is the one cross game decision the design must not defer.
-5. **The deny list**, owner reviewed, applied to every list, per prep F7. ENABLE
-   and ESDB both contain slurs and vulgar words; a probe found seven of twenty in
-   ESDB 50. Recorded in ASSETS.md.
-6. **Input at the 44 pixel floor**, the alphabetical keyboard of prep F5, measured
-   in the page at 360 pixels, not trusted from the stylesheet.
-7. **Failure model, buckets, share grammar, telemetry patterns and leak checks,**
-   the same contract every game meets. The registry row's provisional values are
-   corrected in the build, not here, but the design states the correct values.
+1. **The rule and the substrate.** The registry one line rule is "Make words from
+   seven letters, always using the centre letter, and find the word that uses all
+   seven." The substrate is a seven letter set with one required centre letter; the
+   pangram is the word using all seven. Decide the exact scoring: how partial words
+   score, whether length matters, and what the target is.
+2. **The word source.** PANGRAM uses SCOWL/ESDB, per the settled family decision,
+   not wordfreq. It is a word game that must validate free player words, so like
+   WORD LADDER it ships a runtime accepted list; measure its byte cost. Decide the
+   accepted word length range.
+3. **Generation and the daily letter set.** How a day's seven letters are drawn so
+   that at least one pangram exists and enough words are makeable, and how the set
+   is verified. This is the generation acceptance measurement.
+4. **The difficulty integer, seven band resolution, and the named fallback.** As
+   every game: an emergent integer that fills seven bands, proved, with a fallback
+   if it collapses. Candidate integers: the count of makeable words, or the count
+   of pangrams.
+5. **The fairness and any uniqueness claims,** stated exactly as the verifier will
+   prove them, never aspirational.
+6. **The deny list**, owner reviewed, applied to the accepted list, as WORD LADDER
+   did.
+7. **Input at the 44 pixel floor.** PANGRAM needs only seven letter keys, so the
+   floor is met easily; the BACKLOG note says do not lay them out as a honeycomb of
+   seven hexagons (trade dress).
+8. **Failure model, buckets, share grammar, telemetry patterns and leak checks,**
+   the contract every game meets. The registry row for pangram has provisional
+   values (hue 208, a bucket count, hasWinLoss); the design states the correct
+   values and the build corrects the row.
 
-Deliverable: WORD-LADDER.md, the ASSETS.md rows it needs (or a note that the
-family source decision defers them to the build), any ARCHITECTURE2 section 46
-amendment and a section 56 design entry, and the deletion of WORD-LADDER-PREP.md
-in the same change once the design has absorbed what it keeps. The prep exists only
-until the design supersedes it.
+Deliverable: PANGRAM.md, the ASSETS.md rows it needs (or a note deferring the exact
+committed files to the build), any ARCHITECTURE2 section 46 amendment and a section
+56 design entry, and the rewritten HANDOFF.md for the PANGRAM build. No game code.
 
-**Size.** WORD-LADDER.md is well over 300 lines. The owner has waived the wait, so
-produce it, but still gather and show the reproduced measurements before writing
-the prose that depends on them.
+**Size.** PANGRAM.md is well over 300 lines. The owner has waived the wait, so
+produce it, but still gather and show the reproduced measurements before writing the
+prose that depends on them.
 
 ---
 
@@ -166,13 +157,13 @@ the prose that depends on them.
 
 | Requirement | Exists today as | Notes |
 |---|---|---|
-| Exact shortest path and par precedent | `src/games/difference-relay/solver.ts` | Breadth first search with an independent verifier |
-| Word game design precedent | LETTER-TRAIL.md | Familiarity source, no runtime validation list, themed known set |
-| Keyboard or grid input | `src/ui/gridCursor.ts`, `src/ui/listCursor.ts` | An alphabetical key grid is a renderer concern on gridCursor |
-| Scaffold and procedure | `tools/new-game.ts`, NEW_GAME.md | For the build, not this design |
-| Manifest codec | `src/engine/manifest-codec.ts` | Light obfuscation of start, goal and par route |
-| Word lists | ENABLE and ESDB, named in WORD-LADDER-PREP.md | Offline only; the design sets the family source |
-| Gate plan | `GAME_PLANS` in `tools/certify.ts` | For the build |
+| Word game design precedent, SCOWL source | WORD-LADDER.md, `src/games/word-ladder/` | Runtime accepted list, deny list, exact measure first, independent verifier |
+| Word game design precedent, validation model | LETTER-TRAIL.md | Chose to ship no runtime dictionary; PANGRAM must decide its own |
+| Runtime word asset pattern | `src/games/word-ladder/words.ts`, `tools/word-ladder-generate.ts` | Committed list embedded as source, derived offline from ENABLE and ESDB |
+| SCOWL/ESDB derivation | the WORD LADDER tools and `data/word-lists/deny.txt` | The family source; PANGRAM derives its own list the same way |
+| Keyboard input | `src/games/word-ladder/render.ts` | A letter set keyboard as a renderer concern under custom input |
+| Manifest codec | `src/engine/manifest-codec.ts` | Light obfuscation of the day's letters |
+| Scaffold, gate plan | `tools/new-game.ts`, `GAME_PLANS` in `tools/certify.ts` | For the build |
 
 ---
 
@@ -181,14 +172,15 @@ the prose that depends on them.
 | File | What it is |
 |---|---|
 | HANDOFF.md | This file |
-| WORD-LADDER-PREP.md | The measured evidence for WORD LADDER, transient, deleted when the design absorbs it |
-| LETTER-TRAIL.md | The worked word game design precedent |
+| WORD-LADDER.md | The most recent worked word game design and build |
+| LETTER-TRAIL.md | The first worked word game design |
 | ARCHITECTURE2.md | Active architecture, v3 contract, gate, concept notes, migration and phase log |
 | ARCHITECTURE.md | The v2 record, the file manifest, every settled decision |
-| ASSETS.md | Every shipped asset, and the LETTER TRAIL build time word data rows |
-| BACKLOG.md | Everything deliberately not built |
+| ASSETS.md | Every shipped asset, and the word game build time and runtime word data rows |
+| BACKLOG.md | Everything deliberately not built, including the two source word list decision |
 | NEW_GAME.md | The authoring procedure, for the build |
 | ROTATE-LOCK.md, DIFFERENCE-RELAY.md | Worked v3 design references |
+| src/games/word-ladder/ | The worked word game code to model PANGRAM's build on later |
 | tools/ship.ps1 | The owner's one command delivery |
 
 ---
@@ -211,13 +203,15 @@ checks, UAT and the one delivery command.
    subject, not the delivered commit id, because the owner's `git am` makes a new
    commit. `main` may carry the owner's own commits after the base; that is normal.
 2. **Work on a local branch named for the work,** for example
-   `git switch -c claude/word-ladder-design`. Record the commit the clone checked
-   out; it is the next handoff's base.
+   `git switch -c claude/pangram-design`. Record the commit the clone checked out;
+   it is the next handoff's base.
 3. **Set a local git identity before committing** (the container has none):
    `git config user.email "claude@dailykit.local" && git config user.name "Claude"`.
 4. **Deliver when every automated gate is green.** A documents only design does not
-   change code, so run typecheck, the dependency check and `npm run certify --
-   --check` to prove no regression, and confirm only the intended documents changed.
+   change code, so run typecheck, the dependency check and `npm run certify` to
+   prove no regression, and confirm only the intended documents changed. A design
+   plus build (as WORD LADDER became) runs the full gate: typecheck (three configs),
+   depcheck, the whole test suite, the game verifier, build, budget, and certify.
    Commit everything including the rewritten HANDOFF.md as one commit, then:
 
    ```
@@ -234,14 +228,17 @@ checks, UAT and the one delivery command.
 
    The script branches from the base, applies and commits the patch, pushes, and
    prints the pull request link. It refuses a dirty tree and a patch with no base.
-5. **Before running ship, the owner clears any uncommitted scratch** (a stray
-   `new-game` scaffold, for instance). `git clean` scoped to named paths, never a
-   bare clean, and only after confirming the scratch exists in no commit.
+5. **Before running ship, the owner clears any uncommitted scratch.** `git clean`
+   scoped to named paths, never a bare clean, and only after confirming the scratch
+   exists in no commit.
 6. **Pushing from the container is not possible and is not attempted.**
-7. **A planned game cannot enter a release build;** `npm run build:harness` builds
-   all targets including planned ones for measuring a page at 360 pixels.
+7. **A planned game cannot enter a release build.** To measure a planned game's page
+   at 360 pixels, build with the certify build mode after temporarily marking it
+   live in a throwaway copy of the tree, as the WORD LADDER budget was measured, or
+   use `npm run build:harness`. Never commit the live flip.
 8. **ESDB and ENABLE stay offline.** Neither CI nor the browser fetches or builds
-   them; derived lists are committed with the ESDB notice, per prep section 1.
+   them; derived lists are committed with the ESDB notice, which ships on the About
+   page.
 
 ---
 
@@ -257,8 +254,8 @@ checks, UAT and the one delivery command.
 5. The owner has waived the wait before long output for this run; still show
    reproduced evidence before prose that depends on it.
 6. Never reconstruct charter text that cannot be read. Ask.
-7. Settled designs are not reopened: the LETTER TRAIL design and the POKER GRID
-   locked decisions stand.
+7. Settled designs are not reopened: the LETTER TRAIL and WORD LADDER designs and
+   the POKER GRID locked decisions stand. The two source word list decision stands.
 8. Anything outside the phase goes to BACKLOG.md with a one line rationale.
 9. Every file added or repurposed is recorded in the architecture documents.
 10. v3 telemetry is the player's own run log on device. Any proposal that sends it
