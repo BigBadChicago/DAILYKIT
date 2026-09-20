@@ -339,6 +339,31 @@ export const GAME_PLANS: Readonly<Record<string, GamePlan>> = {
        gate refuses, until the owner runs them on devices. No exemption covers a
        new game and none is added, so word-ladder stays planned. */
   },
+  pangram: {
+    ...newGamePlan("pangram"),
+    /* PANGRAM.md 15: the committed calibration study and the test that reruns it
+       from the same seeds and demands the same septile edges. */
+    "difficulty-calibration": probes(
+      file("data/pangram/study.json"),
+      testFile("tests/games/pangram/generator.test.ts"),
+    ),
+    /* PANGRAM.md 13: every answer contains the centre letter, so a day is one
+       set of words sharing one letter, not a constraint graph that could split
+       into independent sub puzzles. n/a with a person's reason. */
+    "decomposition-check": {
+      kind: "n/a",
+      reason:
+        "A PANGRAM day is one list of words that all share the centre letter; there is no constraint graph to split (PANGRAM.md 13).",
+    },
+    /* PANGRAM.md 13a: a day is invariant under reordering its letters, so the
+       set is stored alphabetically and the verifier refuses any set shipped
+       twice, under any centre. Proved, not waived. */
+    "symmetry-check": probes(npm("pangram:verify"), testFile("tests/games/pangram/generator.test.ts")),
+    "share-leak-check": probes(testFile("tests/games/pangram/telemetry.test.ts")),
+    /* offline-smoke and manual-mobile-check stay the stub's empty lists, which the
+       gate refuses, until the owner runs them on devices. No exemption covers a
+       new game and none is added, so pangram stays planned. */
+  },
   /* NEW_GAME_INSERTION: GAME_PLANS */
 };
 

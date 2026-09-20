@@ -10,6 +10,16 @@ A game is a module whose default export is `defineGameV3(...)` over a `GameModul
 
 ## 2. The order of work
 
+**One conversation, design through delivery.** Standing rule since 2026-09-20,
+set by the owner: a game's conversation runs every step below that happens in
+the container, from the design document to the delivery patch, in one
+uninterrupted pass. It is pre approved: no stops, no checkpoints and no questions.
+Where a document leaves a choice open, decide, record the decision and its reason,
+and keep moving. Only a genuine unresolvable contradiction in the source documents
+or a hard technical impossibility halts the run. It ends when the patch is ready;
+the owner's only action is the `tools/ship.ps1` command. Step 8, going live, is a
+separate later patch after the owner's manual checks, never part of this run.
+
 1. **Design document.** Write the game's design document before any code. Exit condition: it answers every item of ARCHITECTURE2.md section 44, listed in section 4 below, and the rules are testable in Node without a browser and need no invented behavior.
 2. **Scaffold.** For a slate game that already has a `planned` registry row, run `npm run new-game -- --id <id>`: the row is adopted and the registry is left alone, template decision 10. For a new id, run `npm run new-game -- --id <kebab-case-id> --name "<DISPLAY NAME>" --hue <0-359>`. A live id is refused either way. Exit condition: the scaffold's own tests pass under `npm test` and nothing else was edited. Section 12 lists what it writes. Correct the adopted row's provisional values in the same change that builds the game, because the module test holds the two together.
 3. **Rules.** Replace the scaffold's rules with the real ones, with complete tests, before any renderer is touched. Exit condition: every rejection path, terminal condition, determinism property and one legal state property pass in Node.

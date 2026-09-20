@@ -1,0 +1,157 @@
+/*
+ * PANGRAM play area. Requirement 7.3.8 gives a game its accent and board
+ * typography and nothing else; every other colour is the suite theme's.
+ *
+ * The seven letter keys sit four over three, a plain keypad, never a honeycomb
+ * of hexagons (BACKLOG.md, trade dress). At 360 pixels each key is far wider
+ * than the 44 pixel tap floor (PANGRAM.md 5). The centre letter is marked by a
+ * thick border, an underline and the word "centre" in its label, never by
+ * colour alone.
+ */
+
+.pg-game {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  max-width: 24rem;
+  margin: 0 auto;
+  font-family: var(--dk-board-font, ui-monospace, monospace);
+}
+
+.pg-status {
+  margin: 0;
+  min-height: 1.4em;
+  text-align: center;
+  font-family: var(--dk-font, system-ui, sans-serif);
+  font-size: 0.95rem;
+}
+
+.pg-meter {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 3px;
+  width: 100%;
+  height: 10px;
+}
+
+.pg-meter-cell {
+  border: 1px solid var(--dk-border, currentColor);
+  border-radius: 3px;
+}
+
+.pg-meter-cell[data-full="true"] {
+  background: hsl(var(--dk-accent-hue, 208) 65% 45%);
+}
+
+.pg-draft {
+  min-height: 2.4rem;
+  margin: 0;
+  font-size: 1.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.pg-keys {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+}
+
+.pg-key-row {
+  display: grid;
+  gap: 8px;
+}
+
+.pg-key-row-top {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.pg-key-row-bottom {
+  grid-template-columns: repeat(3, 1fr);
+  padding: 0 12.5%;
+}
+
+.pg-key {
+  min-width: 44px;
+  min-height: 56px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  border: 2px solid var(--dk-border, currentColor);
+  border-radius: 10px;
+  background: var(--dk-surface, transparent);
+  color: inherit;
+  touch-action: manipulation;
+}
+
+.pg-key[data-centre="true"] {
+  border-width: 4px;
+  border-color: hsl(var(--dk-accent-hue, 208) 65% 45%);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.pg-controls {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  width: 100%;
+}
+
+.pg-controls button,
+.pg-finish {
+  min-height: 48px;
+  min-width: 44px;
+  font-family: var(--dk-font, system-ui, sans-serif);
+  font-size: 1rem;
+  border: 1px solid var(--dk-border, currentColor);
+  border-radius: 8px;
+  background: var(--dk-surface, transparent);
+  color: inherit;
+  touch-action: manipulation;
+}
+
+.pg-finish {
+  width: 100%;
+}
+
+.pg-found,
+.pg-missed {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+}
+
+.pg-found-word[data-pangram="true"],
+.pg-missed-word[data-pangram="true"] {
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.pg-missed-heading {
+  margin: 0.4rem 0 0;
+  width: 100%;
+  font-family: var(--dk-font, system-ui, sans-serif);
+  font-size: 0.9rem;
+}
+
+button:disabled {
+  opacity: 0.5;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .pg-game[data-reduced-motion="false"] .pg-key:active {
+    transform: scale(0.96);
+  }
+}

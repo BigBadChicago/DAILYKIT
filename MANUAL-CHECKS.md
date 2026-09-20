@@ -297,6 +297,26 @@ that path touches storage, the help panel, and the handoff to today.
 | Open statistics | Games played still reads zero |
 | Reload halfway through a practice board | Today's board loads, not the practice board again |
 
+## Section 7. PANGRAM
+
+**Why.** PANGRAM is the first game whose answers come from a word list a person
+has to judge, and the first with a seven key keypad. Automation proves the lists
+are consistent; only a person can say the words are fit to show.
+
+**What to do.** Build a throwaway copy with PANGRAM marked live, as the handoff
+describes, then at 360 by 780:
+
+| Step | Pass |
+|---|---|
+| Read `data/word-lists/deny.txt` | Every entry is a word you are content to refuse; say which to drop or add |
+| Skim the missed words list at the end of three days | No word you would be unhappy to show a player |
+| The keypad | Seven keys, four over three, the centre key marked by border, underline and its label, no honeycomb |
+| Tap each key with a thumb | Every key and Delete, Shuffle, Enter and Finish is easy to hit |
+| Tap Finish once | It asks for a second tap and nothing ends |
+| A Monday then a Saturday | Saturday has clearly more to find than Monday |
+| Share after finishing | Four lines: title, meter, opening finds, the URL |
+| Offline, as in Section 5 | Today's letters play from cache |
+
 ## If something fails
 
 Open a new chat in VS Code, Agent mode, and type `/manual-check` followed by

@@ -38,6 +38,7 @@ pipeline, theme/chrome, offline behavior, and certification gate.
 | Deployment | Cloudflare Pages at `dailykit.providentia.games` |
 | Migration status | Phases 1 to 4 are done: the contract and engine seams, then VECTOR, CIPHER and POKER GRID, each implementing v2 and v3 at once. Phase 5 is done: part A moved the shell, the hub and the daily card to v3 with one share composer, and part B made the section 45 gate a CI job whose committed records decide which games a release contains. Phase 6 is done, 2026-09-17: the v2 contract is deleted, every game's default export is its v3 module, and the scaffold writes v3 and a certification plan row. Charter Phase 13, 2026-09-17: ROTATE LOCK, the first new game on v3, is built and verified, and stays planned until its manual mobile check (section 56) |
 | Chosen lineup | Approved 2026-09-13: the five recommended concepts become the new build slate, DIFFERENCE RELAY, TURN TABLE, RING BALANCE, ORDER OF OPERATIONS, ROTATE LOCK. This supersedes SLATE.md's five for new work; the three legacy games stay live. Composition A approved the same day: the suite is eight games, not five, and TALLY DROP and RECALL are cancelled. ROTATE LOCK was named VECTOR LOCK until the rename that removed the collision with the shipped VECTOR. Carried into `src/shell/registry.ts`, section 56. **Amended 2026-09-19 by the owner:** four word games, LETTER TRAIL, WORD LADDER, PANGRAM and FIVE LETTERS, are the next four built, in that order, ahead of TURN TABLE, RING BALANCE and ORDER OF OPERATIONS, which stay approved and move behind them. The suite is twelve games. Section 56, "Slate amendment: four word games" |
+| Working rule | Amended 2026-09-20 by the owner: each remaining game is designed, built, tested and packaged in one conversation, pre approved, with no stops and no questions, ending when the delivery patch is ready. The owner's only action is the `tools/ship.ps1` command, then the manual checks before a separate go live patch. HANDOFF.md section 8, NEW_GAME.md section 2 |
 | This document | The active architecture target. ARCHITECTURE.md is the v2 record the legacy games still satisfy and is retained until migration completes |
 
 The original architecture established the project as a layered static application with
@@ -2320,6 +2321,23 @@ continuous score ladder toward the pangram, no words
 Primary engine stress test: a continuous score whose maximum is a word count the
 player cannot see, and keeping the layout clear of other games' trade dress.
 
+Designed and built 2026-09-20: `PANGRAM.md` answers every item of section 44 and
+the game ships planned. The preferred shape above held in its essentials, with
+three settlements. The day carries its own answer list in the manifest and the
+browser ships no dictionary, because a day's answers are determined by its seven
+letters and a shipped dictionary would cost 67 KB or more gzipped. Difficulty is
+the total available score alone, with the answer count as the named fallback;
+pangram rarity has too few values (one to seven) to band. S never appears in a
+day's letters, which halves the day. As built:
+
+```text
+CUSTOM word entry from seven keys, four over three, never a honeycomb
+exact enumeration of the accepted list, the manifest answers proved identical
+total available score as difficulty, answer count as fallback
+meter row and opening finds row, grammar C, no words
+no generation past the horizon: the browser holds no dictionary
+```
+
 ## FIVE LETTERS
 
 Added 2026-09-19. Game nine in build order.
@@ -3990,3 +4008,115 @@ its one runtime asset, the byte cost section 46 anticipated for this game and th
 LETTER TRAIL avoided. The game ships planned: its offline smoke and manual mobile
 checks are the gate refusing stubs until the owner runs them, and going live is a
 separate patch, per the delivery pipeline decision.
+
+## Charter Phase 13, PANGRAM design and build. Done 2026-09-20.
+
+Game eight of twelve, designed and built in one conversation, the first under
+the standing rule below. `PANGRAM.md` is the design, answering all 28 items of
+section 44, with every number reproduced in the container before it was adopted
+(its section 30). The game is a full v3 module and ships planned.
+
+### The finding: no dictionary in the browser
+
+A PANGRAM day's valid words are determined by its seven letters and centre, so
+each day's answer list, median 46 words, travels in its manifest entry through
+the engine codec, and the browser ships no word list at all. Measured: the
+dictionary a browser would need costs 67 KB gzipped at ESDB 35 and 99 KB at ESDB
+50; the per day lists cost about 8 KB gzipped per 31 day chunk, fetched after the
+page is interactive. The page is 27.1 KB gzipped. Two consequences are recorded
+as risks, not hidden: the answers sit behind light obfuscation only, and there is
+no generation past the horizon, so the manifest must be regenerated before
+2027-01-04. A benefit: the end screen can list the words a player missed. This
+settles WORD LADDER's runtime list question differently for PANGRAM on purpose:
+a ladder rung can be any word in the language, a PANGRAM answer cannot.
+
+### Decisions, made 2026-09-20 under the standing rule
+
+1. **One list, as WORD LADDER.** The accepted list (ESDB 50) is the scoring list,
+   so the total is exact and no player can exceed it. Familiar (ESDB 35) drives
+   only the fairness screen and the root draw.
+2. **Fairness is the top tier reachable with familiar words:** a familiar pangram
+   and familiar words carrying at least 65 percent of the total, against a 60
+   percent top threshold. Proved per day by the verifier.
+3. **No S in any day**, a lever fixed off: median candidate day 49 words rather
+   than 79.
+4. **Difficulty is the total available score**, septiles 75, 96, 120, 145, 171,
+   207 from 4,000 seeds and 265 distinct values; the answer count is the named
+   fallback, also seven bands, both in the committed study.
+5. **Scoring and tiers:** one point per letter past three, seven more for a
+   pangram; tiers at 60 (with a pangram), 40, 25 and 10 percent. Five buckets,
+   `hasWinLoss` false, as the provisional row had them.
+6. **Registry row corrected:** the rule now names the four letter minimum. Hue
+   208, bucket count 5, win and loss false and state version 1 were checked
+   against the module and stand.
+7. **The verifier imports only the codec.** Replay determinism is proved by the
+   generator test replaying the first ten committed days byte for byte and
+   rerunning the whole calibration study, so the verifier never imports the
+   generator, stricter than WORD LADDER's verifier, which does.
+8. **Word lists are rebuildable.** `tools/pangram-words.ts` derives both lists
+   from recorded inputs, offline only; WORD LADDER left no such tool.
+9. **The family deny list grew from 22 to 89**, authored in this run from a 285
+   word probe, and awaits owner review as the first row of MANUAL-CHECKS.md
+   section 7.
+
+### The abstraction test, requirement 7.4
+
+Zero engine changes. No file under `src/core`, `src/engine`, `src/ui`,
+`src/contract` or `src/shared` changed. Two WORD LADDER defects surfaced and are
+logged in BACKLOG.md rather than fixed here: five newly denied words are still
+valid rungs, and a reveal with no rungs yields an artifact the engine refuses for
+lacking a fingerprint. `word-ladder:verify` was also missing from CI and is added.
+
+### Green after the change, 2026-09-20
+
+| Gate | Result |
+|---|---|
+| Typecheck | three tsconfigs, zero errors |
+| Dependency check | layers verified |
+| Tests | 89 files, 1,112 tests (63 new for PANGRAM) |
+| Verifiers | all seven games, each 365 days; PANGRAM in about 0.4 seconds |
+| Production build | `engine-v2.js` 30.4 KB; pangram excluded, being planned |
+| Byte budget | Hub 18.1, POKER GRID 28.3, CIPHER 26.2, VECTOR 28.5, About 4.0 KB; PANGRAM 27.1 KB in a throwaway certify build |
+| Certification | three live games production safe; pangram not evaluated, being planned |
+
+### Files
+
+| Path | What it is |
+|---|---|
+| PANGRAM.md | The design document |
+| src/games/pangram/letters.ts | Set arithmetic, scoring and thresholds |
+| src/games/pangram/rules.ts | Puzzle construction, actions, refusals, tiers, state rebuild |
+| src/games/pangram/pangram-codec.ts | Layout and answer list encoding over the engine codec |
+| src/games/pangram/solver.ts | Exact day enumeration, fairness and roots; Node only |
+| src/games/pangram/bands.ts | Band edges and the weekday curve; Node only |
+| src/games/pangram/generator.ts | Rejection sampling over roots and centres; Node only |
+| src/games/pangram/telemetry.ts | Run log, artifact, fingerprint, archetype, leak probes |
+| src/games/pangram/render.ts, style.css | Keypad, draft, meter, found and missed words |
+| src/games/pangram/help.ts, tutorial.ts | Help and the embedded first session day |
+| src/games/pangram/module.ts | The v3 module |
+| src/shell/entries/pangram.html, pangram.ts | The entry |
+| tools/pangram-words.ts | Offline list derivation |
+| tools/pangram-generate.ts, pangram-calibrate.ts | Horizon and calibration |
+| tools/pangram-verify.ts | The independent verifier |
+| data/pangram/ | accepted.txt, familiar.txt, study.json, index and twelve chunks |
+| data/word-lists/deny.txt | The family deny list, extended |
+| tests/games/pangram/ | letters, rules, solver, generator, telemetry, module and render tests, and fixtures |
+| tools/certify.ts, vite.config.ts, package.json, src/shell/registry.ts | The plan row, the target, four scripts, the corrected rule |
+| .github/workflows/ci.yml | pangram:verify and the missing word-ladder:verify |
+| MANUAL-CHECKS.md | Section 7, PANGRAM |
+
+## Standing rule: a game's conversation runs design through delivery. Set 2026-09-20.
+
+Directed by the owner. Every remaining game, FIVE LETTERS, TURN TABLE, RING
+BALANCE and ORDER OF OPERATIONS, and the LETTER TRAIL build, runs in one
+conversation from design document to delivery patch, pre approved, with no
+stops, no checkpoints and no questions. Where a document says to pause, split at
+a phase boundary, or wait for sign off, that is superseded: decide with judgment,
+record the decision and its reason, and keep moving. Only a genuine unresolvable
+contradiction in the source documents or a hard technical impossibility halts a
+run. The owner's sole action is the ship command; going live stays a separate
+patch after the owner's manual checks. The earlier entries in this log that
+describe a design only conversation are history and stand as written. Carried in
+HANDOFF.md section 8, NEW_GAME.md section 2, the Status table above, and
+ARCHITECTURE.md's slate note.
+

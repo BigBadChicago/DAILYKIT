@@ -80,6 +80,7 @@ Table columns are fixed as follows and every future entry uses them.
 | SLATE.md | n/a | The Phase 9 candidate list and the recommended five | none |
 | CIPHER.md | n/a | CIPHER rules, feedback algorithm, verification, tiers, and share layout | none |
 | WORD-LADDER.md | n/a | WORD LADDER rules, par and fairness model, difficulty, deny list, share layout, and the family word source decision | none |
+| PANGRAM.md | n/a | PANGRAM rules, the no dictionary in the browser finding, exact answer lists, familiar fairness, total score difficulty, keypad, and share layout; its files are listed in ARCHITECTURE2.md section 56 | none |
 | src/shared/share-vocabulary.ts | shared | Suite wide share tokens, their glyphs, and their shapes | none |
 | src/shared/poker-hands.ts | shared | Poker hand categories, ordinals, and shared result tier mapping | shared/share-vocabulary |
 | src/core/result.ts | 0 | Result type so rule failures are values rather than throws | none |
@@ -916,6 +917,13 @@ phase and are not to be reopened without a stated reason.
    TURN TABLE, RING BALANCE and ORDER OF OPERATIONS, which stay approved behind
    them. The suite is twelve games. Same mechanism, four rows in the registry.
    ARCHITECTURE2.md section 56, "Slate amendment: four word games".
+
+   **Working rule amended 2026-09-20.** Each remaining game is designed, built,
+   tested and packaged in one conversation, pre approved, with no stops and no
+   questions, ending when the delivery patch is ready; the owner runs only the
+   ship command, then the manual checks before a separate go live patch. This
+   replaces the earlier design conversation then build conversation split.
+   HANDOFF.md section 8 and NEW_GAME.md section 2 carry it.
 
 ## Resolutions of internal conflicts in the source document
 
