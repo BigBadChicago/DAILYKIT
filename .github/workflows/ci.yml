@@ -46,6 +46,12 @@ jobs:
       # Here from the change that adds the game rather than the one that makes it
       # live, so the certify test finds the verifier before the certify step.
       - run: npm run difference-relay:verify
+      # Game seven, WORD LADDER. Its own graph and breadth first search, sharing
+      # no code with the game's solver. Missing from the change that built it.
+      - run: npm run word-ladder:verify
+      # Game eight, PANGRAM. Proves each day's stored answers are exactly the
+      # dictionary's words for its letters, without the generator or solver.
+      - run: npm run pangram:verify
       # Phase 10. The release build is the only build that produces the shared
       # engine chunk, so a change that breaks bundling must fail here rather
       # than at deploy time.

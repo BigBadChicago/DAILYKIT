@@ -185,7 +185,11 @@ export const SUITE_GAMES: readonly SuiteGameEntry[] = [
   {
     id: "pangram",
     displayName: "PANGRAM",
-    oneLineRule: "Make words from seven letters, always using the centre letter, and find the word that uses all seven.",
+    /* Charter Phase 13, PANGRAM.md 1. The rule now names the four letter
+       minimum; bucket count, win and loss flag and state version were checked
+       against the built module and stand. */
+    oneLineRule:
+      "Make words of four or more letters from seven, always using the centre letter, and find the word that uses all seven.",
     path: "/pangram/",
     accent: { hue: "208", boardFontStack: MONO },
     epoch: { year: 2026, month: 1, day: 5 },

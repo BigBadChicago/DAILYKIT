@@ -478,3 +478,32 @@ the result, which is a human pass across real devices.
   reopen the manifest convention mid build. Reconciling the manifest to list every
   game's files, or retiring it in favour of the migration log, is a documentation
   decision not taken here.
+
+## Logged at the PANGRAM design and build, 2026-09-20
+
+- **PANGRAM horizon must be extended before 2027-01-04.** PANGRAM has no past
+  horizon generation, by design: a day needs the dictionary and the browser does
+  not hold it (PANGRAM.md 0 and 26). Past day 365 the game shows unavailable.
+  Regenerate with `npm run pangram:generate -- --count <n>` and ship before then.
+- **WORD LADDER still accepts five newly denied rungs.** boob, orgy, pimp, porn and
+  rape were added to the family deny list for PANGRAM after WORD LADDER's list was
+  committed. Rederive WORD LADDER's lists, recalibrate and regenerate its manifest
+  before it goes live. Not done here because it rewrites another game's horizon.
+- **WORD LADDER reveal with no rungs makes an invalid share.** An immediate reveal
+  leaves the fingerprint empty and `validateArtifact` refuses it as no-fingerprint,
+  confirmed in the container. PANGRAM avoids it with a closing fingerprint point
+  (PANGRAM.md 25); WORD LADDER needs the same before it goes live.
+- **WORD LADDER has no committed list derivation tool.** Its words.ts names
+  tools/word-ladder-words.ts, which was never committed, and a reproduction of its
+  list lands within 83 words but not exactly. PANGRAM's tools/pangram-words.ts
+  shows the shape; porting it would make WORD LADDER's list rebuildable.
+- **Hub re sort by session length deferred.** PANGRAM states three to eight
+  minutes, the longest word game. The registry is left in build order until FIVE
+  LETTERS states its length, so the four word games move once, not four times.
+- **Shared keyboard widget: second data point says no.** PANGRAM needed seven keys
+  and a draft word, nothing of WORD LADDER's 26 key keyboard. FIVE LETTERS decides
+  whether an extraction is ever warranted.
+- **The deny list awaits owner review.** 67 entries were authored in this run;
+  MANUAL-CHECKS.md section 7 carries the review, inside the manual mobile check
+  that PANGRAM's gate already refuses until it is recorded.
+

@@ -37,7 +37,11 @@
     "build:game": "vite build",
     "word-ladder:generate": "tsx tools/word-ladder-generate.ts --first 1 --count 365 --out data/word-ladder",
     "word-ladder:verify": "tsx tools/word-ladder-verify.ts --dir data/word-ladder",
-    "word-ladder:calibrate": "tsx tools/word-ladder-calibrate.ts --seeds 1200 --out data/word-ladder"
+    "word-ladder:calibrate": "tsx tools/word-ladder-calibrate.ts --seeds 1200 --out data/word-ladder",
+    "pangram:words": "tsx tools/pangram-words.ts",
+    "pangram:generate": "tsx tools/pangram-generate.ts --first 1 --count 365 --out data/pangram",
+    "pangram:verify": "tsx tools/pangram-verify.ts --dir data/pangram",
+    "pangram:calibrate": "tsx tools/pangram-calibrate.ts --seeds 4000 --out data/pangram"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
