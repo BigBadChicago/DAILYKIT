@@ -1,0 +1,70 @@
+{
+  "accepted": 4359,
+  "answers": 1949,
+  "opening": {
+    "word": "tares",
+    "expected": 97.54
+  },
+  "bandEdges": [
+    15,
+    28,
+    56,
+    90,
+    109,
+    174
+  ],
+  "distinct": 56,
+  "perBand": [
+    280,
+    324,
+    243,
+    294,
+    302,
+    314,
+    192
+  ],
+  "fallback": {
+    "measure": "answers still in the pool after the opening",
+    "bandEdges": [
+      10,
+      17,
+      36,
+      59,
+      69,
+      122
+    ],
+    "distinct": 42,
+    "perBand": [
+      282,
+      275,
+      294,
+      289,
+      266,
+      366,
+      177
+    ]
+  },
+  "witness": {
+    "histogram": [
+      0,
+      0,
+      41,
+      774,
+      1041,
+      90,
+      3,
+      0
+    ],
+    "worst": 6
+  },
+  "shareLeak": {
+    "positional": {
+      "median": 1280,
+      "min": 4
+    },
+    "sorted": {
+      "median": 1948,
+      "min": 126
+    }
+  }
+}

@@ -317,6 +317,28 @@ describes, then at 360 by 780:
 | Share after finishing | Four lines: title, meter, opening finds, the URL |
 | Offline, as in Section 5 | Today's letters play from cache |
 
+## Section 8. FIVE LETTERS
+
+**Why.** FIVE LETTERS is the first game with a full 26 key keyboard at 360
+pixels, and its marks must read without colour. The container measured every key
+at 45.4 by 52 pixels in headless Chromium; only a thumb can say it is easy to hit.
+Its deny list additions also need a person's judgement.
+
+**What to do.** Build a throwaway copy with FIVE LETTERS marked live, as the
+handoff describes, then at 360 by 780:
+
+| Step | Pass |
+|---|---|
+| Read the 34 entries FIVE-LETTERS.md section 12 added to `data/word-lists/deny.txt` | Every entry is a word you are content to refuse; say which to drop or add |
+| Tap every key with a thumb, including Del and Enter | No mistaps, nothing cramped, nothing off screen |
+| Type CRANE on the first session day (HEART) | Marks read absent, present, right, absent, present, and are clear as shapes with colour ignored |
+| Type TREAT the next day it would fit, or on the tutorial | The first T is absent and the last T is right |
+| Type a nonsense word, then edit it | Refused with "Not in the word list.", the letters stay to be edited |
+| A Monday then a Saturday | Saturday's word feels clearly harder to pin down |
+| Lose a day on purpose | The end names the word; share shows X/6 and six sorted rows |
+| Share after solving | Title, one sorted row per guess, the URL; no row reveals positions |
+| Offline, as in Section 5 | Today's word plays from cache |
+
 ## If something fails
 
 Open a new chat in VS Code, Agent mode, and type `/manual-check` followed by

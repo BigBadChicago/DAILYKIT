@@ -81,6 +81,8 @@ Table columns are fixed as follows and every future entry uses them.
 | CIPHER.md | n/a | CIPHER rules, feedback algorithm, verification, tiers, and share layout | none |
 | WORD-LADDER.md | n/a | WORD LADDER rules, par and fairness model, difficulty, deny list, share layout, and the family word source decision | none |
 | PANGRAM.md | n/a | PANGRAM rules, the no dictionary in the browser finding, exact answer lists, familiar fairness, total score difficulty, keypad, and share layout; its files are listed in ARCHITECTURE2.md section 56 | none |
+| FIVE-LETTERS.md | n/a | FIVE LETTERS rules, two pass duplicate letter feedback, the shipped guess list finding, witness fairness, candidates after TARES difficulty, sorted share rows, and the alphabetical keyboard; its files are listed in ARCHITECTURE2.md section 56 | none |
+| tools/gate.sh | n/a | The full container gate run detached, one log line per step, every `:verify` script found automatically; `npm run gate` | none |
 | src/shared/share-vocabulary.ts | shared | Suite wide share tokens, their glyphs, and their shapes | none |
 | src/shared/poker-hands.ts | shared | Poker hand categories, ordinals, and shared result tier mapping | shared/share-vocabulary |
 | src/core/result.ts | 0 | Result type so rule failures are values rather than throws | none |

@@ -507,3 +507,42 @@ the result, which is a human pass across real devices.
   MANUAL-CHECKS.md section 7 carries the review, inside the manual mobile check
   that PANGRAM's gate already refuses until it is recorded.
 
+
+## Logged at the FIVE LETTERS design and build, 2026-09-21
+
+- **FIVE LETTERS horizon must be extended before 2027-01-04.** No past horizon
+  generation, by design: the answer pool does not ship (FIVE-LETTERS.md 26).
+  Regenerate with `npm run five-letters:generate -- --count <n>` and ship before
+  then, with PANGRAM's.
+- **PANGRAM still accepts seven newly denied words.** bimbo, boner, dicky, kinky,
+  labia, pubic and vulva were added to the family deny list for FIVE LETTERS after
+  PANGRAM's lists were committed. Rederive PANGRAM's lists and regenerate its
+  manifest before it goes live. Not done here because it rewrites another game's
+  horizon.
+- **Shared keyboard widget: declined.** FIVE LETTERS, the full 26 key case,
+  decided no: WORD LADDER overwrites an armed cell and FIVE LETTERS appends and
+  shows per letter marks, so the shared part is a letter array and one grid rule.
+  Reopen only if a third 26 key game is approved (FIVE-LETTERS.md 5).
+- **Hub re sort by session length.** FIVE LETTERS states one to three minutes, so
+  three of the four word games have stated lengths. Re sort when LETTER TRAIL is
+  built, once, as the PANGRAM entry intended.
+- **FIVE LETTERS hard mode.** A mode requiring every guess to respect earlier
+  marks is the genre's usual option. The run log already measures discipline.
+  Not built: it is a settings surface and a second rule sentence.
+- **The five letter deny additions await owner review.** 34 entries;
+  MANUAL-CHECKS.md section 8 carries the review inside the manual mobile check.
+- **An offline smoke for the word games.** Headless Chromium and playwright-core
+  1.56.1 against `/opt/pw-browsers` work in the container, as FIVE LETTERS' key
+  measurement shows; the four planned word games could record their offline smoke
+  there, as ROTATE LOCK did, before their device checks.
+- **Token and usage pass, the part not built.** The one improvement that paid for
+  itself inside this run was built: `tools/gate.sh`, the whole gate detached with
+  one log line per step. Recorded, not built:
+  1. One shared SCOWL parse in `tools/word-lists.ts` for `pangram-words.ts` and
+     `five-letters-words.ts`, which now duplicate it.
+  2. HANDOFF section 1 giving line ranges as well as section names for the long
+     documents, so a reading costs one command.
+  3. A word game scaffold option in `tools/new-game.ts` emitting PANGRAM's file set
+     (codec, words tool, generate, calibrate, verify, telemetry probes).
+  4. A committed headless Chromium measure script for key sizes and offline smoke,
+     so each game's 44 pixel evidence is one command.

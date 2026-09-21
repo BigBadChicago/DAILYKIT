@@ -41,7 +41,12 @@
     "pangram:words": "tsx tools/pangram-words.ts",
     "pangram:generate": "tsx tools/pangram-generate.ts --first 1 --count 365 --out data/pangram",
     "pangram:verify": "tsx tools/pangram-verify.ts --dir data/pangram",
-    "pangram:calibrate": "tsx tools/pangram-calibrate.ts --seeds 4000 --out data/pangram"
+    "pangram:calibrate": "tsx tools/pangram-calibrate.ts --seeds 4000 --out data/pangram",
+    "five-letters:words": "tsx tools/five-letters-words.ts",
+    "five-letters:generate": "tsx tools/five-letters-generate.ts --first 1 --count 365 --out data/five-letters",
+    "five-letters:verify": "tsx tools/five-letters-verify.ts --dir data/five-letters",
+    "five-letters:calibrate": "tsx tools/five-letters-calibrate.ts --out data/five-letters",
+    "gate": "bash tools/gate.sh"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

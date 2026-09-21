@@ -1,0 +1,148 @@
+/*
+ * FIVE LETTERS play area. Requirement 7.3.8 gives a game its accent and board
+ * typography and nothing else; every other colour is the suite theme's.
+ *
+ * Marks are never colour alone: right is a filled tile with a filled dot,
+ * present a dashed border with a hollow dot, absent a plain tile with a cross.
+ * The keyboard is seven columns at every width; at 360 pixels a key measures
+ * 45.4 pixels wide and 52 tall, over the 44 pixel floor (FIVE-LETTERS.md 5 and 30).
+ */
+
+.fl-game {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  max-width: 24rem;
+  margin: 0 auto;
+  font-family: var(--dk-board-font, ui-monospace, monospace);
+  touch-action: manipulation;
+}
+
+.fl-status {
+  margin: 0;
+  min-height: 1.4em;
+  text-align: center;
+  font-family: var(--dk-font, system-ui, sans-serif);
+  font-size: 0.95rem;
+}
+
+.fl-board {
+  display: grid;
+  grid-template-rows: repeat(6, 1fr);
+  gap: 5px;
+  width: min(100%, 17rem);
+}
+
+.fl-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 5px;
+}
+
+.fl-tile {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  border: 2px solid var(--dk-border, currentColor);
+  border-radius: 6px;
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.fl-mark {
+  position: absolute;
+  right: 3px;
+  bottom: 1px;
+  font-size: 0.7rem;
+  line-height: 1;
+}
+
+.fl-tile[data-mark="2"] {
+  background: hsl(var(--dk-accent-hue, 288) 55% 35%);
+  border-color: hsl(var(--dk-accent-hue, 288) 55% 35%);
+  color: #fff;
+}
+
+.fl-tile[data-mark="1"] {
+  border-style: dashed;
+  border-width: 3px;
+  border-color: hsl(var(--dk-accent-hue, 288) 55% 45%);
+}
+
+.fl-tile[data-mark="0"] {
+  opacity: 0.6;
+  border-color: transparent;
+  background: var(--dk-surface, transparent);
+}
+
+.fl-keys {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+}
+
+/* Three pixel columns: at 360 pixels the play area is 336 wide, and 7 keys plus
+   6 gaps of 3 leave 45.4 pixels a key. Six pixel gaps would leave 42.9 and the
+   44 pixel minimum would push the row past its container (FIVE-LETTERS.md 30). */
+.fl-key-row {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  column-gap: 3px;
+}
+
+.fl-key {
+  min-width: 44px;
+  min-height: 52px;
+  padding: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  border: 2px solid var(--dk-border, currentColor);
+  border-radius: 8px;
+  background: var(--dk-surface, transparent);
+  color: inherit;
+  touch-action: manipulation;
+}
+
+.fl-key-wide {
+  font-family: var(--dk-font, system-ui, sans-serif);
+  font-size: 0.8rem;
+}
+
+.fl-key[data-mark="2"] {
+  background: hsl(var(--dk-accent-hue, 288) 55% 35%);
+  border-color: hsl(var(--dk-accent-hue, 288) 55% 35%);
+  color: #fff;
+}
+
+.fl-key[data-mark="1"] {
+  border-style: dashed;
+  border-width: 3px;
+  border-color: hsl(var(--dk-accent-hue, 288) 55% 45%);
+}
+
+.fl-key[data-mark="0"] {
+  opacity: 0.45;
+  text-decoration: line-through;
+}
+
+button:disabled {
+  opacity: 0.5;
+}
+
+@media (prefers-color-scheme: dark) {
+  .fl-tile[data-mark="2"],
+  .fl-key[data-mark="2"] {
+    background: hsl(var(--dk-accent-hue, 288) 50% 42%);
+    border-color: hsl(var(--dk-accent-hue, 288) 50% 42%);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .fl-game[data-reduced-motion="false"] .fl-key:active {
+    transform: scale(0.96);
+  }
+}

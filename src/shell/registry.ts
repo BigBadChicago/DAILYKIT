@@ -201,6 +201,9 @@ export const SUITE_GAMES: readonly SuiteGameEntry[] = [
   {
     id: "five-letters",
     displayName: "FIVE LETTERS",
+    /* Charter Phase 13, FIVE-LETTERS.md 1. Rule, hue 288, seven buckets, win and
+       loss true and state version 1 were checked against the built module and
+       stand. */
     oneLineRule: "Find the five letter word in six guesses, each letter marked right, present or absent.",
     path: "/five-letters/",
     accent: { hue: "288", boardFontStack: MONO },

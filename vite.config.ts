@@ -130,6 +130,12 @@ const TARGETS: Readonly<Record<string, Target>> = {
     gameId: "pangram",
     productionSafe: false,
   },
+  "five-letters": {
+    outPath: "five-letters",
+    html: "src/shell/entries/five-letters.html",
+    gameId: "five-letters",
+    productionSafe: false,
+  },
   /* NEW_GAME_INSERTION: TARGETS */
 };
 

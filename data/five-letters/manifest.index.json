@@ -1,0 +1,66 @@
+{
+  "codec": "xor-v1",
+  "horizon": 365,
+  "chunks": [
+    {
+      "from": 1,
+      "to": 31,
+      "url": "/data/five-letters/manifest.1-31.json"
+    },
+    {
+      "from": 32,
+      "to": 62,
+      "url": "/data/five-letters/manifest.32-62.json"
+    },
+    {
+      "from": 63,
+      "to": 93,
+      "url": "/data/five-letters/manifest.63-93.json"
+    },
+    {
+      "from": 94,
+      "to": 124,
+      "url": "/data/five-letters/manifest.94-124.json"
+    },
+    {
+      "from": 125,
+      "to": 155,
+      "url": "/data/five-letters/manifest.125-155.json"
+    },
+    {
+      "from": 156,
+      "to": 186,
+      "url": "/data/five-letters/manifest.156-186.json"
+    },
+    {
+      "from": 187,
+      "to": 217,
+      "url": "/data/five-letters/manifest.187-217.json"
+    },
+    {
+      "from": 218,
+      "to": 248,
+      "url": "/data/five-letters/manifest.218-248.json"
+    },
+    {
+      "from": 249,
+      "to": 279,
+      "url": "/data/five-letters/manifest.249-279.json"
+    },
+    {
+      "from": 280,
+      "to": 310,
+      "url": "/data/five-letters/manifest.280-310.json"
+    },
+    {
+      "from": 311,
+      "to": 341,
+      "url": "/data/five-letters/manifest.311-341.json"
+    },
+    {
+      "from": 342,
+      "to": 365,
+      "url": "/data/five-letters/manifest.342-365.json"
+    }
+  ]
+}

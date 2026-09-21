@@ -2354,6 +2354,22 @@ per position feedback rows, the genre's own grammar
 Primary engine stress test: a 26 key keyboard at 360 pixels against the 44 pixel
 touch floor, and a cognitive mode that overlaps CIPHER's deduction from feedback.
 
+Designed and built 2026-09-21: `FIVE-LETTERS.md` answers every item of section 44
+and the game ships planned. The preferred shape held with three settlements. The
+genre's per position share rows are refused for CIPHER's sorted rows, because a
+positional block measurably leaks (as few as 4 answers left possible against 126).
+The validation list ships in the page, 11.5 KB gzipped, because a guess is any
+word on any day; the manifest carries only the answer. Duplicate letters use two
+pass marking. As built:
+
+```text
+CUSTOM word entry, alphabetical keyboard seven across, 45.4 pixel keys measured
+witness greedy solver proves every day in six; verifier imports only the codec
+candidates left after TARES as difficulty, pool answers left as fallback
+sorted rows, grammar A, CIPHER's token mapping
+no generation past the horizon: the answer pool does not ship
+```
+
 ---
 
 # 47. Existing games under the revised contract
@@ -4104,6 +4120,93 @@ lacking a fingerprint. `word-ladder:verify` was also missing from CI and is adde
 | tools/certify.ts, vite.config.ts, package.json, src/shell/registry.ts | The plan row, the target, four scripts, the corrected rule |
 | .github/workflows/ci.yml | pangram:verify and the missing word-ladder:verify |
 | MANUAL-CHECKS.md | Section 7, PANGRAM |
+
+## Charter Phase 13, FIVE LETTERS design and build. Done 2026-09-21.
+
+Game nine of twelve, designed and built in one conversation under the standing
+rule. `FIVE-LETTERS.md` is the design, answering all 28 items of section 44, with
+every number reproduced in the container before it was adopted (its section 30).
+The game is a full v3 module and ships planned.
+
+### The finding: the guess list ships
+
+Unlike PANGRAM, a FIVE LETTERS guess is any five letter word on any day, so the
+validation list cannot travel with the day. It is embedded as generated source,
+4,359 words at 11.5 KB gzipped; the page measured 38.2 KB gzipped in a throwaway
+live build. The manifest carries the obfuscated answer and two integers. The
+answer pool, 1,949 familiar headwords, never ships, so there is no generation
+past the horizon, which lapses on 2027-01-04 with PANGRAM's.
+
+### Decisions, made 2026-09-21 under the standing rule
+
+1. **One list.** ESDB 50, 4,359 words, is the guess list, the difficulty space
+   and the witness space, so every claim is exact. Answers are drawn only from
+   ESDB 35 headwords, which drops plurals and past tenses.
+2. **Two pass duplicate feedback:** exact first, then present left to right while
+   unmatched copies remain. Proved on the cases that break naive marking.
+3. **Fairness:** a greedy witness over the accepted list, opening TARES, solves
+   every pool answer in six or fewer (41, 774, 1,041, 90, 3 in two to six), proved
+   per day by the verifier with its own search.
+4. **Difficulty** is candidates left after TARES, edges 15, 28, 56, 90, 109, 174
+   over an exhaustive study; the pool count after TARES is the named fallback.
+5. **Sorted share rows, grammar A,** CIPHER's mapping. Tiers: two or fewer
+   Excellent, three Great, four Good, five or six Fair, a miss Rough. Seven
+   buckets, `hasWinLoss` true; the registry row's hue 288, bucket count, flag and
+   state version were checked and stand.
+6. **The shared keyboard widget is declined** (FIVE-LETTERS.md 5); the keyboard
+   is alphabetical seven across with three pixel gaps, 45.4 by 52 pixels a key
+   measured in headless Chromium at 360 pixels.
+7. **The family deny list grew from 89 to 123** from a five letter probe; seven of
+   the additions are still in PANGRAM's list, a BACKLOG item before PANGRAM goes
+   live.
+8. **Efficiency pass:** `tools/gate.sh` runs the whole gate detached with one log
+   line per step and finds every verifier; the rest is in BACKLOG.md.
+
+### The abstraction test, requirement 7.4
+
+Zero engine changes. No file under `src/core`, `src/engine`, `src/ui`,
+`src/contract` or `src/shared` changed. No defect logged.
+
+### Green after the change, 2026-09-21
+
+| Gate | Result |
+|---|---|
+| Typecheck | three tsconfigs, zero errors |
+| Dependency check | layers verified |
+| Tests | 95 files, 1,170 tests (58 new for FIVE LETTERS) |
+| Verifiers | all eight games, each 365 days; FIVE LETTERS in about 6 seconds |
+| Production build | `engine-v2.js` 30.4 KB; five-letters excluded, being planned |
+| Byte budget | Hub 18.1, POKER GRID 28.3, CIPHER 26.2, VECTOR 28.5, About 4.0 KB; FIVE LETTERS 38.2 KB in a throwaway certify build |
+| Certification | three live games production safe; five-letters not evaluated, being planned |
+
+### Files
+
+| Path | What it is |
+|---|---|
+| FIVE-LETTERS.md | The design document |
+| src/games/five-letters/feedback.ts | Two pass marking and patterns |
+| src/games/five-letters/rules.ts | Puzzle construction, actions, refusals, tiers, state rebuild |
+| src/games/five-letters/difficulty.ts | The opening and candidates after it, computed on the device |
+| src/games/five-letters/five-letters-codec.ts | The answer over the engine codec |
+| src/games/five-letters/words.ts | The generated accepted list, the runtime asset |
+| src/games/five-letters/solver.ts | Pattern table, ideal opening, witness; Node only |
+| src/games/five-letters/bands.ts | Band edges and the weekday curve; Node only |
+| src/games/five-letters/generator.ts | Rejection sampling over the pool; Node only |
+| src/games/five-letters/telemetry.ts | Run log, artifact, fingerprint, archetype, leak probes |
+| src/games/five-letters/render.ts, style.css | Board, keyboard, marks as shapes |
+| src/games/five-letters/help.ts, tutorial.ts | Help and the HEART first session day |
+| src/games/five-letters/module.ts | The v3 module |
+| src/shell/entries/five-letters.html, five-letters.ts | The entry |
+| tools/five-letters-words.ts | Offline list derivation, writes words.ts |
+| tools/five-letters-generate.ts, five-letters-calibrate.ts | Horizon and the exhaustive study |
+| tools/five-letters-verify.ts | The independent verifier |
+| tools/gate.sh | The detached full gate |
+| data/five-letters/ | accepted.txt, answers.txt, study.json, index and twelve chunks |
+| data/word-lists/deny.txt | The family deny list, extended |
+| tests/games/five-letters/ | feedback, rules, telemetry, module, render and generator tests, and fixtures |
+| tools/certify.ts, vite.config.ts, package.json, src/shell/registry.ts | The plan row, the target, five scripts, the checked row |
+| .github/workflows/ci.yml | five-letters:verify |
+| MANUAL-CHECKS.md | Section 8, FIVE LETTERS |
 
 ## Standing rule: a game's conversation runs design through delivery. Set 2026-09-20.
 
