@@ -119,6 +119,8 @@ npm run preview             serves dist/, service worker active
 npm run build:harness       includes the share string harness at /harness/
 ```
 
+In the container, where one command is cut off at 300 seconds, run the whole list detached with `setsid nohup npm run gate > /tmp/gate.log 2>&1 &` and read `/tmp/gate.log`: `tools/gate.sh` prints one PASS or FAIL line per step, runs every `:verify` script it finds in package.json, and keeps each step's full output in `/tmp/gate.<step>.log`. Added 2026-09-21 with FIVE LETTERS.
+
 Run `certify` through npm. It starts each probe script with the npm that started it and needs no shell, and it refuses to run when started any other way.
 
 ## 6. Certification

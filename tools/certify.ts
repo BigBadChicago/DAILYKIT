@@ -364,6 +364,29 @@ export const GAME_PLANS: Readonly<Record<string, GamePlan>> = {
        gate refuses, until the owner runs them on devices. No exemption covers a
        new game and none is added, so pangram stays planned. */
   },
+  "five-letters": {
+    ...newGamePlan("five-letters"),
+    /* FIVE-LETTERS.md 15: the exhaustive study over the answer pool and the test
+       that reruns it and demands the same edges. */
+    "difficulty-calibration": probes(
+      file("data/five-letters/study.json"),
+      testFile("tests/games/five-letters/generator.test.ts"),
+    ),
+    /* FIVE-LETTERS.md 13: a day is one hidden word; every mark constrains the
+       same word, so there is no constraint graph to split. */
+    "decomposition-check": {
+      kind: "n/a",
+      reason:
+        "A FIVE LETTERS day is one hidden word; every guess's marks constrain that same word, so there are no independent sub puzzles (FIVE-LETTERS.md 13).",
+    },
+    /* FIVE-LETTERS.md 13a: a day is its answer, so a repeat is the only
+       symmetry; the verifier refuses any answer shipped twice. */
+    "symmetry-check": probes(npm("five-letters:verify"), testFile("tests/games/five-letters/generator.test.ts")),
+    "share-leak-check": probes(testFile("tests/games/five-letters/telemetry.test.ts")),
+    /* offline-smoke and manual-mobile-check stay the stub's empty lists, which the
+       gate refuses, until the owner runs them on devices. No exemption covers a
+       new game and none is added, so five-letters stays planned. */
+  },
   /* NEW_GAME_INSERTION: GAME_PLANS */
 };
 

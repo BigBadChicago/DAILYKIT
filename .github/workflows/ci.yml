@@ -52,6 +52,9 @@ jobs:
       # Game eight, PANGRAM. Proves each day's stored answers are exactly the
       # dictionary's words for its letters, without the generator or solver.
       - run: npm run pangram:verify
+      # Game nine, FIVE LETTERS. Its own marking and witness search, sharing no
+      # code with the game's rules or solver, proves every day solvable in six.
+      - run: npm run five-letters:verify
       # Phase 10. The release build is the only build that produces the shared
       # engine chunk, so a change that breaks bundling must fail here rather
       # than at deploy time.
