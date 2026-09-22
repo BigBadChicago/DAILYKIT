@@ -16,15 +16,6 @@ and it describes exactly one conversation: the next one.
 
 ---
 
-## 0. READ THIS FIRST: 
-1. List the games that are complete and set to live
-2. List the games that are complete and set to Planned
-3. This is a break from the process.  Direction comes from the chat interface
-
-
-
----
-
 ## 1. Reading order
 
 First, clone `main` into the container; section 7 item 1 has the commands and
