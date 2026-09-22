@@ -1,3 +1,5 @@
 End-of-game summary: tier, one line of detail, and an optional numeric score.
 
 `EndScreen({tier, detail, score})`. `tier` is the only accent-colored text on the end screen, from that game's own `game-*` token (set `--accent` on a wrapping element, the same technique `GameButton` and the board components use); `score` is omitted for games that don't keep one — POKER GRID has one, ROTATE LOCK and DIFFERENCE RELAY don't (`hasWinLoss: true`, a moves/runs count instead, per each game's `§19` contract). The tier name itself always comes from the five suite-wide names (`TierBadge`), never a game-specific word.
+
+The detail strings for WORD LADDER, PANGRAM and FIVE LETTERS are the games' own `finishedOutcomeFor` text (`rules.ts`), not paraphrased. None of the three keeps a numeric score in the end screen: WORD LADDER's `score` is its rung count, PANGRAM's is in its detail line, FIVE LETTERS has none, so `score` is omitted.

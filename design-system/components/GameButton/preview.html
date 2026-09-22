@@ -1,4 +1,4 @@
-<!-- @dsCard group="Game marks" height=420 -->
+<!-- @dsCard group="Game marks" height=640 -->
 <body style="padding:16px"><div id="m"></div><script>var K=window.DailyKit,m=document.getElementById('m');
-m.style.cssText='display:flex;flex-direction:column;align-items:flex-start;gap:4px;max-width:320px';
+m.style.cssText='display:flex;flex-direction:column;align-items:flex-start;gap:4px;max-width:420px';
 K.GAMES.forEach(function(g){var b=K.GameButton(g.id,{label:(g.live?'Play ':'Coming soon · ')+g.name});if(!g.live){b.disabled=true;b.style.opacity='.6'}m.appendChild(b);});</script></body>

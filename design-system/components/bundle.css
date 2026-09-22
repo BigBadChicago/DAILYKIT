@@ -161,3 +161,380 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-sans
 
 .dk-tier{display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;border:1px solid var(--line);color:var(--text-dim);font-size:.8rem;white-space:nowrap}
 .dk-tier--distinguished{border-color:var(--accent);color:var(--accent);font-weight:700}
+
+/* WORD LADDER (src/games/word-ladder/style.css, tokens renamed) */
+.wl-game {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  max-width: 24rem;
+  margin: 0 auto;
+  font-family: var(--font-mono);
+}
+.wl-status,
+.wl-goal {
+  margin: 0;
+  min-height: 1.4em;
+  text-align: center;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+}
+.wl-goal {
+  color: var(--text-dim);
+}
+.wl-word {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  width: 100%;
+}
+.wl-cell {
+  flex: 0 0 auto;
+  min-width: 48px;
+  min-height: 48px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  border: 2px solid var(--text-dim);
+  border-radius: 8px;
+  background: var(--surface);
+  color: inherit;
+  touch-action: manipulation;
+}
+.wl-cell[aria-pressed="true"] {
+  border-color: var(--accent);
+  outline: 2px solid var(--accent);
+}
+.wl-keys {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  user-select: none;
+}
+.wl-key-row {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+}
+.wl-key {
+  flex: 1 1 0;
+  min-width: 44px;
+  min-height: 44px;
+  font-size: 1rem;
+  border: 1px solid var(--text-dim);
+  border-radius: 6px;
+  background: var(--surface);
+  color: inherit;
+  touch-action: manipulation;
+}
+.wl-key:disabled,
+.wl-cell:disabled,
+.wl-run:disabled,
+.wl-undo:disabled,
+.wl-reveal:disabled {
+  opacity: 0.5;
+}
+.wl-controls {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  width: 100%;
+}
+.wl-run,
+.wl-undo,
+.wl-reveal {
+  flex: 1 1 0;
+  min-height: 44px;
+  font-size: 0.95rem;
+  font-family: var(--font-sans);
+  border: 1px solid var(--text-dim);
+  border-radius: 6px;
+  background: var(--surface);
+  color: inherit;
+  touch-action: manipulation;
+}
+.wl-run {
+  background: var(--accent);
+  color: var(--accent-text);
+  border-color: transparent;
+}
+:root[data-theme="light"] .wl-run {
+  color: var(--text);
+}
+@media (prefers-contrast: more) {
+  :root[data-theme="light"] .wl-run {
+    color: var(--accent-text);
+  }
+}
+.wl-ladder {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 100%;
+}
+.wl-rung {
+  font-size: 1.1rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+.wl-rung-start {
+  color: var(--text-dim);
+}
+.wl-rung[data-progress="-1"]::after {
+  content: " ▽";
+}
+.wl-rung[data-progress="1"]::after {
+  content: " △";
+}
+
+/* PANGRAM (src/games/pangram/style.css). Classes are pan-* here: the source uses pg-*, which POKER GRID already owns in this one stylesheet. */
+.pan-game {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  max-width: 24rem;
+  margin: 0 auto;
+  font-family: var(--font-mono);
+}
+.pan-status {
+  margin: 0;
+  min-height: 1.4em;
+  text-align: center;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+}
+.pan-meter {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 3px;
+  width: 100%;
+  height: 10px;
+}
+.pan-meter-cell {
+  border: 1px solid var(--text-dim);
+  border-radius: 3px;
+}
+.pan-meter-cell[data-full="true"] {
+  background: var(--accent);
+}
+.pan-draft {
+  min-height: 2.4rem;
+  margin: 0;
+  font-size: 1.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.pan-keys {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+}
+.pan-key-row {
+  display: grid;
+  gap: 8px;
+}
+.pan-key-row-top {
+  grid-template-columns: repeat(4, 1fr);
+}
+.pan-key-row-bottom {
+  grid-template-columns: repeat(3, 1fr);
+  padding: 0 12.5%;
+}
+.pan-key {
+  min-width: 44px;
+  min-height: 56px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  border: 2px solid var(--text-dim);
+  border-radius: 10px;
+  background: var(--surface);
+  color: inherit;
+  touch-action: manipulation;
+}
+.pan-key[data-centre="true"] {
+  border-width: 4px;
+  border-color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+.pan-controls {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  width: 100%;
+}
+.pan-controls button,
+.pan-finish {
+  min-height: 48px;
+  min-width: 44px;
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  border: 1px solid var(--text-dim);
+  border-radius: 8px;
+  background: var(--surface);
+  color: inherit;
+  touch-action: manipulation;
+}
+.pan-finish {
+  width: 100%;
+}
+.pan-found,
+.pan-missed {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+}
+.pan-found-word[data-pangram="true"],
+.pan-missed-word[data-pangram="true"] {
+  font-weight: 700;
+  text-decoration: underline;
+}
+.pan-missed-heading {
+  margin: 0.4rem 0 0;
+  width: 100%;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+}
+.pan-game button:disabled {
+  opacity: 0.5;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .pan-game[data-reduced-motion="false"] .pan-key:active {
+    transform: scale(0.96);
+  }
+}
+
+/* FIVE LETTERS (src/games/five-letters/style.css) */
+.fl-game {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  max-width: 24rem;
+  margin: 0 auto;
+  font-family: var(--font-mono);
+  touch-action: manipulation;
+}
+.fl-status {
+  margin: 0;
+  min-height: 1.4em;
+  text-align: center;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+}
+.fl-board {
+  display: grid;
+  grid-template-rows: repeat(6, 1fr);
+  gap: 5px;
+  width: min(100%, 17rem);
+}
+.fl-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 5px;
+}
+.fl-tile {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  border: 2px solid var(--text-dim);
+  border-radius: 6px;
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+.fl-mark {
+  position: absolute;
+  right: 3px;
+  bottom: 1px;
+  font-size: 0.7rem;
+  line-height: 1;
+}
+.fl-tile[data-mark="2"] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+.fl-tile[data-mark="1"] {
+  border-style: dashed;
+  border-width: 3px;
+  border-color: var(--accent);
+}
+.fl-tile[data-mark="0"] {
+  opacity: 0.6;
+  border-color: transparent;
+  background: var(--surface);
+}
+.fl-keys {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+}
+.fl-key-row {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  column-gap: 3px;
+}
+.fl-key {
+  min-width: 44px;
+  min-height: 52px;
+  padding: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  border: 2px solid var(--text-dim);
+  border-radius: 8px;
+  background: var(--surface);
+  color: inherit;
+  touch-action: manipulation;
+}
+.fl-key-wide {
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+}
+.fl-key[data-mark="2"] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+.fl-key[data-mark="1"] {
+  border-style: dashed;
+  border-width: 3px;
+  border-color: var(--accent);
+}
+.fl-key[data-mark="0"] {
+  opacity: 0.45;
+  text-decoration: line-through;
+}
+.fl-game button:disabled {
+  opacity: 0.5;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .fl-game[data-reduced-motion="false"] .fl-key:active {
+    transform: scale(0.96);
+  }
+}
+
+/* Per-game marks: dark text where white fails 4.5:1 on the light-theme accent (see the game tokens' usage notes) */
+:root[data-theme="light"] .dk-button--game[data-on="dark"]{color:var(--text)}
+:root[data-theme="light"] .dk-game-logo__badge[data-on="dark"]{color:var(--text)}

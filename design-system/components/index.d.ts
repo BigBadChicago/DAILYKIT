@@ -13,12 +13,16 @@ declare namespace DailyKit {
   type IconName = 'home' | 'help' | 'stats' | 'archive' | 'theme-system' | 'theme-light' | 'theme-dark' | 'close';
   function Icon(name: IconName): SVGSVGElement;
   const ICON_LABEL: Record<IconName, string>;
-  type GameId = 'poker-grid' | 'vector' | 'cipher' | 'rotate-lock' | 'difference-relay' | 'turn-table' | 'ring-balance' | 'order-of-operations';
-  interface GameSpec { id: GameId; name: string; token: string; live: boolean; rule: string; motif: string }
+  const ICONS: Record<IconName, string>; // the inner SVG markup of each 24x24 icon, currentColor
+  type GameId = 'poker-grid' | 'vector' | 'cipher' | 'rotate-lock' | 'difference-relay' | 'turn-table' | 'ring-balance' | 'order-of-operations' | 'word-ladder' | 'pangram' | 'five-letters';
+  interface GameSpec { id: GameId; on?: 'dark'; name: string; token: string; live: boolean; rule: string; motif: string }
   const GAMES: GameSpec[];
   function GameIcon(id: GameId): SVGSVGElement;
   function GameLogo(id: GameId, size?: 'md' | 'lg'): HTMLElement;
   function GameButton(id: GameId, opts?: { label?: string; onClick?: () => void }): HTMLButtonElement;
   const TIERS: string[];
   function TierBadge(tier: 0 | 1 | 2 | 3 | 4, label?: string): HTMLElement;
+  function WordLadderBoard(o: { status?: string; goal?: string; word: string; armed?: number; rungs?: { word: string; progress: -1 | 0 | 1 }[]; start: string; locked?: boolean }): HTMLElement;
+  function PangramBoard(o: { status?: string; meter?: number; draft?: string; letters: string[]; found?: { word: string; pangram?: boolean }[]; confirming?: boolean }): HTMLElement;
+  function FiveLettersBoard(o: { status?: string; rows?: ({ word: string; marks: (0 | 1 | 2)[] } | { draft: string } | null)[]; keyMarks?: Record<string, 0 | 1 | 2> }): HTMLElement;
 }
