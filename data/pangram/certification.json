@@ -1,0 +1,84 @@
+{
+  "schema": 1,
+  "gameId": "pangram",
+  "certifiedCommit": "fcace772ae5b",
+  "outcomesHash": "fdc357464b74de80dca4622dcd8e20ee5a79b2bb0ad5a21059c4436da9f3ae05",
+  "checks": {
+    "typecheck": {
+      "outcome": "pass",
+      "evidence": "npm:typecheck, npm:typecheck:tools, npm:typecheck:sw"
+    },
+    "tests": {
+      "outcome": "pass",
+      "evidence": "npm:test"
+    },
+    "dependency-check": {
+      "outcome": "pass",
+      "evidence": "npm:depcheck"
+    },
+    "determinism-vectors": {
+      "outcome": "pass",
+      "evidence": "test:tests/core/rng.test.ts"
+    },
+    "generation-pipeline": {
+      "outcome": "pass",
+      "evidence": "test:tests/games/pangram/generator.test.ts"
+    },
+    "independent-verification": {
+      "outcome": "pass",
+      "evidence": "npm:pangram:verify"
+    },
+    "difficulty-calibration": {
+      "outcome": "pass",
+      "evidence": "file:data/pangram/study.json, test:tests/games/pangram/generator.test.ts"
+    },
+    "yearly-horizon": {
+      "outcome": "pass",
+      "evidence": "npm:pangram:verify, horizon:pangram"
+    },
+    "duplicate-check": {
+      "outcome": "pass",
+      "evidence": "npm:pangram:verify"
+    },
+    "decomposition-check": {
+      "outcome": "n/a",
+      "reason": "A PANGRAM day is one list of words that all share the centre letter; there is no constraint graph to split (PANGRAM.md 13)."
+    },
+    "symmetry-check": {
+      "outcome": "pass",
+      "evidence": "npm:pangram:verify, test:tests/games/pangram/generator.test.ts"
+    },
+    "share-leak-check": {
+      "outcome": "pass",
+      "evidence": "test:tests/games/pangram/telemetry.test.ts"
+    },
+    "glyph-check": {
+      "outcome": "pass",
+      "evidence": "test:tests/engine/share-grammar.test.ts"
+    },
+    "accessibility-contract": {
+      "outcome": "pass",
+      "evidence": "test:tests/games/pangram/render.test.ts, test:tests/ui/a11y.test.ts"
+    },
+    "state-round-trip": {
+      "outcome": "pass",
+      "evidence": "test:tests/games/pangram/module.test.ts"
+    },
+    "manifest-round-trip": {
+      "outcome": "pass",
+      "evidence": "test:tests/games/pangram/module.test.ts, test:tests/shell/boot.test.ts"
+    },
+    "offline-smoke": {
+      "outcome": "pass",
+      "evidence": "manual 2026-09-22: Headless Chromium at 360 by 740 against vite preview of a release build, engine-v2, service worker controlling: hub, then difference-relay, word-ladder, pangram, five-letters each visited once; context offline; hub and pangram rendered from cache, controller attached, no console error. The build admitted pangram by a throwaway patch in a copy of the tree, because a planned game cannot enter a release build."
+    },
+    "byte-budget": {
+      "outcome": "pass",
+      "evidence": "npm:build, npm:budget, page:pangram"
+    },
+    "manual-mobile-check": {
+      "outcome": "pending",
+      "exemption": "manual-mobile-2026-09-22"
+    }
+  }
+}

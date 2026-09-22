@@ -1,0 +1,84 @@
+{
+  "schema": 1,
+  "gameId": "word-ladder",
+  "certifiedCommit": "fcace772ae5b",
+  "outcomesHash": "6291a273fcc6306d5fa5064bd519a6cae85fbfcceea304f446daec652cc59d04",
+  "checks": {
+    "typecheck": {
+      "outcome": "pass",
+      "evidence": "npm:typecheck, npm:typecheck:tools, npm:typecheck:sw"
+    },
+    "tests": {
+      "outcome": "pass",
+      "evidence": "npm:test"
+    },
+    "dependency-check": {
+      "outcome": "pass",
+      "evidence": "npm:depcheck"
+    },
+    "determinism-vectors": {
+      "outcome": "pass",
+      "evidence": "test:tests/core/rng.test.ts"
+    },
+    "generation-pipeline": {
+      "outcome": "pass",
+      "evidence": "test:tests/games/word-ladder/generator.test.ts"
+    },
+    "independent-verification": {
+      "outcome": "pass",
+      "evidence": "npm:word-ladder:verify"
+    },
+    "difficulty-calibration": {
+      "outcome": "pass",
+      "evidence": "file:data/word-ladder/study.json, test:tests/games/word-ladder/generator.test.ts"
+    },
+    "yearly-horizon": {
+      "outcome": "pass",
+      "evidence": "npm:word-ladder:verify, horizon:word-ladder"
+    },
+    "duplicate-check": {
+      "outcome": "pass",
+      "evidence": "npm:word-ladder:verify"
+    },
+    "decomposition-check": {
+      "outcome": "n/a",
+      "reason": "A word ladder is one path from start to goal, not a set of independent sub puzzles; there is no constraint graph to split (WORD-LADDER.md 13)."
+    },
+    "symmetry-check": {
+      "outcome": "pass",
+      "evidence": "npm:word-ladder:verify, test:tests/games/word-ladder/generator.test.ts"
+    },
+    "share-leak-check": {
+      "outcome": "pass",
+      "evidence": "test:tests/games/word-ladder/telemetry.test.ts"
+    },
+    "glyph-check": {
+      "outcome": "pass",
+      "evidence": "test:tests/engine/share-grammar.test.ts"
+    },
+    "accessibility-contract": {
+      "outcome": "pass",
+      "evidence": "test:tests/games/word-ladder/render.test.ts, test:tests/ui/a11y.test.ts"
+    },
+    "state-round-trip": {
+      "outcome": "pass",
+      "evidence": "test:tests/games/word-ladder/module.test.ts"
+    },
+    "manifest-round-trip": {
+      "outcome": "pass",
+      "evidence": "test:tests/games/word-ladder/module.test.ts, test:tests/shell/boot.test.ts"
+    },
+    "offline-smoke": {
+      "outcome": "pass",
+      "evidence": "manual 2026-09-22: Headless Chromium at 360 by 740 against vite preview of a release build, engine-v2, service worker controlling: hub, then difference-relay, word-ladder, pangram, five-letters each visited once; context offline; hub and word-ladder rendered from cache, controller attached, no console error. The build admitted word-ladder by a throwaway patch in a copy of the tree, because a planned game cannot enter a release build."
+    },
+    "byte-budget": {
+      "outcome": "pass",
+      "evidence": "npm:build, npm:budget, page:word-ladder"
+    },
+    "manual-mobile-check": {
+      "outcome": "pending",
+      "exemption": "manual-mobile-2026-09-22"
+    }
+  }
+}

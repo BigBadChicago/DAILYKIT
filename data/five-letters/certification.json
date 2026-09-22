@@ -1,0 +1,84 @@
+{
+  "schema": 1,
+  "gameId": "five-letters",
+  "certifiedCommit": "fcace772ae5b",
+  "outcomesHash": "4d43a867e7d0775f10bd4c6f6c35ed3638d534c347121a205e38f079f8f44b5a",
+  "checks": {
+    "typecheck": {
+      "outcome": "pass",
+      "evidence": "npm:typecheck, npm:typecheck:tools, npm:typecheck:sw"
+    },
+    "tests": {
+      "outcome": "pass",
+      "evidence": "npm:test"
+    },
+    "dependency-check": {
+      "outcome": "pass",
+      "evidence": "npm:depcheck"
+    },
+    "determinism-vectors": {
+      "outcome": "pass",
+      "evidence": "test:tests/core/rng.test.ts"
+    },
+    "generation-pipeline": {
+      "outcome": "pass",
+      "evidence": "test:tests/games/five-letters/generator.test.ts"
+    },
+    "independent-verification": {
+      "outcome": "pass",
+      "evidence": "npm:five-letters:verify"
+    },
+    "difficulty-calibration": {
+      "outcome": "pass",
+      "evidence": "file:data/five-letters/study.json, test:tests/games/five-letters/generator.test.ts"
+    },
+    "yearly-horizon": {
+      "outcome": "pass",
+      "evidence": "npm:five-letters:verify, horizon:five-letters"
+    },
+    "duplicate-check": {
+      "outcome": "pass",
+      "evidence": "npm:five-letters:verify"
+    },
+    "decomposition-check": {
+      "outcome": "n/a",
+      "reason": "A FIVE LETTERS day is one hidden word; every guess's marks constrain that same word, so there are no independent sub puzzles (FIVE-LETTERS.md 13)."
+    },
+    "symmetry-check": {
+      "outcome": "pass",
+      "evidence": "npm:five-letters:verify, test:tests/games/five-letters/generator.test.ts"
+    },
+    "share-leak-check": {
+      "outcome": "pass",
+      "evidence": "test:tests/games/five-letters/telemetry.test.ts"
+    },
+    "glyph-check": {
+      "outcome": "pass",
+      "evidence": "test:tests/engine/share-grammar.test.ts"
+    },
+    "accessibility-contract": {
+      "outcome": "pass",
+      "evidence": "test:tests/games/five-letters/render.test.ts, test:tests/ui/a11y.test.ts"
+    },
+    "state-round-trip": {
+      "outcome": "pass",
+      "evidence": "test:tests/games/five-letters/module.test.ts"
+    },
+    "manifest-round-trip": {
+      "outcome": "pass",
+      "evidence": "test:tests/games/five-letters/module.test.ts, test:tests/shell/boot.test.ts"
+    },
+    "offline-smoke": {
+      "outcome": "pass",
+      "evidence": "manual 2026-09-22: Headless Chromium at 360 by 740 against vite preview of a release build, engine-v2, service worker controlling: hub, then difference-relay, word-ladder, pangram, five-letters each visited once; context offline; hub and five-letters rendered from cache, controller attached, no console error. The build admitted five-letters by a throwaway patch in a copy of the tree, because a planned game cannot enter a release build."
+    },
+    "byte-budget": {
+      "outcome": "pass",
+      "evidence": "npm:build, npm:budget, page:five-letters"
+    },
+    "manual-mobile-check": {
+      "outcome": "pending",
+      "exemption": "manual-mobile-2026-09-22"
+    }
+  }
+}

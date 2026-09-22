@@ -303,8 +303,8 @@ that path touches storage, the help panel, and the handoff to today.
 has to judge, and the first with a seven key keypad. Automation proves the lists
 are consistent; only a person can say the words are fit to show.
 
-**What to do.** Build a throwaway copy with PANGRAM marked live, as the handoff
-describes, then at 360 by 780:
+**What to do.** PANGRAM is live in production as of 2026-09-22; open the site
+directly, no throwaway copy needed. At 360 by 780:
 
 | Step | Pass |
 |---|---|
@@ -324,8 +324,8 @@ pixels, and its marks must read without colour. The container measured every key
 at 45.4 by 52 pixels in headless Chromium; only a thumb can say it is easy to hit.
 Its deny list additions also need a person's judgement.
 
-**What to do.** Build a throwaway copy with FIVE LETTERS marked live, as the
-handoff describes, then at 360 by 780:
+**What to do.** FIVE LETTERS is live in production as of 2026-09-22; open the
+site directly, no throwaway copy needed. At 360 by 780:
 
 | Step | Pass |
 |---|---|
@@ -338,6 +338,28 @@ handoff describes, then at 360 by 780:
 | Lose a day on purpose | The end names the word; share shows X/6 and six sorted rows |
 | Share after solving | Title, one sorted row per guess, the URL; no row reveals positions |
 | Offline, as in Section 5 | Today's word plays from cache |
+
+## Section 9. ROTATE LOCK, DIFFERENCE RELAY, WORD LADDER
+
+**Why.** These three, and PANGRAM and FIVE LETTERS above, went live in
+production 2026-09-22 by direction in chat, ahead of this file, under gate
+exemption `manual-mobile-2026-09-22` (`src/engine/certification.ts`). The
+exemption expires 2026-12-21; this file needs a real section for each of these
+three before then, or the games come back off the registry.
+
+**What to do until those sections are written.** Open the site directly, no
+throwaway copy needed, and at minimum repeat Sections 1 through 6 for each of
+the three, plus:
+
+| Game | Extra check |
+|---|---|
+| ROTATE LOCK | Rotate every piece with a thumb; dragging one piece never moves another |
+| DIFFERENCE RELAY | The signed gaps between numbers are readable at 360 pixels without zooming |
+| WORD LADDER | A rejected rung says why; share never reveals a rung on an immediate reveal (BACKLOG.md) |
+
+Writing the full section for each, matched to Sections 7 and 8's depth, is
+BACKLOG.md, "MANUAL-CHECKS.md sections for the three games pushed live
+2026-09-22."
 
 ## If something fails
 

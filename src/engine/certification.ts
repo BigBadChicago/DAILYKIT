@@ -92,6 +92,17 @@ export const GATE_EXEMPTIONS: readonly GateExemption[] = [
       "The three live games shipped before the gate existed and MANUAL-CHECKS.md has never been run. " +
       "They stay live until it is run once and its result recorded, and no longer than this date.",
   },
+  {
+    id: "manual-mobile-2026-09-22",
+    steps: ["manual-mobile-check"],
+    games: ["rotate-lock", "difference-relay", "word-ladder", "pangram", "five-letters"],
+    issued: "2026-09-22",
+    expires: "2026-12-21",
+    reason:
+      "The owner directed these five built games live in chat on 2026-09-22, ahead of MANUAL-CHECKS.md, " +
+      "trading the device pass for speed. They stay live until it is run once per game and recorded, " +
+      "and no longer than this date.",
+  },
 ];
 
 /** Bumped when the record's shape changes, so a stale committed file is refused

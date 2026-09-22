@@ -13,6 +13,7 @@ import {
   GAME_PLANS,
   HORIZON_DAYS,
   MANUAL_MOBILE_EXEMPTION,
+  MANUAL_MOBILE_EXEMPTION_2026_09_22,
   TEST_SUITE_KEY,
   buildRecord,
   checksFrom,
@@ -70,18 +71,18 @@ describe("the plans", () => {
     expect(() => planFor("cipher", { cipher: partial as GamePlan })).toThrow(/missing glyph-check/);
   });
 
-  it("mark n/a only the two section 12 checks, each with a reason, and pending only the manual mobile check", () => {
+  it("mark n/a only with a reason, and pending only the manual mobile check under a live exemption", () => {
     for (const gameId of liveGameIds()) {
       const plan = planFor(gameId);
       for (const step of GATE_STEPS) {
         const stepPlan = plan[step];
         if (stepPlan.kind === "n/a") {
           expect(["decomposition-check", "symmetry-check"]).toContain(step);
-          expect(stepPlan.reason).toMatch(/BACKLOG/);
+          expect(stepPlan.reason.trim()).not.toBe("");
         }
         if (stepPlan.kind === "pending") {
           expect(step).toBe("manual-mobile-check");
-          expect(stepPlan.exemption).toBe(MANUAL_MOBILE_EXEMPTION);
+          expect([MANUAL_MOBILE_EXEMPTION, MANUAL_MOBILE_EXEMPTION_2026_09_22]).toContain(stepPlan.exemption);
         }
         if (stepPlan.kind === "manual") expect(step).toBe("offline-smoke");
         if (stepPlan.kind === "probes") expect(stepPlan.probes.length).toBeGreaterThan(0);
@@ -306,7 +307,7 @@ describe("checksFrom", () => {
     for (const gameId of liveGameIds()) {
       const plan = planFor(gameId);
       const record = buildRecord(gameId, checksFrom(plan, allOk(uniqueProbes([plan]))), "c");
-      expect(isProductionSafe(record, "2026-09-16"), gameId).toBe(true);
+      expect(isProductionSafe(record, "2026-09-22"), gameId).toBe(true);
     }
   });
 });

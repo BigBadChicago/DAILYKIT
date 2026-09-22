@@ -4,6 +4,10 @@ import cipher from "../../src/games/cipher/module.js";
 import pokerGrid from "../../src/games/poker-grid/module.js";
 import vector from "../../src/games/vector/module.js";
 import rotateLock from "../../src/games/rotate-lock/module.js";
+import differenceRelay from "../../src/games/difference-relay/module.js";
+import wordLadder from "../../src/games/word-ladder/module.js";
+import pangram from "../../src/games/pangram/module.js";
+import fiveLetters from "../../src/games/five-letters/module.js";
 import { LIVE_GAMES, SUITE_GAMES, entryFor, promotableIds } from "../../src/shell/registry.js";
 import { crossPromotionTarget } from "../../src/engine/stats.js";
 import { emptySuiteRecord } from "../../src/engine/storage.js";
@@ -34,7 +38,7 @@ describe("suite registry", () => {
    * catch. Adding the game to the list is not optional bookkeeping.
    */
   it("agrees with every built module's identity", () => {
-    for (const built of [pokerGrid, vector, cipher]) {
+    for (const built of [pokerGrid, vector, cipher, rotateLock, differenceRelay, wordLadder, pangram, fiveLetters]) {
       const entry = entryFor(built.identity.id);
       expect(entry).not.toBeNull();
       expect(entry!.displayName).toBe(built.identity.displayName);
@@ -48,21 +52,6 @@ describe("suite registry", () => {
     }
   });
 
-  /* Charter Phase 13. ROTATE LOCK is built and stays planned until its own
-     certification record is production safe, so it is held to its module on
-     every field but status. */
-  it("agrees with ROTATE LOCK's module while it waits for certification", () => {
-    const entry = entryFor(rotateLock.identity.id);
-    expect(entry).not.toBeNull();
-    expect(entry!.displayName).toBe(rotateLock.identity.displayName);
-    expect(entry!.oneLineRule).toBe(rotateLock.identity.oneLineRule);
-    expect(entry!.epoch).toEqual(rotateLock.identity.epoch);
-    expect(entry!.accent).toEqual(rotateLock.identity.accent);
-    expect(entry!.bucketCount).toBe(rotateLock.distribution.labels.length);
-    expect(entry!.hasWinLoss).toBe(rotateLock.hasWinLoss);
-    expect(entry!.stateVersion).toBe(rotateLock.stateVersion);
-  });
-
   it("starts every game after POKER GRID on the first Monday of the epoch year", () => {
     for (const entry of SUITE_GAMES) {
       if (entry.id === "poker-grid") continue;
@@ -73,9 +62,9 @@ describe("suite registry", () => {
   it("never offers a planned game as a cross promotion", () => {
     const ids = promotableIds();
     expect(ids).toEqual(LIVE_GAMES.map((entry) => entry.id));
-    /* Three live games now, so cross promotion always has something to offer.
-       With nothing played yet the tie breaks on registry order, which runs
-       poker-grid, vector, cipher. */
+    /* Eight live games now (charter Phase 13, "handoff break in process to
+       push games live"), so cross promotion always has something to offer.
+       With nothing played yet the tie breaks on registry order. */
     expect(crossPromotionTarget(emptySuiteRecord(), ids, "poker-grid")).toBe("vector");
     expect(crossPromotionTarget(emptySuiteRecord(), ids, "cipher")).toBe("poker-grid");
     expect(crossPromotionTarget(emptySuiteRecord(), ids, "vector")).toBe("poker-grid");
@@ -96,8 +85,13 @@ describe("suite registry", () => {
     const at = ids.indexOf("difference-relay");
     expect(ids.slice(at + 1, at + 5)).toEqual(["letter-trail", "word-ladder", "pangram", "five-letters"]);
     expect(ids.slice(at + 5)).toEqual(["turn-table", "ring-balance", "order-of-operations"]);
-    for (const id of ["letter-trail", "word-ladder", "pangram", "five-letters"]) {
-      expect(entryFor(id)?.status).toBe("planned");
+    /* Charter Phase 13, "handoff break in process to push games live":
+       word-ladder, pangram and five-letters went live 2026-09-22, ahead of
+       their manual mobile check, by owner direction. letter-trail is not
+       built yet and stays planned. */
+    expect(entryFor("letter-trail")?.status).toBe("planned");
+    for (const id of ["word-ladder", "pangram", "five-letters"]) {
+      expect(entryFor(id)?.status).toBe("live");
     }
   });
 });

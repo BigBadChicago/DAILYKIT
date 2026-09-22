@@ -131,7 +131,7 @@ export const SUITE_GAMES: readonly SuiteGameEntry[] = [
     bucketCount: 5,
     hasWinLoss: true,
     stateVersion: 1,
-    status: "planned",
+    status: "live",
   },
   {
     id: "difference-relay",
@@ -145,7 +145,7 @@ export const SUITE_GAMES: readonly SuiteGameEntry[] = [
     bucketCount: 7,
     hasWinLoss: true,
     stateVersion: 1,
-    status: "planned",
+    status: "live",
   },
   /*
    * Slate amendment, 2026-09-19, directed by the owner: four word games are the
@@ -180,7 +180,7 @@ export const SUITE_GAMES: readonly SuiteGameEntry[] = [
     bucketCount: 5,
     hasWinLoss: false,
     stateVersion: 1,
-    status: "planned",
+    status: "live",
   },
   {
     id: "pangram",
@@ -196,7 +196,7 @@ export const SUITE_GAMES: readonly SuiteGameEntry[] = [
     bucketCount: 5,
     hasWinLoss: false,
     stateVersion: 1,
-    status: "planned",
+    status: "live",
   },
   {
     id: "five-letters",
@@ -211,7 +211,7 @@ export const SUITE_GAMES: readonly SuiteGameEntry[] = [
     bucketCount: 7,
     hasWinLoss: true,
     stateVersion: 1,
-    status: "planned",
+    status: "live",
   },
   {
     id: "turn-table",

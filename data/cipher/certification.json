@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "gameId": "cipher",
-  "certifiedCommit": "6d9a238464d2",
+  "certifiedCommit": "fcace772ae5b",
   "outcomesHash": "b22e459faf6bc98cd40daa9750e7af3c4b3303396a9b8f1fb9cfde2e27d9242f",
   "checks": {
     "typecheck": {

@@ -1,0 +1,84 @@
+{
+  "schema": 1,
+  "gameId": "rotate-lock",
+  "certifiedCommit": "fcace772ae5b",
+  "outcomesHash": "cbc40cf8250f9d1b162034218c34e9ba99995023edc03ff9e5ac824a728ba60d",
+  "checks": {
+    "typecheck": {
+      "outcome": "pass",
+      "evidence": "npm:typecheck, npm:typecheck:tools, npm:typecheck:sw"
+    },
+    "tests": {
+      "outcome": "pass",
+      "evidence": "npm:test"
+    },
+    "dependency-check": {
+      "outcome": "pass",
+      "evidence": "npm:depcheck"
+    },
+    "determinism-vectors": {
+      "outcome": "pass",
+      "evidence": "test:tests/core/rng.test.ts"
+    },
+    "generation-pipeline": {
+      "outcome": "pass",
+      "evidence": "test:tests/games/rotate-lock/generator.test.ts"
+    },
+    "independent-verification": {
+      "outcome": "pass",
+      "evidence": "npm:rotate-lock:verify"
+    },
+    "difficulty-calibration": {
+      "outcome": "pass",
+      "evidence": "file:data/rotate-lock/study.json, test:tests/games/rotate-lock/generator.test.ts"
+    },
+    "yearly-horizon": {
+      "outcome": "pass",
+      "evidence": "npm:rotate-lock:verify, horizon:rotate-lock"
+    },
+    "duplicate-check": {
+      "outcome": "pass",
+      "evidence": "npm:rotate-lock:verify"
+    },
+    "decomposition-check": {
+      "outcome": "pass",
+      "evidence": "npm:rotate-lock:verify, test:tests/games/rotate-lock/generator.test.ts"
+    },
+    "symmetry-check": {
+      "outcome": "pass",
+      "evidence": "npm:rotate-lock:verify, test:tests/games/rotate-lock/generator.test.ts"
+    },
+    "share-leak-check": {
+      "outcome": "pass",
+      "evidence": "test:tests/games/rotate-lock/telemetry.test.ts"
+    },
+    "glyph-check": {
+      "outcome": "pass",
+      "evidence": "test:tests/engine/share-grammar.test.ts"
+    },
+    "accessibility-contract": {
+      "outcome": "pass",
+      "evidence": "test:tests/games/rotate-lock/render.test.ts, test:tests/ui/a11y.test.ts"
+    },
+    "state-round-trip": {
+      "outcome": "pass",
+      "evidence": "test:tests/games/rotate-lock/module.test.ts"
+    },
+    "manifest-round-trip": {
+      "outcome": "pass",
+      "evidence": "test:tests/games/rotate-lock/module.test.ts, test:tests/shell/boot.test.ts"
+    },
+    "offline-smoke": {
+      "outcome": "pass",
+      "evidence": "manual 2026-09-17: Headless Chromium at 360 by 740 against vite preview of a release build, engine-v2, service worker controlling: hub, ROTATE LOCK twice (practice board, then day 256 from the manifest), two moves played, VECTOR, hub; context offline; hub and ROTATE LOCK rendered from cache with 36 cells, 7 pieces and the two moves restored, no console error, no horizontal scroll. The build admitted rotate-lock by a throwaway patch in a copy of the tree, because a planned game cannot enter a release build."
+    },
+    "byte-budget": {
+      "outcome": "pass",
+      "evidence": "npm:build, npm:budget, page:rotate-lock"
+    },
+    "manual-mobile-check": {
+      "outcome": "pending",
+      "exemption": "manual-mobile-2026-09-22"
+    }
+  }
+}

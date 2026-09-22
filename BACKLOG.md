@@ -546,3 +546,27 @@ the result, which is a human pass across real devices.
      (codec, words tool, generate, calibrate, verify, telemetry probes).
   4. A committed headless Chromium measure script for key sizes and offline smoke,
      so each game's 44 pixel evidence is one command.
+
+
+## Logged at "handoff break in process to push games live", 2026-09-22
+
+- **Five built games pushed live ahead of MANUAL-CHECKS.md, by owner direction
+  in chat.** ROTATE LOCK, DIFFERENCE RELAY, WORD LADDER, PANGRAM, FIVE LETTERS
+  moved from `planned` to `live` in `src/shell/registry.ts` without their
+  device pass. Covered by gate exemption `manual-mobile-2026-09-22`
+  (`src/engine/certification.ts`), expiring 2026-12-21, the same shape as the
+  original three live games' exemption. Not a bypass of the gate: certify still
+  refuses any other unresolved step, and this covers only manual-mobile-check.
+- **Offline smoke for difference-relay, word-ladder, pangram, five-letters was
+  run for real, not waived.** Headless Chromium against a release build with
+  the service worker, built via a throwaway uncommitted patch to
+  `releasable()` in a scratch copy of the tree, the same method already on
+  record for ROTATE LOCK. All four passed; recorded in `tools/certify.ts`.
+- **MANUAL-CHECKS.md sections for the three games pushed live 2026-09-22.**
+  ROTATE LOCK, DIFFERENCE RELAY and WORD LADDER have no dedicated section, only
+  the placeholder Section 9 added here. Write one matched to Sections 7 and 8's
+  depth before the exemption expires 2026-12-21, and run all five for real
+  before then.
+- **LETTER TRAIL was not touched.** It is designed, not built, and was not
+  covered by the chat direction; it stays planned and its build is still the
+  next conversation's task.

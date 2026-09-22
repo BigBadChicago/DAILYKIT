@@ -7,21 +7,22 @@ and it describes exactly one conversation: the next one.
 
 | Field | Value |
 |---|---|
-| Written | 2026-09-21, after FIVE LETTERS was designed and built in one conversation |
-| Built on | Base commit `bdfa539` ("Merge pull request #11 from BigBadChicago/claude/pangram-design-and-build"), branch `claude/five-letters-design-and-build`, commit subject "FIVE LETTERS design and build" |
-| For the conversation | **Charter Phase 13: LETTER TRAIL build**, game six in slate order and the last word game, build through delivery in one run from its settled design |
+| Written | 2026-09-22, after an interruption that pushed five built games live |
+| Built on | Base commit `fcace772ae5b8c83e5e26e9461c6b726d990579d` ("handoff break in process to push games live"), branch `claude/five-games-live`, commit subject "five games pushed live, ahead of manual mobile check" |
+| For the conversation | **Charter Phase 13: LETTER TRAIL build**, resumed, game six in slate order and the last word game, build through delivery in one run from its settled design |
 | Phase scheme | Charter phases, Section 9 of the project instructions. The v3 migration phases are complete |
 | Before any work | LETTER-TRAIL.md is the settled design, written 2026-09-19. It is built as written; it is not redesigned |
 | Next after this | TURN TABLE, RING BALANCE, ORDER OF OPERATIONS, each in its own conversation, each design through delivery |
 
 ---
 
-## 0. READ THIS FIRST: 
-1. List the games that are complete and set to live
-2. List the games that are complete and set to Planned
-3. This is a break from the process.  Direction comes from the chat interface
+## 0. What happened since the last LETTER TRAIL handoff
 
-
+The owner broke into that conversation in chat, mid run, asking which built
+games sat on `live` versus `planned`, then directed the five built and gated
+games live now, skipping the manual mobile device check. Nothing about LETTER
+TRAIL changed. See ARCHITECTURE2.md section 56, "Charter Phase 13 interruption:
+five games pushed live," for the full account.
 
 ---
 
@@ -41,8 +42,8 @@ a section's line range and `sed -n` to read just that range.
    code follows most closely.
 3. **ARCHITECTURE2.md**: the section 46 LETTER TRAIL note, section 44 (the
    authoring contract), and the section 56 entries "Charter Phase 13, FIVE LETTERS
-   design and build" and "Standing rule". Sections 3, 9 to 18 and 21 only where a
-   decision turns on them.
+   design and build" and "Charter Phase 13 interruption: five games pushed live."
+   Sections 3, 9 to 18 and 21 only where a decision turns on them.
 4. **FIVE-LETTERS.md** sections 0, 5, 9 and 30, and `src/games/five-letters/`:
    the most recent worked word game, design and build, with the codec only
    verifier, the exhaustive study, the measured keyboard and the leak probes with
@@ -50,7 +51,8 @@ a section's line range and `sed -n` to read just that range.
 5. **PANGRAM.md** sections 0 and 12, and `src/games/pangram/`: the manifest
    carried answer list, which is LETTER TRAIL's shape too (its words are checked
    against the day's baked set).
-6. **BACKLOG.md**, the entries logged 2026-09-19, 2026-09-20 and 2026-09-21.
+6. **BACKLOG.md**, the entries logged 2026-09-19, 2026-09-20, 2026-09-21 and
+   2026-09-22.
 
 Precedence: the working tree, then ARCHITECTURE2.md, then ARCHITECTURE.md, then
 the project instructions. If this file disagrees with ARCHITECTURE2.md, this file
@@ -60,16 +62,17 @@ is stale; say so.
 
 ## 2. Where the project stands
 
-**Suite.** Twelve games in `src/shell/registry.ts`: POKER GRID, VECTOR, CIPHER
-(live); ROTATE LOCK, DIFFERENCE RELAY, WORD LADDER, PANGRAM, FIVE LETTERS (built,
-planned, each waiting on its manual mobile check and go live patch); LETTER TRAIL
-(designed, not built); TURN TABLE, RING BALANCE, ORDER OF OPERATIONS (planned,
-not designed).
+**Suite.** Twelve games in `src/shell/registry.ts`: POKER GRID, VECTOR, CIPHER,
+ROTATE LOCK, DIFFERENCE RELAY, WORD LADDER, PANGRAM, FIVE LETTERS (all eight
+live); LETTER TRAIL (designed, not built); TURN TABLE, RING BALANCE, ORDER OF
+OPERATIONS (planned, not designed).
 
-**FIVE LETTERS is designed and built in the patch that carries this handoff.** See
-the section 56 entry. Its finding: the guess list ships in the page, 11.5 KB
-gzipped, because a guess is any word on any day; the page is 38.2 KB. Share rows
-are sorted because positional rows measurably leak. It ships planned.
+**Two open gate exemptions, both for `manual-mobile-check` only,** in
+`src/engine/certification.ts`: `manual-mobile-2026-09-16` for POKER GRID,
+CIPHER, VECTOR, expiring 2026-12-15; `manual-mobile-2026-09-22` for ROTATE
+LOCK, DIFFERENCE RELAY, WORD LADDER, PANGRAM, FIVE LETTERS, expiring
+2026-12-21. Neither is this conversation's work to close; do not touch them
+unless LETTER TRAIL's own build needs the mechanism.
 
 **Open items another game's work must not trip over** (BACKLOG.md):
 
@@ -79,6 +82,9 @@ are sorted because positional rows measurably leak. It ships planned.
 - PANGRAM's and FIVE LETTERS' horizons must be extended before 2027-01-04.
 - The family deny list's 67 PANGRAM and 34 FIVE LETTERS additions await owner
   review.
+- MANUAL-CHECKS.md has no dedicated section yet for ROTATE LOCK, DIFFERENCE
+  RELAY or WORD LADDER; only a placeholder Section 9. Needed before
+  2026-12-21.
 
 **LETTER TRAIL uses a different word source on purpose.** ENABLE intersected with
 wordfreq's top 30,000, not SCOWL/ESDB (ARCHITECTURE2 section 56, "two family word
@@ -86,26 +92,27 @@ sources"; BACKLOG.md). The deny list still applies to it. wordfreq is a Python
 package; `pip install wordfreq --break-system-packages` reaches pypi from the
 container. It is a build time input only and is never committed.
 
-**Green baseline to regress against,** measured 2026-09-21 in the container on
-`claude/five-letters-build` at base `bdfa539`:
+**Green baseline to regress against,** measured 2026-09-22 in the container on
+`claude/five-games-live` at base `fcace772`:
 
 | Gate | Result |
 |---|---|
 | Typecheck | three tsconfigs, zero errors |
 | Dependency check | layers verified |
-| Tests | 95 files, 1,170 tests |
-| Verifiers | POKER GRID, CIPHER, VECTOR, ROTATE LOCK, DIFFERENCE RELAY, WORD LADDER, PANGRAM, FIVE LETTERS, each 365 days |
-| Production build | `engine-v2.js` about 30.4 KB; planned games excluded |
-| Byte budget | Hub 18.1, POKER GRID 28.3, CIPHER 26.2, VECTOR 28.5, About 4.0 KB; FIVE LETTERS 38.2 KB, PANGRAM 27.1 KB and WORD LADDER 32.9 KB in throwaway certify builds |
-| Certification | `npm run certify`: three live games production safe |
+| Tests | 95 files, 1,169 tests |
+| Verifiers | all eight live games, each 365 days |
+| Production build | real `npm run build` admits all eight live games with the service worker |
+| Byte budget | About 4.0, hub 18.6, CIPHER 26.7, PANGRAM 27.5, DIFFERENCE RELAY 27.7, POKER GRID 28.8, ROTATE LOCK 29.3, VECTOR 29.0, WORD LADDER 33.4, FIVE LETTERS 38.6 KB gzipped |
+| Certification | all eight live games production safe |
 
 **Run the gate with `tools/gate.sh`.** A single container command is cut off at
-300 seconds, and the whole gate takes about six minutes (VECTOR's verifier about
-65 seconds, ROTATE LOCK's about 65, the tests about 95). So start it detached and
-poll the log:
+300 seconds, and the whole gate takes about eight to ten minutes now that eight
+verifiers run (VECTOR's about 70 seconds, ROTATE LOCK's about 65, PANGRAM and
+DIFFERENCE RELAY each a few seconds, the tests about 130). So start it detached
+and poll the log:
 
 ```
-setsid nohup npm run gate > /tmp/gate.log 2>&1 &
+setsid nohup npm run gate > /tmp/gate.log 2>&1 < /dev/null &
 cat /tmp/gate.log
 ```
 
@@ -117,12 +124,14 @@ package.json, including a new game's, keeps each step's full output in
 
 ## 3. Preconditions to check first
 
-1. **The FIVE LETTERS patch merged.** FIVE-LETTERS.md is on `main`,
-   `src/games/five-letters/` exists, and `data/five-letters/` holds the two lists,
-   the study and thirteen manifest files. If not, say so and stop.
+1. **The five games live patch merged.** `src/shell/registry.ts` shows ROTATE
+   LOCK, DIFFERENCE RELAY, WORD LADDER, PANGRAM and FIVE LETTERS as `"live"`,
+   and `data/*/certification.json` exists for all eight live games. If not,
+   say so and stop.
 2. **The baseline in section 2 still holds.**
 
-Nothing about any planned game going live is this conversation's work.
+Nothing about the two open exemptions or the missing MANUAL-CHECKS.md sections
+is this conversation's work.
 
 ---
 
@@ -162,10 +171,19 @@ What the build must settle, at least:
    module and correct any that disagree. Hue 48 carries the accent contrast defect
    in BACKLOG.md; measure white text on its fill and fix within the game's CSS if
    it fails AA.
+8. **The certification plan.** Follow the shape `tools/certify.ts` now carries
+   for ROTATE LOCK, DIFFERENCE RELAY, WORD LADDER, PANGRAM and FIVE LETTERS:
+   `newGamePlan` for the automatable steps, an `n/a` with a design citation for
+   decomposition and symmetry where the design says there is nothing to split,
+   and leave `offline-smoke` and `manual-mobile-check` as the stub's empty
+   lists (a skip, which the gate refuses) unless the owner directs otherwise in
+   chat. Do not add a `GateExemption` for LETTER TRAIL without that direction:
+   the two on file each name the games they cover and neither extends by
+   default.
 
 Deliverable: the complete game, tools, data, tests, LETTER-TRAIL.md's as built
 notes, the ASSETS, BACKLOG, ARCHITECTURE and ARCHITECTURE2 updates, MANUAL-CHECKS.md
-section 9, this file rewritten for TURN TABLE, and
+section 10, this file rewritten for TURN TABLE, and
 `letter-trail-build.patch`.
 
 ---
@@ -181,6 +199,7 @@ section 9, this file rewritten for TURN TABLE, and
 | Leak probes with positive controls | `tests/games/five-letters/telemetry.test.ts` | |
 | Detached full gate | `tools/gate.sh`, `npm run gate` | |
 | Scaffold, gate plan | `tools/new-game.ts`, `GAME_PLANS` in `tools/certify.ts` | `npm run new-game -- --id letter-trail` adopts the planned row |
+| A second, later `GateExemption`, if a game must ship ahead of its device check | `src/engine/certification.ts`, `GATE_EXEMPTIONS` | Dated, named, expiring; never fabricate a `manual` pass instead |
 
 ---
 
@@ -196,7 +215,7 @@ section 9, this file rewritten for TURN TABLE, and
 | ASSETS.md | Every shipped asset and every word list row |
 | BACKLOG.md | Everything deliberately not built |
 | NEW_GAME.md | The authoring procedure; section 2 carries the one run rule, section 5 the gate |
-| MANUAL-CHECKS.md | The owner's device checks; section 8 is FIVE LETTERS |
+| MANUAL-CHECKS.md | The owner's device checks; sections 7 and 8 are PANGRAM and FIVE LETTERS, section 9 is a placeholder for the three games pushed live 2026-09-22 |
 | tools/ship.ps1 | The owner's one command delivery |
 
 ---
@@ -210,8 +229,8 @@ checks, UAT and the one delivery command.
 
    ```
    git clone -q https://github.com/BigBadChicago/DAILYKIT.git dk && cd dk
-   git merge-base --is-ancestor bdfa539 HEAD && echo BASE_OK
-   git log --format=%s bdfa539..HEAD | grep -Fx "FIVE LETTERS design and build"
+   git merge-base --is-ancestor fcace772 HEAD && echo BASE_OK
+   git log --format=%s fcace772..HEAD | grep -Fx "five games pushed live, ahead of manual mobile check"
    npm ci
    ```
 
@@ -242,7 +261,10 @@ checks, UAT and the one delivery command.
    ```
 7. **Pushing from the container is not possible and is not attempted.**
 8. **A planned game cannot enter a release build.** Item 5 is how its page is
-   measured.
+   measured; a throwaway, uncommitted patch to `releasable()` in a scratch copy
+   of the tree is how a release shaped build with the service worker is
+   measured for offline smoke, as recorded for ROTATE LOCK and for the four
+   games pushed live 2026-09-22.
 
 ---
 
@@ -264,7 +286,8 @@ checks, UAT and the one delivery command.
    Only a genuine unresolvable contradiction in the source documents or a hard
    technical impossibility halts the run. Still show reproduced measurements in
    the design document before the prose that depends on them. Going live is a
-   separate later patch after the owner's manual checks. Set by the owner
+   separate later patch after the owner's manual checks, unless the owner
+   directs otherwise in chat, as happened 2026-09-22. Set by the owner
    2026-09-20; the LETTER TRAIL build, TURN TABLE, RING BALANCE and ORDER OF
    OPERATIONS all inherit it. FIVE LETTERS ran under it.
 6. Never reconstruct charter text that cannot be read. Ask only if rule 5's halt
@@ -279,6 +302,10 @@ checks, UAT and the one delivery command.
     copies, and every delivery is one patch through `tools/ship.ps1`. The rewritten
     HANDOFF.md travels inside that patch and names its base commit, branch and
     subject.
+12. A gate exemption is a dated, named, expiring entry in `GATE_EXEMPTIONS`,
+    never a fabricated `manual` pass. It names exactly the games and the step
+    it covers and does not extend to a game it does not name. Set 2026-09-22,
+    after the five games were pushed live that way.
 
 ---
 

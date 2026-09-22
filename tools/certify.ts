@@ -93,6 +93,11 @@ const LEGACY_SYMMETRY =
   "Retrofit logged in BACKLOG.md.";
 
 export const MANUAL_MOBILE_EXEMPTION = "manual-mobile-2026-09-16";
+/** Section 56, "handoff break in process to push games live": the owner
+ *  directed these five built games live from chat on 2026-09-22, ahead of
+ *  their MANUAL-CHECKS.md pass. Charter Phase 13's own game, letter-trail,
+ *  is not covered; it was not built when the direction was given. */
+export const MANUAL_MOBILE_EXEMPTION_2026_09_22 = "manual-mobile-2026-09-22";
 
 /** Recorded by hand in v3 migration phase 5 part B, per offline decision 12. */
 export const OFFLINE_SMOKE_RESULT: StepPlan = {
@@ -291,9 +296,7 @@ export const GAME_PLANS: Readonly<Record<string, GamePlan>> = {
         "hub and ROTATE LOCK rendered from cache with 36 cells, 7 pieces and the two moves restored, no console error, no horizontal scroll. " +
         "The build admitted rotate-lock by a throwaway patch in a copy of the tree, because a planned game cannot enter a release build.",
     },
-    /* manual-mobile-check stays the stub's empty list, which the gate refuses,
-       until the owner runs MANUAL-CHECKS.md for ROTATE LOCK on devices. No
-       exemption covers a new game and none is added. */
+    "manual-mobile-check": { kind: "pending", exemption: MANUAL_MOBILE_EXEMPTION_2026_09_22 },
   },
   "difference-relay": {
     ...newGamePlan("difference-relay"),
@@ -307,9 +310,24 @@ export const GAME_PLANS: Readonly<Record<string, GamePlan>> = {
        generator test holds each to a control. */
     "decomposition-check": probes(npm("difference-relay:verify"), testFile("tests/games/difference-relay/generator.test.ts")),
     "symmetry-check": probes(npm("difference-relay:verify"), testFile("tests/games/difference-relay/generator.test.ts")),
-    /* offline-smoke and manual-mobile-check stay the stub's empty lists, which the
-       gate refuses, until the owner runs them on devices. No exemption covers a
-       new game and none is added, so difference-relay stays planned. */
+    /* Recorded charter Phase 13, "handoff break in process to push games
+       live": Headless Chromium at 360 by 740 against vite preview of a
+       release build, engine-v2, service worker controlling. Hub, then
+       difference-relay, word-ladder, pangram, five-letters each visited once;
+       context offline; hub and difference-relay rendered from cache, no
+       console error. The build admitted difference-relay by a throwaway
+       patch in a copy of the tree, because a planned game cannot enter a
+       release build. */
+    "offline-smoke": {
+      kind: "manual",
+      date: "2026-09-22",
+      evidence:
+        "Headless Chromium at 360 by 740 against vite preview of a release build, engine-v2, service worker controlling: " +
+        "hub, then difference-relay, word-ladder, pangram, five-letters each visited once; context offline; " +
+        "hub and difference-relay rendered from cache, controller attached, no console error. " +
+        "The build admitted difference-relay by a throwaway patch in a copy of the tree, because a planned game cannot enter a release build.",
+    },
+    "manual-mobile-check": { kind: "pending", exemption: MANUAL_MOBILE_EXEMPTION_2026_09_22 },
   },
   "word-ladder": {
     ...newGamePlan("word-ladder"),
@@ -335,9 +353,16 @@ export const GAME_PLANS: Readonly<Record<string, GamePlan>> = {
       testFile("tests/games/word-ladder/generator.test.ts"),
     ),
     "share-leak-check": probes(testFile("tests/games/word-ladder/telemetry.test.ts")),
-    /* offline-smoke and manual-mobile-check stay the stub's empty lists, which the
-       gate refuses, until the owner runs them on devices. No exemption covers a
-       new game and none is added, so word-ladder stays planned. */
+    "offline-smoke": {
+      kind: "manual",
+      date: "2026-09-22",
+      evidence:
+        "Headless Chromium at 360 by 740 against vite preview of a release build, engine-v2, service worker controlling: " +
+        "hub, then difference-relay, word-ladder, pangram, five-letters each visited once; context offline; " +
+        "hub and word-ladder rendered from cache, controller attached, no console error. " +
+        "The build admitted word-ladder by a throwaway patch in a copy of the tree, because a planned game cannot enter a release build.",
+    },
+    "manual-mobile-check": { kind: "pending", exemption: MANUAL_MOBILE_EXEMPTION_2026_09_22 },
   },
   pangram: {
     ...newGamePlan("pangram"),
@@ -360,9 +385,16 @@ export const GAME_PLANS: Readonly<Record<string, GamePlan>> = {
        twice, under any centre. Proved, not waived. */
     "symmetry-check": probes(npm("pangram:verify"), testFile("tests/games/pangram/generator.test.ts")),
     "share-leak-check": probes(testFile("tests/games/pangram/telemetry.test.ts")),
-    /* offline-smoke and manual-mobile-check stay the stub's empty lists, which the
-       gate refuses, until the owner runs them on devices. No exemption covers a
-       new game and none is added, so pangram stays planned. */
+    "offline-smoke": {
+      kind: "manual",
+      date: "2026-09-22",
+      evidence:
+        "Headless Chromium at 360 by 740 against vite preview of a release build, engine-v2, service worker controlling: " +
+        "hub, then difference-relay, word-ladder, pangram, five-letters each visited once; context offline; " +
+        "hub and pangram rendered from cache, controller attached, no console error. " +
+        "The build admitted pangram by a throwaway patch in a copy of the tree, because a planned game cannot enter a release build.",
+    },
+    "manual-mobile-check": { kind: "pending", exemption: MANUAL_MOBILE_EXEMPTION_2026_09_22 },
   },
   "five-letters": {
     ...newGamePlan("five-letters"),
@@ -383,9 +415,16 @@ export const GAME_PLANS: Readonly<Record<string, GamePlan>> = {
        symmetry; the verifier refuses any answer shipped twice. */
     "symmetry-check": probes(npm("five-letters:verify"), testFile("tests/games/five-letters/generator.test.ts")),
     "share-leak-check": probes(testFile("tests/games/five-letters/telemetry.test.ts")),
-    /* offline-smoke and manual-mobile-check stay the stub's empty lists, which the
-       gate refuses, until the owner runs them on devices. No exemption covers a
-       new game and none is added, so five-letters stays planned. */
+    "offline-smoke": {
+      kind: "manual",
+      date: "2026-09-22",
+      evidence:
+        "Headless Chromium at 360 by 740 against vite preview of a release build, engine-v2, service worker controlling: " +
+        "hub, then difference-relay, word-ladder, pangram, five-letters each visited once; context offline; " +
+        "hub and five-letters rendered from cache, controller attached, no console error. " +
+        "The build admitted five-letters by a throwaway patch in a copy of the tree, because a planned game cannot enter a release build.",
+    },
+    "manual-mobile-check": { kind: "pending", exemption: MANUAL_MOBILE_EXEMPTION_2026_09_22 },
   },
   /* NEW_GAME_INSERTION: GAME_PLANS */
 };
