@@ -1,4 +1,4 @@
-/* @ds-bundle: {"format":4,"namespace":"DailyKit","components":[{"name":"Header"},{"name":"Countdown"},{"name":"HelpPanel"},{"name":"GridCursor"},{"name":"PokerGridBoard"},{"name":"VectorBoard"},{"name":"CipherBoard"},{"name":"RotateLockBoard"},{"name":"DifferenceRelayBoard"},{"name":"HubCard"},{"name":"HubStreak"},{"name":"HubDailyCard"},{"name":"HubFooter"},{"name":"Notice"},{"name":"EndScreen"},{"name":"CrossPromo"},{"name":"ArchiveList"},{"name":"CopyBox"},{"name":"ChangelogList"},{"name":"AboutPage"},{"name":"Icon"},{"name":"GameLogo"},{"name":"GameIcon"},{"name":"GameButton"},{"name":"TierBadge"}]} */
+/* @ds-bundle: {"format":4,"namespace":"DailyKit","components":[{"name":"Header"},{"name":"Countdown"},{"name":"HelpPanel"},{"name":"GridCursor"},{"name":"PokerGridBoard"},{"name":"VectorBoard"},{"name":"CipherBoard"},{"name":"RotateLockBoard"},{"name":"DifferenceRelayBoard"},{"name":"HubCard"},{"name":"HubStreak"},{"name":"HubDailyCard"},{"name":"HubFooter"},{"name":"Notice"},{"name":"EndScreen"},{"name":"CrossPromo"},{"name":"ArchiveList"},{"name":"CopyBox"},{"name":"ChangelogList"},{"name":"AboutPage"},{"name":"Icon"},{"name":"GameLogo"},{"name":"GameIcon"},{"name":"GameButton"},{"name":"TierBadge"},{"name":"WordLadderBoard"},{"name":"PangramBoard"},{"name":"FiveLettersBoard"}]} */
 /* DailyKit bundle: framework-free DOM builders ported from src/ui and src/games/*\/render.ts. */
 (function () {
   "use strict";
@@ -8,7 +8,7 @@
     opts = opts || {};
     if (opts["class"]) n.className = opts["class"];
     if (opts.text != null) n.textContent = opts.text;
-    if (opts.attrs) for (var k in opts.attrs) n.setAttribute(k, opts.attrs[k]);
+    if (opts.attrs) for (var k in opts.attrs) if (opts.attrs[k] != null) n.setAttribute(k, opts.attrs[k]);
     (children || []).forEach(function (c) { if (c) n.appendChild(c); });
     return n;
   }
@@ -261,7 +261,7 @@
       return el("button", { "class": "dk-archive__item", attrs: { type: "button" } }, [
         el("span", { "class": "dk-archive__number", text: "#" + it.number }),
         el("span", { "class": "dk-archive__date", text: it.date }),
-        it.done ? el("span", { "class": "dk-archive__mark", text: "✓" }) : null
+        it.mark ? el("span", { "class": "dk-archive__mark", text: it.mark }) : null
       ]);
     });
     return el("ul", { "class": "dk-archive" }, items.map(function (b) { return el("li", {}, [b]); }));
@@ -293,7 +293,7 @@
      differentiated only by accent hue and a one-shape motif drawn from each
      game's own mechanic (ARCHITECTURE2.md / the registry's oneLineRule). */
   var GAMES = [
-    { id: "poker-grid", name: "POKER GRID", token: "game-poker-grid", live: true,
+    { id: "poker-grid", on: "dark", name: "POKER GRID", token: "game-poker-grid", live: true,
       rule: "Clear the board with connected five card poker hands.",
       motif: "A fanned hand of three cards — POKER GRID clears hands, not single cards.",
       icon: '<g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3.3" y="8.4" width="8.6" height="12.4" rx="1.6" transform="rotate(-14 7.6 14.6)"/><rect x="7.7" y="5.8" width="8.6" height="12.4" rx="1.6"/><rect x="12.1" y="8.4" width="8.6" height="12.4" rx="1.6" transform="rotate(14 16.4 14.6)"/></g>' },
@@ -309,22 +309,34 @@
       rule: "Order and rotate the route pieces so the path takes every marked turn and ends at the lock.",
       motif: "An open lock with a rotate arrow at its shackle — rotating pieces to open the lock.",
       icon: '<rect x="6" y="11" width="12" height="9" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M9 11V8A3 3 0 0 1 15 8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M15.5 4.6A4 4 0 0 1 18.3 7.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M18.6 5.2 18.3 7.4 16.2 6.6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>' },
-    { id: "difference-relay", name: "DIFFERENCE RELAY", token: "game-difference-relay", live: false,
+    { id: "difference-relay", on: "dark", name: "DIFFERENCE RELAY", token: "game-difference-relay", live: false,
       rule: "Order the numbers so every neighbouring pair differs by the amount marked between them.",
       motif: "A zigzag of uneven steps — the marked differences between neighbouring stations.",
       icon: '<path d="M3.5 17 8.5 8.5 13 14.5 18 6.5 20.5 10" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><circle cx="3.5" cy="17" r="1.5" fill="currentColor"/><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/><circle cx="13" cy="14.5" r="1.5" fill="currentColor"/><circle cx="18" cy="6.5" r="1.5" fill="currentColor"/>' },
-    { id: "turn-table", name: "TURN TABLE", token: "game-turn-table", live: false,
+    { id: "turn-table", on: "dark", name: "TURN TABLE", token: "game-turn-table", live: false,
       rule: "Rotate the route tiles until one path runs through every checkpoint.",
       motif: "A turntable dial with its arm — tiles rotated in place until the route lines up.",
       icon: '<circle cx="12" cy="12" r="8.2" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="2" fill="currentColor"/><path d="M12 12 18.5 6.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>' },
-    { id: "ring-balance", name: "RING BALANCE", token: "game-ring-balance", live: false,
+    { id: "ring-balance", on: "dark", name: "RING BALANCE", token: "game-ring-balance", live: false,
       rule: "Place the numbers around the ring so every marked span sums to its target.",
       motif: "A beam balanced across a ring — spans around the ring weighed against each other.",
       icon: '<circle cx="12" cy="12" r="8.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5.8 13.4 18.2 10.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="5.8" cy="13.4" r="1.5" fill="currentColor"/><circle cx="18.2" cy="10.6" r="1.5" fill="currentColor"/><path d="M12 12 12 9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>' },
     { id: "order-of-operations", name: "ORDER OF OPERATIONS", token: "game-order-of-operations", live: false,
       rule: "Order the signed operators so the running total hits every checkpoint.",
       motif: "Three ordered tiles, plus, minus, plus — the signed operators put in sequence.",
-      icon: '<g fill="none" stroke="currentColor" stroke-width="1.7"><rect x="2.5" y="9" width="6.2" height="6.2" rx="1.4"/><rect x="8.9" y="9" width="6.2" height="6.2" rx="1.4"/><rect x="15.3" y="9" width="6.2" height="6.2" rx="1.4"/></g><g stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M5.6 10.6V13.6M4.1 12.1H7.1"/><path d="M10.9 12.1H13.9"/><path d="M18.4 10.6V13.6M16.9 12.1H19.9"/></g>' }
+      icon: '<g fill="none" stroke="currentColor" stroke-width="1.7"><rect x="2.5" y="9" width="6.2" height="6.2" rx="1.4"/><rect x="8.9" y="9" width="6.2" height="6.2" rx="1.4"/><rect x="15.3" y="9" width="6.2" height="6.2" rx="1.4"/></g><g stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M5.6 10.6V13.6M4.1 12.1H7.1"/><path d="M10.9 12.1H13.9"/><path d="M18.4 10.6V13.6M16.9 12.1H19.9"/></g>' },
+    { id: "word-ladder", on: "dark", name: "WORD LADDER", token: "game-word-ladder", live: false,
+      rule: "Change one letter at a time to climb from the start word to the goal word in as few steps as you can.",
+      motif: "A ladder \u2014 one rung per changed letter, start word at the bottom, goal at the top.",
+      icon: '<path d="M7 3V21M17 3V21" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><path d="M7 7.5H17M7 12H17M7 16.5H17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>' },
+    { id: "pangram", name: "PANGRAM", token: "game-pangram", live: false,
+      rule: "Make words of four or more letters from seven, always using the centre letter, and find the word that uses all seven.",
+      motif: "Seven keys, four over three, the centre key filled \u2014 the keypad itself, never a honeycomb.",
+      icon: '<g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><rect x="1.8" y="6.9" width="3.6" height="3.6" rx="0.8"/><rect x="7.4" y="6.9" width="3.6" height="3.6" rx="0.8"/><rect x="13" y="6.9" width="3.6" height="3.6" rx="0.8"/><rect x="18.6" y="6.9" width="3.6" height="3.6" rx="0.8"/><rect x="4.6" y="12.5" width="3.6" height="3.6" rx="0.8"/><rect x="15.8" y="12.5" width="3.6" height="3.6" rx="0.8"/></g><rect x="9.5" y="11.8" width="5" height="5" rx="1.1" fill="currentColor"/>' },
+    { id: "five-letters", name: "FIVE LETTERS", token: "game-five-letters", live: false,
+      rule: "Find the five letter word in six guesses, each letter marked right, present or absent.",
+      motif: "The three marks \u2014 a filled tile (right), a dashed tile (present), a crossed tile (absent).",
+      icon: '<rect x="1.4" y="8.8" width="6.4" height="6.4" rx="1.3" fill="currentColor"/><rect x="9.6" y="9.6" width="4.8" height="4.8" rx="0.8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-dasharray="2.2 1.4"/><rect x="17" y="9.6" width="4.8" height="4.8" rx="0.8" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M18.2 10.8 20.6 13.2M20.6 10.8 18.2 13.2" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>' }
   ];
   function gameById(id) { for (var i = 0; i < GAMES.length; i++) if (GAMES[i].id === id) return GAMES[i]; return null; }
   function GameIcon(id) {
@@ -339,7 +351,7 @@
   /* GameLogo: the badge-plus-wordmark lockup. size: "md" (default, header/hub scale) or "lg" (cover/splash scale). */
   function GameLogo(id, size) {
     var g = gameById(id);
-    var badge = el("span", { "class": "dk-game-logo__badge", attrs: { style: "background:var(--" + g.token + ")" } }, [GameIcon(id)]);
+    var badge = el("span", { "class": "dk-game-logo__badge", attrs: { style: "background:var(--" + g.token + ")", "data-on": g.on || "light" } }, [GameIcon(id)]);
     var name = el("span", { "class": "dk-game-logo__name", text: g.name });
     return el("div", { "class": "dk-game-logo" + (size === "lg" ? " dk-game-logo--lg" : "") }, [badge, name]);
   }
@@ -348,7 +360,7 @@
     opts = opts || {};
     var g = gameById(id);
     var label = opts.label || ("Play " + g.name);
-    var b = el("button", { "class": "dk-button dk-button--primary dk-button--game", attrs: { type: "button", style: "--accent:var(--" + g.token + ")" } },
+    var b = el("button", { "class": "dk-button dk-button--primary dk-button--game", attrs: { type: "button", style: "--accent:var(--" + g.token + ")", "data-on": g.on || "light" } },
       [GameIcon(id), el("span", { text: label })]);
     if (opts.onClick) b.addEventListener("click", opts.onClick);
     return b;
@@ -362,5 +374,95 @@
     return el("span", { "class": "dk-tier" + (tier === 0 ? " dk-tier--distinguished" : ""), text: label ? (name + " · " + label) : name });
   }
 
-  window.DailyKit = { Header: Header, Countdown: Countdown, formatDuration: formatDuration, HelpPanel: HelpPanel, GridCursor: GridCursor, PokerGridBoard: PokerGridBoard, VectorBoard: VectorBoard, CipherBoard: CipherBoard, RotateLockBoard: RotateLockBoard, DifferenceRelayBoard: DifferenceRelayBoard, HubCard: HubCard, HubStreak: HubStreak, HubDailyCard: HubDailyCard, HubFooter: HubFooter, Notice: Notice, EndScreen: EndScreen, CrossPromo: CrossPromo, ArchiveList: ArchiveList, CopyBox: CopyBox, ChangelogList: ChangelogList, AboutPage: AboutPage, Icon: Icon, ICON_LABEL: ICON_LABEL, GAMES: GAMES, GameIcon: GameIcon, GameLogo: GameLogo, GameButton: GameButton, TierBadge: TierBadge, TIERS: TIERS };
+  /* WORD LADDER: { status, goal, word, armed (0-3), rungs: [{word, progress -1|0|1}], start, locked } */
+  var WL_KEYS = ["abcdefg", "hijklmn", "opqrstu", "vwxyz"];
+  function WordLadderBoard(o) {
+    var cells = o.word.toUpperCase().split("").map(function (ch, i) {
+      return el("button", { "class": "wl-cell", text: ch, attrs: { type: "button", "aria-pressed": o.armed === i ? "true" : "false", "aria-label": "Letter " + (i + 1) + ": " + ch + (o.armed === i ? ", armed" : ""), disabled: o.locked ? "true" : null } });
+    });
+    var keys = WL_KEYS.map(function (row) {
+      return el("div", { "class": "wl-key-row" }, row.split("").map(function (ch) {
+        return el("button", { "class": "wl-key", text: ch.toUpperCase(), attrs: { type: "button", "data-letter": ch } });
+      }));
+    });
+    var rungs = [el("li", { "class": "wl-rung wl-rung-start", text: o.start.toUpperCase() })].concat((o.rungs || []).map(function (r) {
+      return el("li", { "class": "wl-rung", text: r.word.toUpperCase(), attrs: { "data-progress": String(r.progress) } });
+    }));
+    return el("div", { "class": "wl-game" }, [
+      el("p", { "class": "wl-status", text: o.status || "", attrs: { role: "status", "aria-live": "polite" } }),
+      el("p", { "class": "wl-goal", text: o.goal || "" }),
+      el("div", { "class": "wl-word", attrs: { role: "group", "aria-label": "Current word" } }, cells),
+      el("div", { "class": "wl-keys", attrs: { role: "group", "aria-label": "Letter keys" } }, keys),
+      el("div", { "class": "wl-controls" }, [
+        el("button", { "class": "wl-run", text: "Add rung", attrs: { type: "button" } }),
+        el("button", { "class": "wl-undo", text: "Undo", attrs: { type: "button", disabled: (o.rungs || []).length ? null : "true" } }),
+        el("button", { "class": "wl-reveal", text: "Reveal", attrs: { type: "button" } })
+      ]),
+      el("ol", { "class": "wl-ladder", attrs: { "aria-label": "Rungs climbed" } }, rungs)
+    ]);
+  }
+
+  /* PANGRAM: { status, meter (0-8 full cells), draft, letters: [7 in slot order; slot 5, bottom middle, is the centre], found: [{word, pangram}], confirming } */
+  function PangramBoard(o) {
+    var meter = [];
+    for (var i = 0; i < 8; i++) meter.push(el("span", { "class": "pan-meter-cell", attrs: { "data-full": i < (o.meter || 0) ? "true" : "false" } }));
+    function key(slot) {
+      var centre = slot === 5;
+      return el("button", { "class": "pan-key", text: o.letters[slot].toUpperCase(), attrs: { type: "button", "data-slot": slot, "data-centre": centre ? "true" : "false", "aria-label": o.letters[slot].toUpperCase() + (centre ? ", centre letter" : "") } });
+    }
+    var found = (o.found || []).map(function (f) {
+      return el("li", { "class": "pan-found-word", text: f.pangram ? f.word + " (pangram)" : f.word, attrs: { "data-pangram": String(!!f.pangram) } });
+    });
+    return el("div", { "class": "pan-game" }, [
+      el("p", { "class": "pan-status", text: o.status || "", attrs: { role: "status", "aria-live": "polite" } }),
+      el("div", { "class": "pan-meter", attrs: { role: "img", "aria-label": "Score meter" } }, meter),
+      el("p", { "class": "pan-draft", text: o.draft || "", attrs: { "aria-label": "Word being typed" } }),
+      el("div", { "class": "pan-keys", attrs: { role: "group", "aria-label": "Letter keys" } }, [
+        el("div", { "class": "pan-key-row pan-key-row-top" }, [0, 1, 2, 3].map(key)),
+        el("div", { "class": "pan-key-row pan-key-row-bottom" }, [4, 5, 6].map(key))
+      ]),
+      el("div", { "class": "pan-controls" }, [
+        el("button", { "class": "pan-delete", text: "Delete", attrs: { type: "button" } }),
+        el("button", { "class": "pan-shuffle", text: "Shuffle", attrs: { type: "button" } }),
+        el("button", { "class": "pan-enter", text: "Enter", attrs: { type: "button" } })
+      ]),
+      el("button", { "class": "pan-finish", text: o.confirming ? "Tap again to finish" : "Finish", attrs: { type: "button" } }),
+      el("ul", { "class": "pan-found", attrs: { "aria-label": "Words found" } }, found)
+    ]);
+  }
+
+  /* FIVE LETTERS: { status, rows: 6 x ({word, marks[5]: 0 absent|1 present|2 right} | {draft} | null), keyMarks: {letter: mark} } */
+  var FL_MARK_GLYPH = ["\u00D7", "\u25CB", "\u25CF"], FL_MARK_WORD = ["absent", "present", "right"];
+  function FiveLettersBoard(o) {
+    var rows = [];
+    for (var r = 0; r < 6; r++) {
+      var row = (o.rows || [])[r] || null, tiles = [];
+      for (var c = 0; c < 5; c++) {
+        var letter = row ? (row.word ? row.word[c] : (row.draft || "")[c]) : "";
+        var mark = row && row.marks ? row.marks[c] : null;
+        var kids = [el("span", { "class": "fl-letter", text: (letter || "").toUpperCase() }), el("span", { "class": "fl-mark", text: mark == null ? "" : FL_MARK_GLYPH[mark], attrs: { "aria-hidden": "true" } })];
+        tiles.push(el("div", { "class": "fl-tile", attrs: mark == null ? {} : { "data-mark": String(mark) } }, kids));
+      }
+      rows.push(el("div", { "class": "fl-row", attrs: { role: "group" } }, tiles));
+    }
+    var km = o.keyMarks || {};
+    var keyRows = ["abcdefg", "hijklmn", "opqrstu", "vwxyz"].map(function (letters, i) {
+      var ks = letters.split("").map(function (ch) {
+        var m = km[ch];
+        return el("button", { "class": "fl-key", text: ch.toUpperCase(), attrs: Object.assign({ type: "button", "data-letter": ch }, m == null ? {} : { "data-mark": String(m), "aria-label": ch.toUpperCase() + ", " + FL_MARK_WORD[m] }) });
+      });
+      if (i === 3) {
+        ks.push(el("button", { "class": "fl-key fl-key-wide", text: "Del", attrs: { type: "button", "aria-label": "Delete" } }));
+        ks.push(el("button", { "class": "fl-key fl-key-wide", text: "Enter", attrs: { type: "button" } }));
+      }
+      return el("div", { "class": "fl-key-row" }, ks);
+    });
+    return el("div", { "class": "fl-game" }, [
+      el("p", { "class": "fl-status", text: o.status || "", attrs: { role: "status", "aria-live": "polite" } }),
+      el("div", { "class": "fl-board", attrs: { role: "group", "aria-label": "Guesses" } }, rows),
+      el("div", { "class": "fl-keys", attrs: { role: "group", "aria-label": "Letter keys" } }, keyRows)
+    ]);
+  }
+
+  window.DailyKit = { Header: Header, Countdown: Countdown, formatDuration: formatDuration, HelpPanel: HelpPanel, GridCursor: GridCursor, PokerGridBoard: PokerGridBoard, VectorBoard: VectorBoard, CipherBoard: CipherBoard, RotateLockBoard: RotateLockBoard, DifferenceRelayBoard: DifferenceRelayBoard, HubCard: HubCard, HubStreak: HubStreak, HubDailyCard: HubDailyCard, HubFooter: HubFooter, Notice: Notice, EndScreen: EndScreen, CrossPromo: CrossPromo, ArchiveList: ArchiveList, CopyBox: CopyBox, ChangelogList: ChangelogList, AboutPage: AboutPage, Icon: Icon, ICONS: ICON_SVG, ICON_LABEL: ICON_LABEL, GAMES: GAMES, GameIcon: GameIcon, GameLogo: GameLogo, GameButton: GameButton, TierBadge: TierBadge, TIERS: TIERS, WordLadderBoard: WordLadderBoard, PangramBoard: PangramBoard, FiveLettersBoard: FiveLettersBoard };
 })();

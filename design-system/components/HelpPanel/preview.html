@@ -1,4 +1,4 @@
-<!-- @dsCard group="Chrome" height=760 -->
+<!-- @dsCard group="Chrome" height=1560 -->
 <body style="padding:16px">
 <div id="m" style="display:flex;flex-direction:column;gap:20px;max-width:380px"></div>
 <script>
@@ -37,6 +37,39 @@ card('DIFFERENCE RELAY — DIFFERENCE-RELAY.md §19, five steps, a four-station 
     'Six runs. Read where the baton stopped to infer a hidden gap before your next run.'
   ],
   example: { lines: ['Run 1: 3 1 4 2 — baton reaches station 3 of 4', 'Run 2: 3 1 2 4 — baton reaches station 4: open'], caption: 'The first run’s stop told them station 3–4 was wrong; swapping it opened the relay.' }
+});
+
+card('WORD LADDER \u2014 src/games/word-ladder/help.ts, five steps', {
+  headline: 'Change one letter at a time to climb from the start word to the goal word in as few steps as you can.',
+  steps: [
+    'You start on the top word and climb toward the goal word shown below it.',
+    'Each step changes exactly one letter, and every step must be a real four letter word.',
+    'The shortest possible climb is par. Match it for the best result.',
+    'Tap a letter tile then a key to change it, or type the whole word and press Enter.',
+    'Stuck? Reveal shows one shortest climb and ends today\u2019s ladder.'
+  ],
+  example: { lines: ['cold, then cord, then word, then ward, then warm', 'four steps, one letter changed each time'], caption: 'COLD to WARM in four steps: COLD, CORD, WORD, WARD, WARM. Each step changes one letter into a real word.' }
+});
+card('PANGRAM \u2014 src/games/pangram/help.ts, five steps', {
+  headline: 'Make words of four or more letters from the seven, always using the centre letter, and find the word that uses all seven.',
+  steps: [
+    'Tap letters to spell a word, or type it, then press Enter. Letters may repeat.',
+    'Every word needs at least four letters and must include the centre letter.',
+    'A word scores one point for each letter past three. A word using all seven letters is a pangram and scores seven more.',
+    'Your rank rises as your score grows. The top rank needs a pangram.',
+    'Finish whenever you like to end the day and see every word you missed.'
+  ],
+  example: { lines: ['bath, 1 point', 'habit, 2 points', 'habitation, a pangram, 14 points', 'tint is refused: no centre letter'], caption: 'Letters A B I N O T with H in the centre: BATH scores 1, HABIT scores 2, and HABITATION uses all seven, scoring 7 plus 7.' }
+});
+card('FIVE LETTERS \u2014 src/games/five-letters/help.ts, four steps', {
+  headline: 'Find the five letter word in six guesses, each letter marked right, present or absent.',
+  steps: [
+    'Type a five letter word, or tap the letter keys, then press Enter.',
+    'Right means the letter is in that position. Present means the word has it elsewhere. Absent means no more copies.',
+    'A letter is marked right or present only as many times as the word holds it, and exact matches are marked first.',
+    'The keyboard remembers the best mark each letter has earned.'
+  ],
+  example: { lines: ['T absent', 'R present', 'E present', 'A present', 'T right'], caption: 'The word is HEART. Guessing TREAT: the last T is right, so the first T is absent; R, E and A are present.' }
 });
 </script>
 </body>

@@ -1,3 +1,5 @@
 The five suite-wide result tiers (`src/engine/tiers.ts`): Excellent, Great, Good, Fair, Rough — shared by every v3 game (confirmed by ROTATE-LOCK.md and DIFFERENCE-RELAY.md §6.5, both compare the run to par on this same five-step scale). Tier 0 (Excellent) is always the distinguished bucket in that game's histogram and gets the accent border and bold weight here; the other four stay neutral, on purpose — nothing below the top tier is penalized visually, only named.
 
 `TierBadge(tier, label)`; `tier` is 0–4, `label` is optional trailing detail (`"9 moves"`, `"3/6"`).
+
+How each game maps its result onto the five tiers: POKER GRID and VECTOR by score band; CIPHER, ROTATE LOCK and DIFFERENCE RELAY against par or the guess count; **WORD LADDER** by rungs against par (par = Excellent, +1 Great, +2 Good, +3 or more Fair, revealed Rough); **PANGRAM** by the share of the day's points (60% and a pangram Excellent, 40% Great, 25% Good, 10% Fair, under that Rough, so the top tier needs a pangram); **FIVE LETTERS** by guess count (solved in 1 or 2 Excellent, 3 Great, 4 Good, 5 or 6 Fair, not solved Rough).

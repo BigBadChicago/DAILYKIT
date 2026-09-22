@@ -47,7 +47,7 @@
   align-items: center;
   justify-content: center;
   aspect-ratio: 1;
-  border: 2px solid var(--dk-border, currentColor);
+  border: 2px solid var(--dk-text-dim);
   border-radius: 6px;
   font-size: 1.6rem;
   font-weight: 700;
@@ -62,15 +62,15 @@
 }
 
 .fl-tile[data-mark="2"] {
-  background: hsl(var(--dk-accent-hue, 288) 55% 35%);
-  border-color: hsl(var(--dk-accent-hue, 288) 55% 35%);
-  color: #fff;
+  background: var(--dk-accent);
+  border-color: var(--dk-accent);
+  color: var(--dk-accent-text);
 }
 
 .fl-tile[data-mark="1"] {
   border-style: dashed;
   border-width: 3px;
-  border-color: hsl(var(--dk-accent-hue, 288) 55% 45%);
+  border-color: var(--dk-accent);
 }
 
 .fl-tile[data-mark="0"] {
@@ -100,7 +100,7 @@
   padding: 0;
   font-size: 1.2rem;
   font-weight: 700;
-  border: 2px solid var(--dk-border, currentColor);
+  border: 2px solid var(--dk-text-dim);
   border-radius: 8px;
   background: var(--dk-surface, transparent);
   color: inherit;
@@ -113,15 +113,15 @@
 }
 
 .fl-key[data-mark="2"] {
-  background: hsl(var(--dk-accent-hue, 288) 55% 35%);
-  border-color: hsl(var(--dk-accent-hue, 288) 55% 35%);
-  color: #fff;
+  background: var(--dk-accent);
+  border-color: var(--dk-accent);
+  color: var(--dk-accent-text);
 }
 
 .fl-key[data-mark="1"] {
   border-style: dashed;
   border-width: 3px;
-  border-color: hsl(var(--dk-accent-hue, 288) 55% 45%);
+  border-color: var(--dk-accent);
 }
 
 .fl-key[data-mark="0"] {
@@ -131,14 +131,6 @@
 
 button:disabled {
   opacity: 0.5;
-}
-
-@media (prefers-color-scheme: dark) {
-  .fl-tile[data-mark="2"],
-  .fl-key[data-mark="2"] {
-    background: hsl(var(--dk-accent-hue, 288) 50% 42%);
-    border-color: hsl(var(--dk-accent-hue, 288) 50% 42%);
-  }
 }
 
 @media (prefers-reduced-motion: no-preference) {

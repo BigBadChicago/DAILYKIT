@@ -1,0 +1,5 @@
+WORD LADDER: the current four-letter word as four tiles, a seven-across alphabetical keyboard, the three controls, and the ladder of rungs climbed so far. Ported from `src/games/word-ladder/render.ts` and `style.css`, with the same class names (`wl-*`).
+
+`WordLadderBoard({status, goal, word, armed, rungs[{word, progress}], start, locked})`. The armed tile takes a 2px accent outline; a key press overwrites it. A rung's progress is a marker, never colour alone: `△` closer to the goal, `▽` farther, none when level; the goal and par are written as text (`Goal: WARM — par 4`). Keys are seven across so each clears 44px at a 360px viewport (WORD-LADDER.md 5). Set `--accent` to `game-word-ladder`.
+
+**Add rung** is the one filled control. Hue 128 is 3.2:1 against white in the light theme, so the light theme uses dark text on the fill (5.2:1), and the high-contrast layer returns to `accent-text`, where white passes again (5.1:1). Control outlines are `text-dim`, not `line`: `line` is 1.5:1 on white and cannot mark a control's edge (3:1 needed).

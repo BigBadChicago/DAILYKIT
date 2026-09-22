@@ -12,4 +12,8 @@ The single mark for one game: 24x24 line art in `currentColor`, one motif drawn 
 | TURN TABLE | 108 | a turntable dial and arm | route tiles rotated in place |
 | RING BALANCE | 188 | a beam balanced across a ring | spans around a ring weighed against each other |
 | ORDER OF OPERATIONS | 228 | three tiles, `+ − +` | signed operators put in sequence |
+| WORD LADDER | 128 | a ladder, two rails and three rungs | one rung per changed letter, start at the bottom, goal at the top |
+| PANGRAM | 208 | seven keys four over three, the centre filled | the keypad itself, deliberately not a honeycomb (PANGRAM.md 5) |
+| FIVE LETTERS | 288 | three tiles: filled, dashed, crossed | the three marks: right, present, absent |
 
+The last three come from their built design documents and renderers, not from a one-line rule alone. They are still `status: "planned"` in the registry, so the mark shows dim wherever the game is not yet offered as playable.
