@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "gameId": "vector",
-  "certifiedCommit": "6d9a238464d2",
+  "certifiedCommit": "fcace772ae5b",
   "outcomesHash": "dcecaad07970351c868a3a17df730c97750c4148cf933d891b4cef64ec8fded8",
   "checks": {
     "typecheck": {

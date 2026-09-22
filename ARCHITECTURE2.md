@@ -4208,6 +4208,76 @@ Zero engine changes. No file under `src/core`, `src/engine`, `src/ui`,
 | .github/workflows/ci.yml | five-letters:verify |
 | MANUAL-CHECKS.md | Section 8, FIVE LETTERS |
 
+## Charter Phase 13 interruption: five games pushed live. Done 2026-09-22.
+
+Not a charter phase. The owner broke into the LETTER TRAIL build conversation
+mid run with a rewritten `HANDOFF.md`, commit `fcace772ae5b8c83e5e26e9461c6b726d990579d`
+("handoff break in process to push games live"), asking which built games sat
+on `live` versus `planned`, then directed the five built and gated games live
+now, efficiently, skipping the manual mobile device check.
+
+### The finding: status alone does not ship a game
+
+Flipping `status` to `"live"` in `src/shell/registry.ts` makes `liveGameIds()`
+and the hub agree a game is live, but `vite.config.ts`'s real production build
+(`releasable()`) admits a game only when `productionSafeFromDisk` says its
+committed certification record has no refusals. Two of the nineteen gate steps
+were unresolved for these five: `manual-mobile-check` on all five, and
+`offline-smoke` on four of five (ROTATE LOCK already had one on record).
+
+### Decisions, made 2026-09-22 under the owner's direct chat instruction
+
+1. **`manual-mobile-check` is exempted, not faked.** A second `GateExemption`,
+   `manual-mobile-2026-09-22`, covers the five games, expiring 2026-12-21, the
+   same mechanism and shape as the original three live games' exemption
+   (`src/engine/certification.ts`). No check claims a device pass that did not
+   happen.
+2. **`offline-smoke` was actually run, not exempted.** A throwaway,
+   uncommitted patch to `releasable()` in a scratch copy of the tree admitted
+   every live game into a real `dist` build with the service worker, the same
+   method already on record for ROTATE LOCK's own offline-smoke evidence.
+   Headless Chromium at 360 by 740 confirmed the hub and all four remaining
+   games render from cache offline, service worker controller attached, no
+   console error. Recorded per game in `tools/certify.ts`.
+3. **Six stale test assertions were corrected, not weakened,** where they
+   hardcoded the old `planned` state or a single legacy exemption: the
+   registry's word game ordering test, the hub's status label test, the
+   certification exemptions test, two `certify.test.ts` checks, and FIVE
+   LETTERS' own registry agreement test. Each now asserts the true current
+   state rather than a fixed one.
+4. **LETTER TRAIL was left untouched.** It is designed, not built, and the
+   direction did not name it; it stays planned.
+
+### The abstraction test, requirement 7.4
+
+Not applicable. No game was built; the engine's admission and certification
+mechanisms were exercised as designed, not extended.
+
+### Green after the change, 2026-09-22
+
+| Gate | Result |
+|---|---|
+| Typecheck | three tsconfigs, zero errors |
+| Dependency check | layers verified |
+| Tests | 95 files, 1,169 tests |
+| Verifiers | all eight live games, each 365 days |
+| Production build | real `npm run build` (no certify flag) admits all eight live games with the service worker |
+| Byte budget | About 4.0, hub 18.6, CIPHER 26.7, PANGRAM 27.5, DIFFERENCE RELAY 27.7, POKER GRID 28.8, ROTATE LOCK 29.3, VECTOR 29.0, WORD LADDER 33.4, FIVE LETTERS 38.6 KB gzipped, every page inside budget |
+| Certification | all eight live games production safe |
+
+### Files
+
+| Path | What it is |
+|---|---|
+| src/shell/registry.ts | Five rows moved `planned` to `live` |
+| src/engine/certification.ts | The second `GateExemption`, `manual-mobile-2026-09-22` |
+| tools/certify.ts | The five games' plans: pending exemption, real offline smoke evidence |
+| tests/engine/certification.test.ts, tests/hub/hub.test.ts, tests/shell/registry.test.ts, tests/tools/certify.test.ts, tests/games/five-letters/module.test.ts | Corrected to the true current state |
+| data/{rotate-lock,difference-relay,word-ladder,pangram,five-letters}/certification.json | Written by `npm run certify`, all production safe |
+| MANUAL-CHECKS.md | Sections 7 and 8 updated, live in production, no throwaway copy; Section 9 placeholder for the three games with no section yet |
+| BACKLOG.md | The exemption, the real offline smoke method, the missing manual check sections logged |
+| HANDOFF.md | Rewritten; the LETTER TRAIL build is still the next conversation's task |
+
 ## Standing rule: a game's conversation runs design through delivery. Set 2026-09-20.
 
 Directed by the owner. Every remaining game, FIVE LETTERS, TURN TABLE, RING

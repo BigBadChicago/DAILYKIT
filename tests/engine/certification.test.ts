@@ -115,11 +115,16 @@ describe("the committed exemptions", () => {
     }
   });
 
-  it("covers only the manual mobile check, and only the three games live when it was issued", () => {
-    expect(GATE_EXEMPTIONS).toHaveLength(1);
-    const [only] = GATE_EXEMPTIONS;
-    expect(only?.steps).toEqual(["manual-mobile-check"]);
-    expect(only?.games).toEqual(["poker-grid", "cipher", "vector"]);
-    expect(only?.issued).toBe("2026-09-16");
+  it("each covers only the manual mobile check, named games and a reason", () => {
+    for (const exemption of GATE_EXEMPTIONS) {
+      expect(exemption.steps).toEqual(["manual-mobile-check"]);
+      expect(exemption.games.length).toBeGreaterThan(0);
+    }
+    const first = GATE_EXEMPTIONS.find((e) => e.id === "manual-mobile-2026-09-16");
+    expect(first?.games).toEqual(["poker-grid", "cipher", "vector"]);
+    expect(first?.issued).toBe("2026-09-16");
+    const second = GATE_EXEMPTIONS.find((e) => e.id === "manual-mobile-2026-09-22");
+    expect(second?.games).toEqual(["rotate-lock", "difference-relay", "word-ladder", "pangram", "five-letters"]);
+    expect(second?.issued).toBe("2026-09-22");
   });
 });

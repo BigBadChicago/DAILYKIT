@@ -47,7 +47,7 @@ describe("FIVE LETTERS contract surface", () => {
     expect(game.archiveEnabled).toBe(true);
   });
 
-  it("agrees with its registry entry, which stays planned", () => {
+  it("agrees with its registry entry, now live", () => {
     const row = entryFor("five-letters");
     expect(row).not.toBeNull();
     expect(row?.bucketCount).toBe(game.distribution.labels.length);
@@ -55,7 +55,7 @@ describe("FIVE LETTERS contract surface", () => {
     expect(row?.stateVersion).toBe(game.stateVersion);
     expect(row?.oneLineRule).toBe(game.identity.oneLineRule);
     expect(row?.accent.hue).toBe(game.identity.accent.hue);
-    expect(row?.status).toBe("planned");
+    expect(row?.status).toBe("live");
   });
 });
 

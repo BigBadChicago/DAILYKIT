@@ -125,10 +125,10 @@ describe("the hub", () => {
     expect(labels[0]).toContain("POKER GRID");
     expect(labels[0]).toContain("Not started");
     expect(labels[1]).toContain("VECTOR");
-    /* The first planned card sits immediately after the live ones, so the index
-       is derived rather than written down. It was 3 and it was tally-drop until
-       the 2026-09-13 reconciliation, and it moves again every time a game
-       ships. */
-    expect(labels[LIVE_GAMES.length]).toContain("Coming soon");
+    /* Hub order is the registry's declared order, session length descending,
+       independent of status (registry.ts header). A planned card can sit
+       between two live cards, as letter-trail now does. */
+    const firstPlanned = SUITE_GAMES.findIndex((entry) => entry.status === "planned");
+    expect(labels[firstPlanned]).toContain("Coming soon");
   });
 });

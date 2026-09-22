@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "gameId": "poker-grid",
-  "certifiedCommit": "6d9a238464d2",
+  "certifiedCommit": "fcace772ae5b",
   "outcomesHash": "a765d10d334b711aad93f67c38999b5e9bb360d7734f399b0edc4c8905432122",
   "checks": {
     "typecheck": {
