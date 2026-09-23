@@ -23,7 +23,14 @@
  */
 
 import { readFileSync, writeFileSync } from "node:fs";
-import { argv, exit, stdout } from "node:process";
+import { exit, stdout } from "node:process";
+import {
+  cleanWordText,
+  getCommandLineFlag,
+  parseScowlLevels,
+  readLines,
+  type ScowlLevels,
+} from "./word-lists.js";
 
 export const ACCEPTED_LEVEL = 50;
 export const ANSWER_LEVEL = 35;
@@ -32,6 +39,8 @@ export const DENY_PATH = "data/word-lists/deny.txt";
 export const ACCEPTED_PATH = "data/five-letters/accepted.txt";
 export const ANSWERS_PATH = "data/five-letters/answers.txt";
 export const WORDS_SOURCE_PATH = "src/games/five-letters/words.ts";
+
+export type Levels = ScowlLevels;
 
 /** The runtime asset: the accepted list as one blob in a generated source file,
  *  so the page needs no fetch to validate a guess and plays offline. */
@@ -58,73 +67,7 @@ export const ACCEPTED_WORDS: readonly string[] = BLOB.split(" ");
 `;
 }
 
-const LINE = /^((?:\d+\s*(?:\[[^\]]*\]\s*)*)+):\s*(.*)$/;
-const SIZE = /(?<![\w[])(\d+)(?=\s*(?:\[|$|\s))/g;
-const WORD = /^[a-z]+$/;
-const CODE = /^[A-Z][A-Za-z]*$/;
-
-function clean(text: string): string {
-  return text
-    .replace(/<[^>]*>/g, "")
-    .replace(/\{[^}]*\}/g, "")
-    .replace(/#.*$/, "")
-    .trim();
-}
-
-export interface Levels {
-  /** Smallest level at which the word appears at all. */
-  readonly any: Map<string, number>;
-  /** Smallest level at which the word is a headword of its own line. */
-  readonly head: Map<string, number>;
-}
-
-function lower(map: Map<string, number>, word: string, level: number): void {
-  const known = map.get(word);
-  if (known === undefined || level < known) map.set(word, level);
-}
-
-/** PANGRAM's parse, with headword status kept alongside. */
-export function sizeLevels(scowl: string): Levels {
-  const any = new Map<string, number>();
-  const head = new Map<string, number>();
-  let previous: string | null = null;
-  for (const raw of scowl.split("\n")) {
-    const line = LINE.exec(raw);
-    if (line === null) continue;
-    const levels = [...(line[1] as string).matchAll(SIZE)].map((match) => Number(match[1]));
-    if (levels.length === 0) continue;
-    const level = Math.min(...levels);
-    const fields = (line[2] as string).split(":");
-    const at = fields.findIndex((field) => field.includes("<"));
-    if (at < 0) continue;
-    const codes = fields
-      .slice(0, at)
-      .join(" ")
-      .split(/\s+/)
-      .filter((flag) => CODE.test(flag));
-    if (codes.length > 0 && !codes.some((code) => code.startsWith("A"))) continue;
-    const headField = fields[at] as string;
-    const tags = /<([^>]*)>/.exec(headField)?.[1] ?? "";
-    let word = clean(headField);
-    const continuation = word === "-" || word === "";
-    if (continuation) word = previous ?? "";
-    else previous = word;
-    /* After tracking the headword, so a continuation line after an upper or abbr
-       entry still resolves to it, exactly as PANGRAM's parse does. */
-    if (tags.includes("upper") || tags.includes("abbr")) continue;
-    if (WORD.test(word)) {
-      lower(any, word, level);
-      if (!continuation) lower(head, word, level);
-    }
-    for (const field of fields.slice(at + 1)) {
-      for (const piece of clean(field).split(",")) {
-        const inflection = piece.trim();
-        if (inflection !== "" && inflection !== "-" && WORD.test(inflection)) lower(any, inflection, level);
-      }
-    }
-  }
-  return { any, head };
-}
+export { cleanWordText as clean, parseScowlLevels as sizeLevels, readLines as lines };
 
 export function deriveAccepted(levels: Levels, enable: ReadonlySet<string>, deny: ReadonlySet<string>): string[] {
   const out: string[] = [];
@@ -139,27 +82,15 @@ export function deriveAnswers(levels: Levels, accepted: readonly string[]): stri
   return accepted.filter((word) => (levels.head.get(word) ?? Infinity) <= ANSWER_LEVEL);
 }
 
-export function lines(path: string): string[] {
-  return readFileSync(path, "utf8")
-    .split("\n")
-    .map((word) => word.trim())
-    .filter((word) => word.length > 0);
-}
-
-function flag(name: string): string | null {
-  const at = argv.indexOf(`--${name}`);
-  return at >= 0 && at + 1 < argv.length ? (argv[at + 1] as string) : null;
-}
-
 function main(): void {
-  const scowlPath = flag("scowl");
-  const enablePath = flag("enable");
+  const scowlPath = getCommandLineFlag("scowl");
+  const enablePath = getCommandLineFlag("enable");
   if (scowlPath === null || enablePath === null) {
     stdout.write("usage: five-letters-words --scowl <scowl-pre.txt> --enable <enable1.txt>\n");
     exit(1);
   }
-  const levels = sizeLevels(readFileSync(scowlPath, "utf8"));
-  const accepted = deriveAccepted(levels, new Set(lines(enablePath)), new Set(lines(DENY_PATH)));
+  const levels = parseScowlLevels(readFileSync(scowlPath, "utf8"));
+  const accepted = deriveAccepted(levels, new Set(readLines(enablePath)), new Set(readLines(DENY_PATH)));
   const answers = deriveAnswers(levels, accepted);
   writeFileSync(ACCEPTED_PATH, `${accepted.join("\n")}\n`);
   writeFileSync(ANSWERS_PATH, `${answers.join("\n")}\n`);

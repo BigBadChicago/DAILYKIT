@@ -29,17 +29,47 @@ export type Weekday = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 /** 1970-01-01 was a Thursday, so day number 0 maps to weekday 4. */
 const EPOCH_WEEKDAY = 4;
 
+export function isLeapYear(year: number): boolean {
+  return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+}
+
+export function daysInMonth(year: number, month: number): number {
+  if (month === 2) return isLeapYear(year) ? 29 : 28;
+  if (month === 4 || month === 6 || month === 9 || month === 11) return 30;
+  return 31;
+}
+
+export function isValidCivilDate(date: unknown): date is CivilDate {
+  if (typeof date !== "object" || date === null) return false;
+  const { year, month, day } = date as Partial<CivilDate>;
+  if (typeof year !== "number" || !Number.isInteger(year) || year < 100 || year > 9999) return false;
+  if (typeof month !== "number" || !Number.isInteger(month) || month < 1 || month > 12) return false;
+  if (typeof day !== "number" || !Number.isInteger(day) || day < 1 || day > daysInMonth(year, month)) return false;
+  return true;
+}
+
 function assertCivil(date: CivilDate): void {
-  const { year, month, day } = date;
-  if (!Number.isInteger(year) || year < 100 || year > 9999) {
-    throw new RangeError(`year out of supported range, got ${year}`);
+  if (!isValidCivilDate(date)) {
+    throw new RangeError(`invalid civil date: ${JSON.stringify(date)}`);
   }
-  if (!Number.isInteger(month) || month < 1 || month > 12) {
-    throw new RangeError(`month must be 1 through 12, got ${month}`);
-  }
-  if (!Number.isInteger(day) || day < 1 || day > 31) {
-    throw new RangeError(`day must be 1 through 31, got ${day}`);
-  }
+}
+
+export function parseCivilDate(isoString: string): CivilDate | null {
+  if (typeof isoString !== "string") return null;
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(isoString.trim());
+  if (!match) return null;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const date = { year, month, day };
+  return isValidCivilDate(date) ? date : null;
+}
+
+export function formatCivilDate(date: CivilDate): string {
+  assertCivil(date);
+  const m = String(date.month).padStart(2, "0");
+  const d = String(date.day).padStart(2, "0");
+  return `${date.year}-${m}-${d}`;
 }
 
 /**

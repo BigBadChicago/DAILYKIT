@@ -27,6 +27,29 @@ describe("openModal", () => {
     expect(document.body.classList.contains("dk-scroll-locked")).toBe(false);
   });
 
+  it("traps focus and restores focus to trigger element on close", () => {
+    const trigger = document.createElement("button");
+    document.body.appendChild(trigger);
+    trigger.focus();
+    expect(document.activeElement).toBe(trigger);
+
+    const handle = openModal({
+      title: "Focus Test",
+      render: (body) => {
+        const btn = document.createElement("button");
+        btn.textContent = "Action";
+        body.appendChild(btn);
+      },
+    });
+
+    visible(document.body);
+    const closeBtn = handle.element.querySelector("button")!;
+    expect(document.activeElement).toBe(closeBtn);
+
+    handle.close();
+    expect(document.activeElement).toBe(trigger);
+  });
+
   it("closes on Escape, on the close button, and calls onClose once", () => {
     const onClose = vi.fn();
     const handle = openModal({ title: "T", render: () => {}, onClose });

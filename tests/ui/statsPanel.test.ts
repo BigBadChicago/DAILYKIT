@@ -68,6 +68,27 @@ describe("stats panel", () => {
     expect(rows[0]!.getAttribute("aria-label")).toBe("Perfect Clear, 1");
   });
 
+  it("renders activity grid when provided", () => {
+    const host = el("div");
+    const panel = renderStatsPanel(host);
+    panel.update({
+      ...base,
+      activityGrid: [
+        { puzzleNumber: 1, status: "cleared", label: "Puzzle 1: cleared" },
+        { puzzleNumber: 2, status: "failed", label: "Puzzle 2: failed" },
+        { puzzleNumber: 3, status: "empty", label: "Puzzle 3: not played" },
+      ],
+    });
+    const grid = host.querySelector(".dk-stats__grid");
+    expect(grid).not.toBeNull();
+    expect(grid?.classList.contains("dk-hidden")).toBe(false);
+    const cells = host.querySelectorAll(".dk-stats__grid-cell");
+    expect(cells.length).toBe(3);
+    expect(cells[0]!.classList.contains("dk-stats__grid-cell--cleared")).toBe(true);
+    expect(cells[1]!.classList.contains("dk-stats__grid-cell--failed")).toBe(true);
+    expect(cells[2]!.classList.contains("dk-stats__grid-cell--empty")).toBe(true);
+  });
+
   it("moves the current highlight on a second update without rebuilding rows", () => {
     const host = el("div");
     const panel = renderStatsPanel(host);

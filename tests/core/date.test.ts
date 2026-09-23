@@ -3,8 +3,13 @@ import {
   civilFromDays,
   dateForPuzzleNumber,
   daysFromCivil,
+  daysInMonth,
+  formatCivilDate,
+  isLeapYear,
+  isValidCivilDate,
   localCivilDate,
   msUntilNextLocalMidnight,
+  parseCivilDate,
   puzzleNumberFor,
   relateToWatermark,
   weekdayOf,
@@ -13,6 +18,45 @@ import {
 
 /** POKER GRID, charter decision 5. */
 const EPOCH: CivilDate = { year: 2026, month: 1, day: 1 };
+
+describe("isLeapYear and daysInMonth", () => {
+  it("correctly identifies leap years", () => {
+    expect(isLeapYear(2024)).toBe(true);
+    expect(isLeapYear(2000)).toBe(true);
+    expect(isLeapYear(1900)).toBe(false);
+    expect(isLeapYear(2026)).toBe(false);
+  });
+
+  it("returns correct days in month", () => {
+    expect(daysInMonth(2024, 2)).toBe(29);
+    expect(daysInMonth(2026, 2)).toBe(28);
+    expect(daysInMonth(2026, 4)).toBe(30);
+    expect(daysInMonth(2026, 1)).toBe(31);
+  });
+});
+
+describe("isValidCivilDate, parseCivilDate and formatCivilDate", () => {
+  it("validates civil date objects", () => {
+    expect(isValidCivilDate({ year: 2026, month: 2, day: 28 })).toBe(true);
+    expect(isValidCivilDate({ year: 2024, month: 2, day: 29 })).toBe(true);
+    expect(isValidCivilDate({ year: 2026, month: 2, day: 29 })).toBe(false);
+    expect(isValidCivilDate({ year: 2026, month: 13, day: 1 })).toBe(false);
+    expect(isValidCivilDate(null)).toBe(false);
+    expect(isValidCivilDate("2026-01-01")).toBe(false);
+  });
+
+  it("parses valid ISO date strings", () => {
+    expect(parseCivilDate("2026-09-23")).toEqual({ year: 2026, month: 9, day: 23 });
+    expect(parseCivilDate("2024-02-29")).toEqual({ year: 2024, month: 2, day: 29 });
+    expect(parseCivilDate("2026-02-29")).toBeNull();
+    expect(parseCivilDate("invalid")).toBeNull();
+  });
+
+  it("formats civil dates into ISO date strings", () => {
+    expect(formatCivilDate({ year: 2026, month: 9, day: 23 })).toBe("2026-09-23");
+    expect(formatCivilDate({ year: 2024, month: 2, day: 5 })).toBe("2024-02-05");
+  });
+});
 
 describe("daysFromCivil", () => {
   it("anchors at the Unix epoch", () => {

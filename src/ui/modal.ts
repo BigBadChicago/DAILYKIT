@@ -94,12 +94,14 @@ export function openModal(options: ModalOptions): ModalHandle {
       if (downOnScrim && event.target === scrim) close();
       downOnScrim = false;
     }));
-    disposers.push(on(dialog, "keydown", (event) => {
-      if ((event as KeyboardEvent).key === "Escape") {
+
+    const handleEscape = (event: Event): void => {
+      if ((event as KeyboardEvent).key === "Escape" && stack[stack.length - 1] === entry) {
         event.stopPropagation();
         close();
       }
-    }));
+    };
+    disposers.push(on(window, "keydown", handleEscape));
   }
 
   stack.push(entry);
