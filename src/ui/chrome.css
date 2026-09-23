@@ -387,6 +387,39 @@ body.dk-scroll-locked {
   color: var(--dk-text-dim);
 }
 
+.dk-stats__grid {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 4px;
+  margin: 0 0 16px;
+}
+
+.dk-stats__grid-cell {
+  aspect-ratio: 1;
+  border-radius: 3px;
+  background: var(--dk-line);
+  border: 1px solid transparent;
+}
+
+.dk-stats__grid-cell--cleared {
+  background: var(--dk-accent);
+  border-color: var(--dk-text);
+}
+
+.dk-stats__grid-cell--failed {
+  background: hsl(0 75% 50%);
+  border-color: var(--dk-text);
+}
+
+.dk-stats__grid-cell--played {
+  background: hsl(210 75% 50%);
+  border-color: var(--dk-text);
+}
+
+.dk-stats__grid-cell--empty {
+  opacity: 0.35;
+}
+
 .dk-hist__row {
   display: flex;
   align-items: center;

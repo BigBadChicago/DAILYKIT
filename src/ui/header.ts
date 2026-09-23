@@ -110,6 +110,34 @@ export function createHeader(options: HeaderOptions): HeaderView {
     theme,
   ]);
 
+  const handleKeydown = (event: KeyboardEvent): void => {
+    if (event.defaultPrevented || event.ctrlKey || event.altKey || event.metaKey) return;
+    if (document.querySelector(".dk-modal") !== null) return;
+    const target = event.target as HTMLElement | null;
+    if (
+      target &&
+      (target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.tagName === "SELECT" ||
+        target.isContentEditable)
+    ) {
+      return;
+    }
+
+    const key = event.key;
+    if (key === "?") {
+      event.preventDefault();
+      options.onHelp();
+    } else if (key === "s" || key === "S") {
+      event.preventDefault();
+      options.onStats();
+    } else if (key === "t" || key === "T") {
+      event.preventDefault();
+      options.theme.cycle();
+      paintTheme();
+    }
+  };
+
   const disposers = [
     on(help, "click", () => options.onHelp()),
     on(stats, "click", () => options.onStats()),
@@ -118,6 +146,7 @@ export function createHeader(options: HeaderOptions): HeaderView {
       paintTheme();
     }),
     options.theme.subscribe(() => paintTheme()),
+    on(window, "keydown", handleKeydown as EventListener),
   ];
   if (archive && options.onArchive) {
     disposers.push(on(archive, "click", () => options.onArchive?.()));

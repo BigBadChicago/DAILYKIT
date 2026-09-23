@@ -105,3 +105,83 @@ export function browserShareDeps(telemetry?: Telemetry): ShareDeps {
     telemetry,
   };
 }
+
+// ---------------------------------------------------------------------------
+// Canvas Social Share Card
+// ---------------------------------------------------------------------------
+
+export interface ShareCardOptions {
+  readonly title?: string;
+  readonly width?: number;
+  readonly height?: number;
+  readonly darkTheme?: boolean;
+}
+
+/**
+ * Renders a visual share card onto an HTML5 canvas for social image export.
+ * Zero external dependencies. Uses canvas rendering primitives.
+ */
+export function renderShareCardCanvas(
+  text: string,
+  options: ShareCardOptions = {},
+): HTMLCanvasElement | null {
+  if (typeof document === "undefined") return null;
+  const width = options.width ?? 600;
+  const height = options.height ?? 400;
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return null;
+
+  const isDark = options.darkTheme ?? true;
+  const bg = isDark ? "#121824" : "#f8fafc";
+  const cardBg = isDark ? "#1e293b" : "#ffffff";
+  const textColor = isDark ? "#f1f5f9" : "#0f172a";
+  const accentColor = isDark ? "#38bdf8" : "#0284c7";
+  const borderColor = isDark ? "#334155" : "#e2e8f0";
+
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, width, height);
+
+  const pad = 24;
+  ctx.fillStyle = cardBg;
+  ctx.strokeStyle = borderColor;
+  ctx.lineWidth = 2;
+
+  ctx.beginPath();
+  ctx.roundRect?.(pad, pad, width - pad * 2, height - pad * 2, 16);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = accentColor;
+  ctx.font = "bold 20px system-ui, sans-serif";
+  ctx.fillText(options.title ?? "DAILYKIT", pad + 20, pad + 40);
+
+  ctx.fillStyle = textColor;
+  ctx.font = "16px monospace";
+
+  const lines = text.split("\n");
+  let y = pad + 75;
+  const lineHeight = 24;
+
+  for (const line of lines) {
+    if (y > height - pad - 20) break;
+    ctx.fillText(line, pad + 20, y);
+    y += lineHeight;
+  }
+
+  return canvas;
+}
+
+/** Converts a rendered share card canvas to a PNG Data URL string. */
+export function shareCardDataUrl(text: string, options: ShareCardOptions = {}): string | null {
+  const canvas = renderShareCardCanvas(text, options);
+  if (!canvas) return null;
+  try {
+    return canvas.toDataURL("image/png");
+  } catch {
+    return null;
+  }
+}

@@ -19,6 +19,12 @@ export interface DistributionView {
   readonly currentIndex: number | null;
 }
 
+export interface ActivityDay {
+  readonly puzzleNumber: number;
+  readonly status: "cleared" | "failed" | "played" | "empty";
+  readonly label: string;
+}
+
 export interface StatsView {
   readonly played: number;
   /** Null when the module sets hasWinLoss false. Suppresses the win rate row,
@@ -30,6 +36,7 @@ export interface StatsView {
    *  hub exists and a suite record is being kept. */
   readonly suiteStreak: number | null;
   readonly distribution: DistributionView;
+  readonly activityGrid?: readonly ActivityDay[];
 }
 
 export interface StatsPanelOptions {
@@ -89,11 +96,18 @@ function figuresFor(stats: StatsView): Figure[] {
 
 export function renderStatsPanel(host: HTMLElement, options?: StatsPanelOptions): StatsPanelView {
   const figures = el("dl", { class: "dk-stats__figures" });
+  const gridLabel = el("h3", { class: "dk-stats__heading dk-hidden", text: "30 Day Activity" });
+  const activityGrid = el("div", {
+    class: "dk-stats__grid dk-hidden",
+    attrs: { role: "grid", "aria-label": "30 day activity grid" },
+  });
   const histLabel = el("h3", { class: "dk-stats__heading", text: "Distribution" });
   const histogram = el("div", { class: "dk-stats__hist", attrs: { role: "list" } });
   const footer = el("div", { class: "dk-stats__footer" });
 
   host.appendChild(figures);
+  host.appendChild(gridLabel);
+  host.appendChild(activityGrid);
   host.appendChild(histLabel);
   host.appendChild(histogram);
   host.appendChild(footer);
@@ -116,6 +130,36 @@ export function renderStatsPanel(host: HTMLElement, options?: StatsPanelOptions)
         const note = node.children[2] as HTMLElement;
         setText(note, figure.note ?? "");
         setClass(note, "dk-hidden", figure.note === null);
+      },
+    );
+  };
+
+  const paintActivityGrid = (stats: StatsView): void => {
+    const days = stats.activityGrid;
+    if (!days || days.length === 0) {
+      setClass(gridLabel, "dk-hidden", true);
+      setClass(activityGrid, "dk-hidden", true);
+      return;
+    }
+    setClass(gridLabel, "dk-hidden", false);
+    setClass(activityGrid, "dk-hidden", false);
+
+    patchKeyed(
+      activityGrid,
+      days,
+      (day) => String(day.puzzleNumber),
+      () =>
+        el("div", {
+          class: "dk-stats__grid-cell",
+          attrs: { role: "gridcell" },
+        }),
+      (node, day) => {
+        setClass(node, "dk-stats__grid-cell--cleared", day.status === "cleared");
+        setClass(node, "dk-stats__grid-cell--failed", day.status === "failed");
+        setClass(node, "dk-stats__grid-cell--played", day.status === "played");
+        setClass(node, "dk-stats__grid-cell--empty", day.status === "empty");
+        node.setAttribute("aria-label", day.label);
+        node.setAttribute("title", day.label);
       },
     );
   };
@@ -160,10 +204,13 @@ export function renderStatsPanel(host: HTMLElement, options?: StatsPanelOptions)
   return {
     update(stats: StatsView): void {
       paintFigures(stats);
+      paintActivityGrid(stats);
       paintHistogram(stats);
     },
     destroy(): void {
       figures.remove();
+      gridLabel.remove();
+      activityGrid.remove();
       histLabel.remove();
       histogram.remove();
       footer.remove();

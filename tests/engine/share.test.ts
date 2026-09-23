@@ -1,5 +1,11 @@
+// @vitest-environment jsdom
 import { describe, expect, it, vi } from "vitest";
-import { deliverShare, type ShareDeps } from "../../src/engine/share.js";
+import {
+  deliverShare,
+  renderShareCardCanvas,
+  shareCardDataUrl,
+  type ShareDeps,
+} from "../../src/engine/share.js";
 
 describe("deliverShare", () => {
   it("prefers Web Share", async () => {
@@ -54,5 +60,38 @@ describe("deliverShare", () => {
 
   it("skips Web Share entirely where the API is absent", async () => {
     expect(await deliverShare("text", { writeClipboard: async () => undefined })).toBe("copied");
+  });
+});
+
+describe("renderShareCardCanvas", () => {
+  it("renders a canvas with specified width and height", () => {
+    const mockCtx = {
+      fillRect: vi.fn(),
+      beginPath: vi.fn(),
+      roundRect: vi.fn(),
+      fill: vi.fn(),
+      stroke: vi.fn(),
+      fillText: vi.fn(),
+      fillStyle: "",
+      strokeStyle: "",
+      lineWidth: 0,
+      font: "",
+    };
+    vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(
+      mockCtx as unknown as CanvasRenderingContext2D,
+    );
+    vi.spyOn(HTMLCanvasElement.prototype, "toDataURL").mockReturnValue("data:image/png;base64,mock");
+
+    const canvas = renderShareCardCanvas("Line 1\nLine 2", {
+      title: "POKER GRID",
+      width: 500,
+      height: 300,
+    });
+    expect(canvas).not.toBeNull();
+    expect(canvas?.width).toBe(500);
+    expect(canvas?.height).toBe(300);
+
+    const dataUrl = shareCardDataUrl("DAILYKIT #101\nScore: 100", { title: "DAILYKIT" });
+    expect(dataUrl).toBe("data:image/png;base64,mock");
   });
 });

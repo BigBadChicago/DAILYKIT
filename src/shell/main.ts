@@ -47,7 +47,7 @@ import { el, on, setClass, setText } from "../ui/dom.js";
 import { createHeader } from "../ui/header.js";
 import { openModal } from "../ui/modal.js";
 import { renderHelpPanel } from "../ui/helpPanel.js";
-import { renderStatsPanel, type StatsView } from "../ui/statsPanel.js";
+import { renderStatsPanel, type ActivityDay, type StatsView } from "../ui/statsPanel.js";
 import { createToaster } from "../ui/toast.js";
 import { applyAccent, installTheme } from "../ui/theme.js";
 import { PuzzleSource } from "./boot.js";
@@ -409,6 +409,27 @@ export function bootGame(game: AnyGameModuleV3, root: HTMLElement): void {
   // -------------------------------------------------------------------------
 
   function statsView(currentIndex: number | null): StatsView {
+    const currentPuzzle = session?.puzzleNumber ?? (record.watermark > 0 ? record.watermark : 1);
+    const startPuzzle = Math.max(1, currentPuzzle - 29);
+    const activityGrid: ActivityDay[] = [];
+    for (let pNum = startPuzzle; pNum <= currentPuzzle; pNum++) {
+      const res = resultFor(record, pNum) ?? archiveResultFor(record, pNum);
+      if (res !== null) {
+        const status = res.won === true ? "cleared" : res.won === false ? "failed" : "played";
+        activityGrid.push({
+          puzzleNumber: pNum,
+          status,
+          label: `Puzzle ${pNum}: ${status}`,
+        });
+      } else {
+        activityGrid.push({
+          puzzleNumber: pNum,
+          status: "empty",
+          label: `Puzzle ${pNum}: not played`,
+        });
+      }
+    }
+
     return {
       played: record.played,
       wins: game.hasWinLoss ? record.won : null,
@@ -421,6 +442,7 @@ export function bootGame(game: AnyGameModuleV3, root: HTMLElement): void {
         distinguishedIndex: game.distribution.distinguishedIndex,
         currentIndex,
       },
+      activityGrid,
     };
   }
 

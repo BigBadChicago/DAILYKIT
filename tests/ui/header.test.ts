@@ -67,6 +67,43 @@ describe("header", () => {
     theme.destroy();
   });
 
+  it("triggers shortcuts for ?, s, and t when no modal is open and focus is outside inputs", () => {
+    const onHelp = vi.fn();
+    const onStats = vi.fn();
+    const { view, theme } = build({ onHelp, onStats });
+
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "?" }));
+    expect(onHelp).toHaveBeenCalledTimes(1);
+
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "s" }));
+    expect(onStats).toHaveBeenCalledTimes(1);
+
+    const initialChoice = theme.choice;
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "t" }));
+    expect(theme.choice).not.toBe(initialChoice);
+
+    view.destroy();
+    theme.destroy();
+  });
+
+  it("does not trigger shortcuts when typing inside an input element", () => {
+    const onHelp = vi.fn();
+    const onStats = vi.fn();
+    const { view, theme } = build({ onHelp, onStats });
+
+    const input = document.createElement("input");
+    document.body.appendChild(input);
+    input.focus();
+
+    input.dispatchEvent(new KeyboardEvent("keydown", { key: "?", bubbles: true }));
+    input.dispatchEvent(new KeyboardEvent("keydown", { key: "s", bubbles: true }));
+    expect(onHelp).not.toHaveBeenCalled();
+    expect(onStats).not.toHaveBeenCalled();
+
+    view.destroy();
+    theme.destroy();
+  });
+
   it("cycles the theme and relabels the button each time", () => {
     const { view, theme } = build();
     const button = view.element.querySelector<HTMLElement>("[aria-label^=Theme]")!;
